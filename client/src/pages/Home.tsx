@@ -24,21 +24,22 @@ export default function Home() {
       <section className="relative h-screen w-full overflow-hidden flex items-center justify-center">
         <div className="absolute inset-0 z-0">
           <img 
-            src="/images/hero-bg.jpg" 
-            alt="Hero Background" 
-            className="w-full h-full object-cover opacity-60 grayscale contrast-125"
+            src="/images/hero-bg-real.jpg" 
+            alt="Tokyo Bar Background" 
+            className="w-full h-full object-cover opacity-40"
           />
-          <div className="absolute inset-0 bg-black/40" />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/50 to-black" />
         </div>
-        
-        <div className="container relative z-10 flex flex-col items-start justify-center h-full">
+
+        <div className="relative z-10 container mx-auto px-6 h-full flex flex-col justify-center items-start">
           <motion.h1 
-            initial={{ opacity: 0, y: 100 }}
+            initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: "easeOut" }}
-            className="text-7xl md:text-9xl font-bold tracking-tighter leading-none mix-blend-difference text-white mb-6"
+            className="text-5xl md:text-7xl lg:text-8xl font-bold tracking-tighter leading-tight mb-6 mix-blend-difference whitespace-pre-line"
           >
-            HAVOC <br /> & DREAM
+            活著本身就是一場浩劫，<br />
+            夢是這世界唯一的解脫。
           </motion.h1>
           
           <motion.p 
