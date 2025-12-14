@@ -2,13 +2,15 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
-import { photos, reviews, Category } from "@/lib/data";
+import Lightbox from "@/components/Lightbox";
+import { photos, reviews, Category, Photo } from "@/lib/data";
 import { ArrowRight, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export default function Home() {
   const [activeCategory, setActiveCategory] = useState<Category>("All");
   const [hoveredPhoto, setHoveredPhoto] = useState<string | null>(null);
+  const [selectedPhoto, setSelectedPhoto] = useState<Photo | null>(null);
 
   const filteredPhotos = activeCategory === "All" 
     ? photos 
@@ -98,8 +100,10 @@ export default function Home() {
                 className="relative group break-inside-avoid cursor-pointer overflow-hidden"
                 onMouseEnter={() => setHoveredPhoto(photo.id)}
                 onMouseLeave={() => setHoveredPhoto(null)}
+                onClick={() => setSelectedPhoto(photo)}
               >
-                <img
+                <motion.img
+                  layoutId={`image-${photo.id}`}
                   src={photo.src}
                   alt={photo.alt}
                   className="w-full h-auto grayscale group-hover:grayscale-0 transition-all duration-700 ease-out scale-100 group-hover:scale-105"
@@ -165,6 +169,15 @@ export default function Home() {
       </section>
 
       <Footer />
+
+      <AnimatePresence>
+        {selectedPhoto && (
+          <Lightbox 
+            photo={selectedPhoto} 
+            onClose={() => setSelectedPhoto(null)} 
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }
