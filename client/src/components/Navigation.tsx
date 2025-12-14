@@ -19,7 +19,6 @@ export default function Navigation() {
   const navLinks = [
     { name: "PORTFOLIO", href: "/" },
     { name: "ABOUT", href: "/about" },
-    { name: "CONTACT", href: "/contact" },
   ];
 
   return (
@@ -50,6 +49,12 @@ export default function Navigation() {
               </a>
             </Link>
           ))}
+          <a 
+            href="mailto:contact@26phi.com"
+            className="text-sm font-mono tracking-widest hover:line-through decoration-1 underline-offset-4 transition-all"
+          >
+            CONTACT
+          </a>
         </div>
 
         {/* Mobile Menu Button */}
@@ -74,6 +79,13 @@ export default function Navigation() {
               </a>
             </Link>
           ))}
+          <a 
+            href="mailto:contact@26phi.com"
+            className="text-2xl font-mono tracking-widest hover:text-gray-400 transition-colors"
+            onClick={() => setIsMobileMenuOpen(false)}
+          >
+            CONTACT
+          </a>
         </div>
       )}
     </nav>
