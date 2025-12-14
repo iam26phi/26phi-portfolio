@@ -189,6 +189,16 @@ export default function Home() {
             }}
             hasNext={filteredPhotos.findIndex(p => p.id === selectedPhoto.id) < filteredPhotos.length - 1}
             hasPrev={filteredPhotos.findIndex(p => p.id === selectedPhoto.id) > 0}
+            nextPhotoSrc={
+              filteredPhotos.findIndex(p => p.id === selectedPhoto.id) < filteredPhotos.length - 1
+                ? filteredPhotos[filteredPhotos.findIndex(p => p.id === selectedPhoto.id) + 1].src
+                : undefined
+            }
+            prevPhotoSrc={
+              filteredPhotos.findIndex(p => p.id === selectedPhoto.id) > 0
+                ? filteredPhotos[filteredPhotos.findIndex(p => p.id === selectedPhoto.id) - 1].src
+                : undefined
+            }
           />
         )}
       </AnimatePresence>

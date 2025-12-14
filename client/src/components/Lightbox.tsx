@@ -10,9 +10,23 @@ interface LightboxProps {
   onPrev: () => void;
   hasNext: boolean;
   hasPrev: boolean;
+  nextPhotoSrc?: string;
+  prevPhotoSrc?: string;
 }
 
-export default function Lightbox({ photo, onClose, onNext, onPrev, hasNext, hasPrev }: LightboxProps) {
+export default function Lightbox({ photo, onClose, onNext, onPrev, hasNext, hasPrev, nextPhotoSrc, prevPhotoSrc }: LightboxProps) {
+  // Preload Images
+  useEffect(() => {
+    if (nextPhotoSrc) {
+      const img = new Image();
+      img.src = nextPhotoSrc;
+    }
+    if (prevPhotoSrc) {
+      const img = new Image();
+      img.src = prevPhotoSrc;
+    }
+  }, [nextPhotoSrc, prevPhotoSrc]);
+
   // Handle Keyboard Navigation
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
