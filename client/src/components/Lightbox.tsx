@@ -1,22 +1,28 @@
-import { motion } from "framer-motion";
-import { X } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { X, ChevronLeft, ChevronRight } from "lucide-react";
 import { Photo } from "@/lib/data";
 import { useEffect } from "react";
 
 interface LightboxProps {
   photo: Photo;
   onClose: () => void;
+  onNext: () => void;
+  onPrev: () => void;
+  hasNext: boolean;
+  hasPrev: boolean;
 }
 
-export default function Lightbox({ photo, onClose }: LightboxProps) {
-  // Handle ESC key
+export default function Lightbox({ photo, onClose, onNext, onPrev, hasNext, hasPrev }: LightboxProps) {
+  // Handle Keyboard Navigation
   useEffect(() => {
-    const handleEsc = (e: KeyboardEvent) => {
+    const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
+      if (e.key === "ArrowRight" && hasNext) onNext();
+      if (e.key === "ArrowLeft" && hasPrev) onPrev();
     };
-    window.addEventListener("keydown", handleEsc);
-    return () => window.removeEventListener("keydown", handleEsc);
-  }, [onClose]);
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [onClose, onNext, onPrev, hasNext, hasPrev]);
 
   return (
     <motion.div
@@ -33,24 +39,50 @@ export default function Lightbox({ photo, onClose }: LightboxProps) {
         <X size={32} />
       </button>
 
+      {/* Navigation Buttons */}
+      {hasPrev && (
+        <button
+          onClick={(e) => { e.stopPropagation(); onPrev(); }}
+          className="absolute left-4 md:left-8 top-1/2 -translate-y-1/2 text-white/50 hover:text-white transition-colors z-50 p-2"
+        >
+          <ChevronLeft size={48} strokeWidth={1} />
+        </button>
+      )}
+      
+      {hasNext && (
+        <button
+          onClick={(e) => { e.stopPropagation(); onNext(); }}
+          className="absolute right-4 md:right-8 top-1/2 -translate-y-1/2 text-white/50 hover:text-white transition-colors z-50 p-2"
+        >
+          <ChevronRight size={48} strokeWidth={1} />
+        </button>
+      )}
+
       <div
-        className="relative w-full h-full max-w-7xl flex flex-col md:flex-row items-center justify-center gap-8 md:gap-16"
+        className="relative w-full h-full max-w-6xl flex flex-col md:flex-row items-center justify-center gap-8 md:gap-12 px-8 md:px-16"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="relative flex-1 w-full h-[60vh] md:h-full flex items-center justify-center">
-          <motion.img
-            layoutId={`image-${photo.id}`}
-            src={photo.src}
-            alt={photo.alt}
-            className="max-w-full max-h-full object-contain shadow-2xl"
-          />
+        <div className="relative flex-1 w-full h-[50vh] md:h-full flex items-center justify-center">
+          <AnimatePresence mode="wait">
+            <motion.img
+              key={photo.id}
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              transition={{ duration: 0.3 }}
+              src={photo.src}
+              alt={photo.alt}
+              className="max-w-full max-h-full object-contain shadow-2xl"
+            />
+          </AnimatePresence>
         </div>
 
         <motion.div
+          key={`info-${photo.id}`}
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.2, duration: 0.5 }}
-          className="w-full md:w-[300px] lg:w-[400px] flex flex-col gap-6 text-white shrink-0"
+          transition={{ delay: 0.1, duration: 0.4 }}
+          className="w-full md:w-[300px] lg:w-[350px] flex flex-col gap-6 text-white shrink-0"
         >
           <div>
             <p className="text-xs font-mono text-neutral-500 mb-2 tracking-widest uppercase">
