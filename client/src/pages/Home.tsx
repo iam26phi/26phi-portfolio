@@ -1,16 +1,40 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useAuth } from "@/_core/hooks/useAuth";
+import { trpc } from "@/lib/trpc";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import Lightbox from "@/components/Lightbox";
-import { photos, reviews, Category, Photo } from "@/lib/data";
-import { ArrowRight, Star } from "lucide-react";
+import { reviews } from "@/lib/data";
+import { ArrowRight, Star, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
+type Category = "All" | "Portrait" | "Travel" | "Editorial";
+type Photo = {
+  id: number;
+  src: string;
+  alt: string;
+  category: "Portrait" | "Travel" | "Editorial";
+  location: string | null;
+  date: string | null;
+  description: string | null;
+  isVisible: number;
+  sortOrder: number;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
 export default function Home() {
+  // The userAuth hooks provides authentication state
+  // To implement login/logout functionality, simply call logout() or redirect to getLoginUrl()
+  let { user, loading, error, isAuthenticated, logout } = useAuth();
+
   const [activeCategory, setActiveCategory] = useState<Category>("All");
-  const [hoveredPhoto, setHoveredPhoto] = useState<string | null>(null);
+  const [hoveredPhoto, setHoveredPhoto] = useState<number | null>(null);
   const [selectedPhoto, setSelectedPhoto] = useState<Photo | null>(null);
+
+  // Fetch photos from backend API
+  const { data: photos = [], isLoading } = trpc.photos.list.useQuery();
 
   const filteredPhotos = activeCategory === "All" 
     ? photos 
@@ -66,6 +90,13 @@ export default function Home() {
 
       {/* Portfolio Section */}
       <section id="portfolio" className="py-32 container">
+        {isLoading && (
+          <div className="flex justify-center py-12">
+            <Loader2 className="animate-spin h-8 w-8" />
+          </div>
+        )}
+        {!isLoading && (
+        <>
         <div className="flex flex-col md:flex-row justify-between items-end mb-20 gap-8">
           <h2 className="text-5xl md:text-7xl font-bold tracking-tighter">SELECTED <br /> WORKS</h2>
           
@@ -125,6 +156,8 @@ export default function Home() {
             ))}
           </AnimatePresence>
         </motion.div>
+        </>
+        )}
       </section>
 
       {/* Reviews Section */}

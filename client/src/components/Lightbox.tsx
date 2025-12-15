@@ -1,7 +1,20 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { X, ChevronLeft, ChevronRight } from "lucide-react";
-import { Photo } from "@/lib/data";
 import { useEffect, useState } from "react";
+
+type Photo = {
+  id: number;
+  src: string;
+  alt: string;
+  category: "Portrait" | "Travel" | "Editorial";
+  location: string | null;
+  date: string | null;
+  description: string | null;
+  isVisible: number;
+  sortOrder: number;
+  createdAt: Date;
+  updatedAt: Date;
+};
 
 interface LightboxProps {
   photo: Photo;
