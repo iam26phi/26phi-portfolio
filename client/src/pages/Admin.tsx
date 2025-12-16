@@ -20,7 +20,8 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { Loader2, Plus, Edit, Trash2, Eye, EyeOff } from "lucide-react";
+import { Loader2, Plus, Edit, Trash2, Eye, EyeOff, Upload } from "lucide-react";
+import { useRef } from "react";
 import { getLoginUrl } from "@/const";
 
 type PhotoFormData = {
@@ -39,6 +40,9 @@ export default function Admin() {
   const { user, loading: authLoading, isAuthenticated } = useAuth();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingPhoto, setEditingPhoto] = useState<PhotoFormData | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadCategory, setUploadCategory] = useState<"Portrait" | "Travel" | "Editorial">("Portrait");
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { data: photos, isLoading, refetch } = trpc.photos.listAll.useQuery(undefined, {
     enabled: isAuthenticated && user?.role === "admin",
@@ -77,6 +81,66 @@ export default function Admin() {
       toast.error(`刪除失敗: ${error.message}`);
     },
   });
+
+  const uploadMutation = trpc.photos.upload.useMutation({
+    onSuccess: async (result) => {
+      toast.success("照片上傳成功");
+      // Create photo record with uploaded URL
+      await createMutation.mutateAsync({
+        src: result.url,
+        alt: "New Photo",
+        category: uploadCategory,
+        location: "",
+        date: new Date().toISOString().split('T')[0],
+        description: "",
+        isVisible: 1,
+        sortOrder: 0,
+      });
+      setIsUploading(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    },
+    onError: (error) => {
+      toast.error(`上傳失敗: ${error.message}`);
+      setIsUploading(false);
+    },
+  });
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      toast.error("請選擇圖片檔案");
+      return;
+    }
+
+    // Validate file size (max 10MB)
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error("檔案大小不能超過 10MB");
+      return;
+    }
+
+    setIsUploading(true);
+
+    // Convert to base64
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      const base64 = event.target?.result as string;
+      await uploadMutation.mutateAsync({
+        file: base64,
+        filename: file.name,
+        category: uploadCategory,
+      });
+    };
+    reader.onerror = () => {
+      toast.error("讀取檔案失敗");
+      setIsUploading(false);
+    };
+    reader.readAsDataURL(file);
+  };
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -154,18 +218,52 @@ export default function Admin() {
             <p className="text-muted-foreground">管理您的作品集照片</p>
           </div>
           
-          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-            <DialogTrigger asChild>
+          <div className="flex gap-2">
+            <div className="flex items-center gap-2">
+              <Select value={uploadCategory} onValueChange={(value) => setUploadCategory(value as "Portrait" | "Travel" | "Editorial")}>
+                <SelectTrigger className="w-32">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Portrait">Portrait</SelectItem>
+                  <SelectItem value="Travel">Travel</SelectItem>
+                  <SelectItem value="Editorial">Editorial</SelectItem>
+                </SelectContent>
+              </Select>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleFileUpload}
+                className="hidden"
+                id="photo-upload"
+                disabled={isUploading}
+              />
               <Button
-                onClick={() => {
-                  setEditingPhoto(null);
-                  setIsDialogOpen(true);
-                }}
+                onClick={() => fileInputRef.current?.click()}
+                disabled={isUploading}
+                variant="outline"
               >
-                <Plus className="mr-2 h-4 w-4" />
-                新增照片
+                {isUploading ? (
+                  <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> 上傳中...</>
+                ) : (
+                  <><Upload className="mr-2 h-4 w-4" /> 上傳照片</>
+                )}
               </Button>
-            </DialogTrigger>
+            </div>
+            
+            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+              <DialogTrigger asChild>
+                <Button
+                  onClick={() => {
+                    setEditingPhoto(null);
+                    setIsDialogOpen(true);
+                  }}
+                >
+                  <Plus className="mr-2 h-4 w-4" />
+                  手動新增
+                </Button>
+              </DialogTrigger>
             <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>
@@ -280,7 +378,8 @@ export default function Admin() {
                 </div>
               </form>
             </DialogContent>
-          </Dialog>
+            </Dialog>
+          </div>
         </div>
 
         {isLoading ? (

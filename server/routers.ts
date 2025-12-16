@@ -4,6 +4,7 @@ import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, router, protectedProcedure } from "./_core/trpc";
 import { z } from "zod";
 import * as db from "./db";
+import { storagePut } from "./storage.js";
 
 export const appRouter = router({
     // if you need to use socket.io, read and register route in server/_core/index.ts, all api should start with '/api/' so that the gateway can route correctly
@@ -87,6 +88,36 @@ export const appRouter = router({
           throw new Error('Unauthorized');
         }
         return await db.deletePhoto(input.id);
+      }),
+
+    upload: protectedProcedure
+      .input(z.object({
+        file: z.string(), // base64 encoded image
+        filename: z.string(),
+        category: z.enum(["Portrait", "Travel", "Editorial"]),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        if (ctx.user.role !== 'admin') {
+          throw new Error('Unauthorized');
+        }
+        
+        // Decode base64 and upload to S3
+        const base64Data = input.file.split(',')[1];
+        const buffer = Buffer.from(base64Data, 'base64');
+        
+        // Generate unique filename
+        const timestamp = Date.now();
+        const ext = input.filename.split('.').pop();
+        const key = `portfolio/${input.category.toLowerCase()}/${timestamp}-${input.filename}`;
+        
+        // Upload to S3
+        const result = await storagePut(key, buffer, `image/${ext}`);
+        
+        return {
+          success: true,
+          url: result.url,
+          key: result.key,
+        };
       }),
   }),
 });
