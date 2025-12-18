@@ -88,7 +88,7 @@ export default function Home() {
       <section className="relative h-screen w-full overflow-hidden flex items-center justify-center">
         <div className="absolute inset-0 z-0">
           <img 
-            src="/images/hero-bg-real.jpg" 
+            src="https://d2xsxph8kpxj0f.cloudfront.net/310519663123146573/3s8FCUF9BWUfzRwVV77JBG/hero-bg-real.jpg" 
             alt="Tokyo Bar Background" 
             className="w-full h-full object-cover opacity-40"
           />
