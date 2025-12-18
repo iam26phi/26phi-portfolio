@@ -138,7 +138,7 @@ export default function Home() {
         {!isLoading && (
         <>
         <div className="flex flex-col md:flex-row justify-between items-end mb-20 gap-8">
-          <h2 className="text-5xl md:text-7xl font-bold tracking-tighter">SELECTED <br /> WORKS</h2>
+          <h2 className="text-5xl md:text-7xl font-bold tracking-tighter">工作記錄</h2>
           
           <div className="flex flex-col md:flex-row gap-4 md:gap-8 items-start md:items-center">
             <div className="flex gap-8 font-mono text-sm tracking-widest">
