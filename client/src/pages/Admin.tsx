@@ -40,8 +40,15 @@ export default function Admin() {
   const { user, loading: authLoading, isAuthenticated } = useAuth();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingPhoto, setEditingPhoto] = useState<PhotoFormData | null>(null);
-  const [isUploading, setIsUploading] = useState(false);
   const [uploadCategory, setUploadCategory] = useState<"Portrait" | "Travel" | "Editorial">("Portrait");
+  const [uploadQueue, setUploadQueue] = useState<Array<{
+    id: string;
+    filename: string;
+    progress: number;
+    stage: "reading" | "uploading" | "creating" | "done" | "error";
+    estimatedTime: number | null;
+    error?: string;
+  }>>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { data: photos, isLoading, refetch } = trpc.photos.listAll.useQuery(undefined, {
@@ -82,64 +89,139 @@ export default function Admin() {
     },
   });
 
-  const uploadMutation = trpc.photos.upload.useMutation({
-    onSuccess: async (result) => {
-      toast.success("照片上傳成功");
-      // Create photo record with uploaded URL
-      await createMutation.mutateAsync({
-        src: result.url,
-        alt: "New Photo",
-        category: uploadCategory,
-        location: "",
-        date: new Date().toISOString().split('T')[0],
-        description: "",
-        isVisible: 1,
-        sortOrder: 0,
-      });
-      setIsUploading(false);
+  const uploadMutation = trpc.photos.upload.useMutation();
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
+
+    // Validate all files
+    const invalidFiles = files.filter(f => !f.type.startsWith('image/'));
+    if (invalidFiles.length > 0) {
+      toast.error(`${invalidFiles.length} 個檔案不是圖片格式，已跳過`);
+    }
+
+    const validFiles = files.filter(f => f.type.startsWith('image/'));
+    if (validFiles.length === 0) return;
+
+    // Initialize upload queue
+    const newQueue = validFiles.map(file => ({
+      id: `${Date.now()}-${Math.random()}`,
+      filename: file.name,
+      progress: 0,
+      stage: "reading" as const,
+      estimatedTime: Math.ceil(file.size / (1024 * 1024)),
+    }));
+
+    setUploadQueue(newQueue);
+
+    // Upload files sequentially
+    for (let i = 0; i < validFiles.length; i++) {
+      const file = validFiles[i];
+      const queueItem = newQueue[i];
+
+      try {
+        await uploadSingleFile(file, queueItem.id);
+      } catch (error) {
+        console.error(`Failed to upload ${file.name}:`, error);
+      }
+    }
+
+    // Clear queue after a delay
+    setTimeout(() => {
+      setUploadQueue([]);
       if (fileInputRef.current) {
         fileInputRef.current.value = "";
       }
-    },
-    onError: (error) => {
-      toast.error(`上傳失敗: ${error.message}`);
-      setIsUploading(false);
-    },
-  });
+    }, 2000);
+  };
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    // Validate file type
-    if (!file.type.startsWith('image/')) {
-      toast.error("請選擇圖片檔案");
-      return;
-    }
-
-    // Validate file size (max 10MB)
-    if (file.size > 10 * 1024 * 1024) {
-      toast.error("檔案大小不能超過 10MB");
-      return;
-    }
-
-    setIsUploading(true);
-
-    // Convert to base64
-    const reader = new FileReader();
-    reader.onload = async (event) => {
-      const base64 = event.target?.result as string;
-      await uploadMutation.mutateAsync({
-        file: base64,
-        filename: file.name,
-        category: uploadCategory,
-      });
+  const uploadSingleFile = async (file: File, queueId: string) => {
+    const updateQueueItem = (updates: Partial<typeof uploadQueue[0]>) => {
+      setUploadQueue(prev => prev.map(item => 
+        item.id === queueId ? { ...item, ...updates } : item
+      ));
     };
-    reader.onerror = () => {
-      toast.error("讀取檔案失敗");
-      setIsUploading(false);
-    };
-    reader.readAsDataURL(file);
+
+    const startTime = Date.now();
+    const estimatedSeconds = Math.ceil(file.size / (1024 * 1024));
+
+    return new Promise<void>((resolve, reject) => {
+      const reader = new FileReader();
+
+      reader.onprogress = (event) => {
+        if (event.lengthComputable) {
+          const progress = Math.round((event.loaded / event.total) * 30);
+          updateQueueItem({ progress });
+
+          const elapsed = (Date.now() - startTime) / 1000;
+          const rate = event.loaded / elapsed;
+          const remaining = (event.total - event.loaded) / rate;
+          updateQueueItem({ estimatedTime: Math.ceil(remaining) });
+        }
+      };
+
+      reader.onload = async (event) => {
+        updateQueueItem({ progress: 30, stage: "uploading" });
+
+        const base64 = event.target?.result as string;
+        const uploadStartTime = Date.now();
+
+        const progressInterval = setInterval(() => {
+          const elapsed = (Date.now() - uploadStartTime) / 1000;
+          const calculatedProgress = 30 + Math.min(50, (elapsed / estimatedSeconds) * 50);
+          const remaining = Math.max(0, estimatedSeconds - elapsed);
+          
+          updateQueueItem({ 
+            progress: Math.round(calculatedProgress),
+            estimatedTime: Math.ceil(remaining)
+          });
+        }, 500);
+
+        try {
+          const result = await uploadMutation.mutateAsync({
+            file: base64,
+            filename: file.name,
+            category: uploadCategory,
+          });
+
+          clearInterval(progressInterval);
+          updateQueueItem({ progress: 90, stage: "creating" });
+
+          await createMutation.mutateAsync({
+            src: result.url,
+            alt: file.name.replace(/\.[^/.]+$/, ""),
+            category: uploadCategory,
+            location: "",
+            date: new Date().toISOString().split('T')[0],
+            description: "",
+            isVisible: 1,
+            sortOrder: 0,
+          });
+
+          updateQueueItem({ progress: 100, stage: "done", estimatedTime: 0 });
+          toast.success(`${file.name} 上傳成功`);
+          resolve();
+        } catch (error: any) {
+          clearInterval(progressInterval);
+          updateQueueItem({ 
+            stage: "error", 
+            error: error.message,
+            estimatedTime: 0
+          });
+          toast.error(`${file.name} 上傳失敗: ${error.message}`);
+          reject(error);
+        }
+      };
+
+      reader.onerror = () => {
+        updateQueueItem({ stage: "error", error: "讀取檔案失敗" });
+        toast.error(`${file.name} 讀取失敗`);
+        reject(new Error("讀取檔案失敗"));
+      };
+
+      reader.readAsDataURL(file);
+    });
   };
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -218,8 +300,51 @@ export default function Admin() {
             <p className="text-muted-foreground">管理您的作品集照片</p>
           </div>
           
-          <div className="flex gap-2">
-            <div className="flex items-center gap-2">
+          <div className="flex flex-col gap-4">
+            {uploadQueue.length > 0 && (
+              <div className="bg-card border rounded-lg p-4 space-y-3">
+                <div className="flex justify-between items-center">
+                  <h3 className="font-medium text-sm">上傳中 ({uploadQueue.filter(q => q.stage === "done").length}/{uploadQueue.length})</h3>
+                </div>
+                <div className="space-y-2 max-h-60 overflow-y-auto">
+                  {uploadQueue.map((item) => (
+                    <div key={item.id} className="space-y-1">
+                      <div className="flex justify-between items-center text-xs">
+                        <span className="font-medium truncate max-w-[200px]" title={item.filename}>
+                          {item.filename}
+                        </span>
+                        <span className="text-muted-foreground flex items-center gap-1">
+                          {item.stage === "done" && <span className="text-green-600">✓ 完成</span>}
+                          {item.stage === "error" && <span className="text-red-600">✗ 失敗</span>}
+                          {item.stage !== "done" && item.stage !== "error" && (
+                            <>
+                              {item.progress}%
+                              {item.estimatedTime !== null && item.estimatedTime > 0 && (
+                                <> · {item.estimatedTime}s</>
+                              )}
+                            </>
+                          )}
+                        </span>
+                      </div>
+                      {item.stage !== "done" && item.stage !== "error" && (
+                        <div className="w-full bg-secondary rounded-full h-1.5 overflow-hidden">
+                          <div
+                            className="bg-primary h-full transition-all duration-300 ease-out"
+                            style={{ width: `${item.progress}%` }}
+                          />
+                        </div>
+                      )}
+                      {item.error && (
+                        <p className="text-xs text-red-600">{item.error}</p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            
+            <div className="flex gap-2">
+              <div className="flex items-center gap-2">
               <Select value={uploadCategory} onValueChange={(value) => setUploadCategory(value as "Portrait" | "Travel" | "Editorial")}>
                 <SelectTrigger className="w-32">
                   <SelectValue />
@@ -234,17 +359,18 @@ export default function Admin() {
                 ref={fileInputRef}
                 type="file"
                 accept="image/*"
+                multiple
                 onChange={handleFileUpload}
                 className="hidden"
                 id="photo-upload"
-                disabled={isUploading}
+                disabled={uploadQueue.length > 0}
               />
               <Button
                 onClick={() => fileInputRef.current?.click()}
-                disabled={isUploading}
+                disabled={uploadQueue.length > 0}
                 variant="outline"
               >
-                {isUploading ? (
+                {uploadQueue.length > 0 ? (
                   <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> 上傳中...</>
                 ) : (
                   <><Upload className="mr-2 h-4 w-4" /> 上傳照片</>
@@ -379,7 +505,8 @@ export default function Admin() {
               </form>
             </DialogContent>
             </Dialog>
-          </div>
+              </div>
+            </div>
         </div>
 
         {isLoading ? (
