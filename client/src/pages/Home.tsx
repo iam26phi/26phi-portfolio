@@ -7,6 +7,7 @@ import Footer from "@/components/Footer";
 import Lightbox from "@/components/Lightbox";
 import { reviews } from "@/lib/data";
 import { ArrowRight, Star, Loader2 } from "lucide-react";
+import { AdvancedFilter, FilterOptions } from "@/components/AdvancedFilter";
 import { cn } from "@/lib/utils";
 
 type Category = "All" | "Portrait" | "Travel" | "Editorial";
@@ -32,13 +33,52 @@ export default function Home() {
   const [activeCategory, setActiveCategory] = useState<Category>("All");
   const [hoveredPhoto, setHoveredPhoto] = useState<number | null>(null);
   const [selectedPhoto, setSelectedPhoto] = useState<Photo | null>(null);
+  const [advancedFilters, setAdvancedFilters] = useState<FilterOptions>({
+    category: "All",
+    location: "All",
+    year: "All",
+  });
 
   // Fetch photos from backend API
   const { data: photos = [], isLoading } = trpc.photos.list.useQuery();
 
-  const filteredPhotos = activeCategory === "All" 
-    ? photos 
-    : photos.filter(p => p.category === activeCategory);
+  // Extract unique locations and years from photos
+  const availableLocations = Array.from(
+    new Set(photos.map(p => p.location).filter(Boolean))
+  ).sort() as string[];
+  
+  const availableYears = Array.from(
+    new Set(photos.map(p => p.date ? new Date(p.date).getFullYear().toString() : null).filter(Boolean))
+  ).sort((a, b) => Number(b) - Number(a)) as string[];
+
+  // Apply filters
+  const filteredPhotos = photos.filter(photo => {
+    // Category filter
+    if (advancedFilters.category !== "All" && photo.category !== advancedFilters.category) {
+      return false;
+    }
+    
+    // Location filter
+    if (advancedFilters.location !== "All" && photo.location !== advancedFilters.location) {
+      return false;
+    }
+    
+    // Year filter
+    if (advancedFilters.year !== "All") {
+      const photoYear = photo.date ? new Date(photo.date).getFullYear().toString() : null;
+      if (photoYear !== advancedFilters.year) {
+        return false;
+      }
+    }
+    
+    return true;
+  });
+
+  // Sync activeCategory with advancedFilters
+  const handleCategoryClick = (cat: Category) => {
+    setActiveCategory(cat);
+    setAdvancedFilters({ ...advancedFilters, category: cat });
+  };
 
   return (
     <div className="min-h-screen bg-background text-foreground selection:bg-white selection:text-black">
@@ -100,19 +140,27 @@ export default function Home() {
         <div className="flex flex-col md:flex-row justify-between items-end mb-20 gap-8">
           <h2 className="text-5xl md:text-7xl font-bold tracking-tighter">SELECTED <br /> WORKS</h2>
           
-          <div className="flex gap-8 font-mono text-sm tracking-widest">
-            {(["All", "Portrait", "Travel", "Editorial"] as Category[]).map((cat) => (
-              <button
-                key={cat}
-                onClick={() => setActiveCategory(cat)}
-                className={cn(
-                  "hover:line-through decoration-1 underline-offset-4 transition-all",
-                  activeCategory === cat ? "line-through text-white" : "text-neutral-500"
-                )}
-              >
-                {cat.toUpperCase()}
-              </button>
-            ))}
+          <div className="flex flex-col md:flex-row gap-4 md:gap-8 items-start md:items-center">
+            <div className="flex gap-8 font-mono text-sm tracking-widest">
+              {(["All", "Portrait", "Travel", "Editorial"] as Category[]).map((cat) => (
+                <button
+                  key={cat}
+                  onClick={() => handleCategoryClick(cat)}
+                  className={cn(
+                    "hover:line-through decoration-1 underline-offset-4 transition-all",
+                    advancedFilters.category === cat ? "line-through text-white" : "text-neutral-500"
+                  )}
+                >
+                  {cat.toUpperCase()}
+                </button>
+              ))}
+            </div>
+            <AdvancedFilter
+              filters={advancedFilters}
+              onFiltersChange={setAdvancedFilters}
+              availableLocations={availableLocations}
+              availableYears={availableYears}
+            />
           </div>
         </div>
 
