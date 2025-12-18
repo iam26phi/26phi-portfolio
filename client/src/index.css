@@ -1,11 +1,28 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
+/* Custom Fonts */
+@font-face {
+  font-family: 'KuMincho';
+  src: url('/fonts/KuMincho-R.otf') format('opentype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Burnfont';
+  src: url('/fonts/burnfont-1.3.otf') format('opentype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-  --font-sans: "Space Grotesk", sans-serif;
-  --font-mono: "JetBrains Mono", monospace;
+  --font-sans: "KuMincho", serif;
+  --font-mono: "Burnfont", sans-serif;
 
   --radius-sm: 0px;
   --radius-md: 0px;
