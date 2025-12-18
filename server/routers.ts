@@ -90,6 +90,19 @@ export const appRouter = router({
         return await db.deletePhoto(input.id);
       }),
 
+    updateOrder: protectedProcedure
+      .input(z.array(z.object({ id: z.number(), sortOrder: z.number() })))
+      .mutation(async ({ input, ctx }) => {
+        if (ctx.user.role !== 'admin') {
+          throw new Error('Unauthorized');
+        }
+        // Update sort order for multiple photos
+        for (const item of input) {
+          await db.updatePhoto(item.id, { sortOrder: item.sortOrder });
+        }
+        return { success: true };
+      }),
+
     upload: protectedProcedure
       .input(z.object({
         file: z.string(), // base64 encoded image

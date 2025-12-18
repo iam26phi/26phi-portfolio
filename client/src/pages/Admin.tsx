@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
@@ -20,9 +20,26 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { Loader2, Plus, Edit, Trash2, Eye, EyeOff, Upload } from "lucide-react";
+import { Loader2, Plus, Edit, Trash2, Eye, EyeOff, Upload, GripVertical, Save, X } from "lucide-react";
+import { SortablePhotoCard } from "@/components/SortablePhotoCard";
 import { useRef } from "react";
 import { getLoginUrl } from "@/const";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 
 type PhotoFormData = {
   id?: number;
@@ -50,10 +67,71 @@ export default function Admin() {
     error?: string;
   }>>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isSorting, setIsSorting] = useState(false);
+  const [sortedPhotos, setSortedPhotos] = useState<Array<{
+    id: number;
+    src: string;
+    alt: string;
+    category: "Portrait" | "Travel" | "Editorial";
+    location: string | null;
+    date: string | null;
+    description: string | null;
+    isVisible: number;
+    sortOrder: number;
+    createdAt: Date;
+    updatedAt: Date;
+  }>>([]);
 
   const { data: photos, isLoading, refetch } = trpc.photos.listAll.useQuery(undefined, {
     enabled: isAuthenticated && user?.role === "admin",
   });
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  const updateOrderMutation = trpc.photos.updateOrder.useMutation({
+    onSuccess: () => {
+      toast.success("排序已更新");
+      refetch();
+      setIsSorting(false);
+    },
+    onError: (error) => {
+      toast.error(`更新排序失敗: ${error.message}`);
+    },
+  });
+
+  // Update sorted photos when data changes
+  useEffect(() => {
+    if (photos) {
+      setSortedPhotos([...photos].sort((a, b) => a.sortOrder - b.sortOrder));
+    }
+  }, [photos]);
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (over && active.id !== over.id && sortedPhotos) {
+      setSortedPhotos((items) => {
+        if (!items) return [];
+        const oldIndex = items.findIndex((item) => item.id === active.id);
+        const newIndex = items.findIndex((item) => item.id === over.id);
+        return arrayMove(items, oldIndex, newIndex);
+      });
+    }
+  };
+
+  const handleSaveOrder = async () => {
+    if (!sortedPhotos) return;
+    const updates = sortedPhotos.map((photo, index) => ({
+      id: photo.id,
+      sortOrder: index,
+    }));
+    await updateOrderMutation.mutateAsync(updates);
+  };
 
   const createMutation = trpc.photos.create.useMutation({
     onSuccess: () => {
@@ -343,7 +421,29 @@ export default function Admin() {
               </div>
             )}
             
-            <div className="flex gap-2">
+            <div className="flex gap-2 items-center">
+              <Button
+                variant={isSorting ? "default" : "outline"}
+                onClick={() => setIsSorting(!isSorting)}
+              >
+                {isSorting ? (
+                  <><X className="mr-2 h-4 w-4" /> 取消排序</>
+                ) : (
+                  <><GripVertical className="mr-2 h-4 w-4" /> 調整順序</>
+                )}
+              </Button>
+              {isSorting && (
+                <Button
+                  onClick={handleSaveOrder}
+                  disabled={updateOrderMutation.isPending}
+                >
+                  {updateOrderMutation.isPending ? (
+                    <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> 儲存中...</>
+                  ) : (
+                    <><Save className="mr-2 h-4 w-4" /> 儲存順序</>
+                  )}
+                </Button>
+              )}
               <div className="flex items-center gap-2">
               <Select value={uploadCategory} onValueChange={(value) => setUploadCategory(value as "Portrait" | "Travel" | "Editorial")}>
                 <SelectTrigger className="w-32">
@@ -514,63 +614,28 @@ export default function Admin() {
             <Loader2 className="animate-spin h-8 w-8" />
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {photos?.map((photo) => (
-              <div
-                key={photo.id}
-                className="border rounded-lg overflow-hidden bg-card"
-              >
-                <div className="relative aspect-[4/3]">
-                  <img
-                    src={photo.src}
-                    alt={photo.alt}
-                    className="w-full h-full object-cover"
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={handleDragEnd}
+          >
+            <SortableContext
+              items={sortedPhotos.map((p) => p.id)}
+            >
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {sortedPhotos.map((photo) => (
+                  <SortablePhotoCard
+                    key={photo.id}
+                    photo={photo}
+                    onEdit={handleEdit}
+                    onDelete={handleDelete}
+                    onToggleVisibility={toggleVisibility}
+                    isSorting={isSorting}
                   />
-                  {photo.isVisible === 0 && (
-                    <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
-                      <EyeOff className="h-8 w-8 text-white" />
-                    </div>
-                  )}
-                </div>
-                <div className="p-4 space-y-3">
-                  <div>
-                    <h3 className="font-bold text-lg">{photo.alt}</h3>
-                    <p className="text-sm text-muted-foreground">
-                      {photo.category} • {photo.location} • {photo.date}
-                    </p>
-                  </div>
-                  
-                  <div className="flex gap-2">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => toggleVisibility(photo)}
-                    >
-                      {photo.isVisible === 1 ? (
-                        <><Eye className="h-4 w-4 mr-1" /> 顯示中</>
-                      ) : (
-                        <><EyeOff className="h-4 w-4 mr-1" /> 已隱藏</>
-                      )}
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => handleEdit(photo)}
-                    >
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="destructive"
-                      onClick={() => handleDelete(photo.id)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
+                ))}
               </div>
-            ))}
-          </div>
+            </SortableContext>
+          </DndContext>
         )}
       </div>
     </div>
