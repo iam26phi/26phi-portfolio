@@ -44,3 +44,25 @@ export const photos = mysqlTable("photos", {
 
 export type Photo = typeof photos.$inferSelect;
 export type InsertPhoto = typeof photos.$inferInsert;
+/**
+ * Blog posts table for article management
+ */
+export const blogPosts = mysqlTable("blog_posts", {
+  id: int("id").autoincrement().primaryKey(),
+  title: varchar("title", { length: 255 }).notNull(),
+  slug: varchar("slug", { length: 255 }).notNull().unique(), // URL-friendly identifier
+  content: text("content").notNull(), // Markdown content
+  excerpt: text("excerpt"), // Short summary for list view
+  coverImage: text("coverImage"), // S3 URL for cover image
+  category: varchar("category", { length: 100 }), // e.g., "Photography", "Behind the Scenes", "Travel"
+  tags: text("tags"), // Comma-separated tags
+  status: mysqlEnum("status", ["draft", "published"]).default("draft").notNull(),
+  publishedAt: timestamp("publishedAt"),
+  viewCount: int("viewCount").default(0).notNull(),
+  authorId: int("authorId").notNull(), // Reference to users table
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type BlogPost = typeof blogPosts.$inferSelect;
+export type InsertBlogPost = typeof blogPosts.$inferInsert;

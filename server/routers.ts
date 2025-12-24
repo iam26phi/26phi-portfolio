@@ -133,6 +133,133 @@ export const appRouter = router({
         };
       }),
   }),
+
+  blog: router({
+    // Public endpoints: get published blog posts
+    list: publicProcedure
+      .input(z.object({
+        status: z.enum(["draft", "published"]).optional(),
+        limit: z.number().optional(),
+      }).optional())
+      .query(async ({ input }) => {
+        return await db.getBlogPosts(input?.status || "published", input?.limit);
+      }),
+
+    getBySlug: publicProcedure
+      .input(z.object({ slug: z.string() }))
+      .query(async ({ input }) => {
+        const post = await db.getBlogPostBySlug(input.slug);
+        if (post && post.status === "published") {
+          // Increment view count
+          await db.incrementBlogPostViews(post.id);
+        }
+        return post;
+      }),
+
+    // Admin endpoints: manage all blog posts
+    listAll: protectedProcedure.query(async ({ ctx }) => {
+      if (ctx.user.role !== 'admin') {
+        throw new Error('Unauthorized');
+      }
+      return await db.getAllBlogPosts();
+    }),
+
+    getById: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .query(async ({ input, ctx }) => {
+        if (ctx.user.role !== 'admin') {
+          throw new Error('Unauthorized');
+        }
+        return await db.getBlogPostById(input.id);
+      }),
+
+    create: protectedProcedure
+      .input(z.object({
+        title: z.string(),
+        slug: z.string(),
+        content: z.string(),
+        excerpt: z.string().optional(),
+        coverImage: z.string().optional(),
+        category: z.string().optional(),
+        tags: z.string().optional(),
+        status: z.enum(["draft", "published"]).default("draft"),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        if (ctx.user.role !== 'admin') {
+          throw new Error('Unauthorized');
+        }
+        return await db.createBlogPost({
+          ...input,
+          authorId: ctx.user.id,
+          publishedAt: input.status === "published" ? new Date() : null,
+        });
+      }),
+
+    update: protectedProcedure
+      .input(z.object({
+        id: z.number(),
+        title: z.string().optional(),
+        slug: z.string().optional(),
+        content: z.string().optional(),
+        excerpt: z.string().optional(),
+        coverImage: z.string().optional(),
+        category: z.string().optional(),
+        tags: z.string().optional(),
+        status: z.enum(["draft", "published"]).optional(),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        if (ctx.user.role !== 'admin') {
+          throw new Error('Unauthorized');
+        }
+        const { id, ...updates } = input;
+        
+        // Set publishedAt when changing from draft to published
+        const currentPost = await db.getBlogPostById(id);
+        if (currentPost?.status === "draft" && updates.status === "published") {
+          (updates as any).publishedAt = new Date();
+        }
+        
+        return await db.updateBlogPost(id, updates);
+      }),
+
+    delete: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ input, ctx }) => {
+        if (ctx.user.role !== 'admin') {
+          throw new Error('Unauthorized');
+        }
+        return await db.deleteBlogPost(input.id);
+      }),
+
+    uploadCover: protectedProcedure
+      .input(z.object({
+        file: z.string(), // base64 encoded image
+        filename: z.string(),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        if (ctx.user.role !== 'admin') {
+          throw new Error('Unauthorized');
+        }
+        
+        // Decode base64 and upload to S3
+        const base64Data = input.file.split(',')[1];
+        const buffer = Buffer.from(base64Data, 'base64');
+        
+        // Generate unique filename
+        const timestamp = Date.now();
+        const ext = input.filename.split('.').pop();
+        const key = `blog/covers/${timestamp}-${input.filename}`;
+        
+        // Upload to S3
+        const result = await storagePut(key, buffer, `image/${ext}`);
+        
+        return {
+          success: true,
+          url: result.url,
+          key: result.key,
+        };
+      }),
+  }),
 });
 
 export type AppRouter = typeof appRouter;

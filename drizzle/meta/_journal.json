@@ -15,6 +15,13 @@
       "when": 1765768803543,
       "tag": "0001_aberrant_magneto",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1766553423079,
+      "tag": "0002_odd_komodo",
+      "breakpoints": true
     }
   ]
 }

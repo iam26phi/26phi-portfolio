@@ -7,6 +7,10 @@ import { ThemeProvider } from "./contexts/ThemeContext";
 import Home from "./pages/Home";
 import About from "./pages/About";
 import Admin from "./pages/Admin";
+import AdminBlog from "./pages/AdminBlog";
+import AdminBlogEditor from "./pages/AdminBlogEditor";
+import Blog from "./pages/Blog";
+import BlogPost from "./pages/BlogPost";
 
 function Router() {
   // make sure to consider if you need authentication for certain routes
@@ -14,7 +18,12 @@ function Router() {
     <Switch>
       <Route path={"/"} component={Home} />
       <Route path={"/about"} component={About} />
+      <Route path={"/blog"} component={Blog} />
+      <Route path={"/blog/:slug"} component={BlogPost} />
       <Route path={"/admin"} component={Admin} />
+      <Route path={"/admin/blog"} component={AdminBlog} />
+      <Route path={"/admin/blog/new"} component={AdminBlogEditor} />
+      <Route path={"/admin/blog/edit/:id"} component={AdminBlogEditor} />
       <Route path={"/404"} component={NotFound} />
       {/* Final fallback route */}
       <Route component={NotFound} />

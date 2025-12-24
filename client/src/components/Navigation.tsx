@@ -19,6 +19,7 @@ export default function Navigation() {
   const navLinks = [
     { name: "PORTFOLIO", href: "/" },
     { name: "ABOUT", href: "/about" },
+    { name: "BLOG", href: "/blog" },
   ];
 
   return (
