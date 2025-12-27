@@ -12,7 +12,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/co
 import { SlidersHorizontal, X } from "lucide-react";
 
 export type FilterOptions = {
-  category: "All" | "Portrait" | "Travel" | "Editorial";
+  category: string;
   location: string;
   year: string;
 };
@@ -22,6 +22,7 @@ type AdvancedFilterProps = {
   onFiltersChange: (filters: FilterOptions) => void;
   availableLocations: string[];
   availableYears: string[];
+  availableCategories: Array<{ id: number; name: string; slug: string; }>;
 };
 
 export function AdvancedFilter({
@@ -29,6 +30,7 @@ export function AdvancedFilter({
   onFiltersChange,
   availableLocations,
   availableYears,
+  availableCategories,
 }: AdvancedFilterProps) {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -92,9 +94,9 @@ export function AdvancedFilter({
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="All">全部</SelectItem>
-                <SelectItem value="Portrait">人物肖像</SelectItem>
-                <SelectItem value="Travel">旅遊攝影</SelectItem>
-                <SelectItem value="Editorial">編輯攝影</SelectItem>
+                {availableCategories.map((cat) => (
+                  <SelectItem key={cat.id} value={cat.slug}>{cat.name}</SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>

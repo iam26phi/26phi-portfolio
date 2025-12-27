@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users, photos, InsertPhoto, blogPosts, InsertBlogPost, siteSettings, InsertSiteSetting } from "../drizzle/schema";
+import { InsertUser, users, photos, InsertPhoto, blogPosts, InsertBlogPost, siteSettings, InsertSiteSetting, photoCategories, InsertPhotoCategory } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -282,4 +282,59 @@ export async function upsertSiteSetting(key: string, value: string) {
   }
   
   return await getSiteSetting(key);
+}
+
+// ============================================
+// Photo Categories Management
+// ============================================
+
+export async function listPhotoCategories() {
+  const db = await getDb();
+  if (!db) return [];
+  
+  try {
+    return await db.select().from(photoCategories).orderBy(photoCategories.sortOrder);
+  } catch (error) {
+    console.error("[Database] Failed to list photo categories:", error);
+    return [];
+  }
+}
+
+export async function createPhotoCategory(category: InsertPhotoCategory) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  try {
+    const result = await db.insert(photoCategories).values(category);
+    return { success: true, id: Number((result as any).insertId) };
+  } catch (error) {
+    console.error("[Database] Failed to create photo category:", error);
+    throw error;
+  }
+}
+
+export async function updatePhotoCategory(id: number, data: Partial<InsertPhotoCategory>) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  try {
+    await db.update(photoCategories).set(data).where(eq(photoCategories.id, id));
+    return { success: true };
+  } catch (error) {
+    console.error("[Database] Failed to update photo category:", error);
+    throw error;
+  }
+}
+
+export async function deletePhotoCategory(id: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  try {
+    await db.delete(photoCategories).where(eq(photoCategories.id, id));
+    return { success: true };
+  } catch (error) {
+    console.error("[Database] Failed to delete photo category:", error);
+    throw error;
+  }
 }

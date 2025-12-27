@@ -10,12 +10,12 @@ import { ArrowRight, Star, Loader2 } from "lucide-react";
 import { AdvancedFilter, FilterOptions } from "@/components/AdvancedFilter";
 import { cn } from "@/lib/utils";
 
-type Category = "All" | "Portrait" | "Travel" | "Editorial";
+type Category = "All" | string;
 type Photo = {
   id: number;
   src: string;
   alt: string;
-  category: "Portrait" | "Travel" | "Editorial";
+  category: string;
   location: string | null;
   date: string | null;
   description: string | null;
@@ -30,7 +30,7 @@ export default function Home() {
   // To implement login/logout functionality, simply call logout() or redirect to getLoginUrl()
   let { user, loading, error, isAuthenticated, logout } = useAuth();
 
-  const [activeCategory, setActiveCategory] = useState<Category>("All");
+  const [activeCategory, setActiveCategory] = useState<string>("All");
   const [hoveredPhoto, setHoveredPhoto] = useState<number | null>(null);
   const [selectedPhoto, setSelectedPhoto] = useState<Photo | null>(null);
   const [advancedFilters, setAdvancedFilters] = useState<FilterOptions>({
@@ -41,6 +41,9 @@ export default function Home() {
 
   // Fetch photos from backend API
   const { data: photos = [], isLoading } = trpc.photos.list.useQuery();
+  
+  // Fetch categories from backend API
+  const { data: categories = [] } = trpc.photoCategories.list.useQuery();
   
   // Fetch hero background image from settings
   const { data: heroSetting } = trpc.settings.get.useQuery({ key: "hero_background_image" });
@@ -145,16 +148,16 @@ export default function Home() {
           
           <div className="flex flex-col md:flex-row gap-4 md:gap-8 items-start md:items-center">
             <div className="flex gap-8 font-mono text-sm tracking-widest">
-              {(["All", "Portrait", "Travel", "Editorial"] as Category[]).map((cat) => (
+              {[{ name: "All", slug: "All" }, ...categories].map((cat) => (
                 <button
-                  key={cat}
-                  onClick={() => handleCategoryClick(cat)}
+                  key={cat.slug}
+                  onClick={() => handleCategoryClick(cat.slug)}
                   className={cn(
                     "hover:line-through decoration-1 underline-offset-4 transition-all",
-                    advancedFilters.category === cat ? "line-through text-white" : "text-neutral-500"
+                    advancedFilters.category === cat.slug ? "line-through text-white" : "text-neutral-500"
                   )}
                 >
-                  {cat.toUpperCase()}
+                  {cat.name.toUpperCase()}
                 </button>
               ))}
             </div>
@@ -163,6 +166,7 @@ export default function Home() {
               onFiltersChange={setAdvancedFilters}
               availableLocations={availableLocations}
               availableYears={availableYears}
+              availableCategories={categories}
             />
           </div>
         </div>

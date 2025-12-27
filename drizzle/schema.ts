@@ -28,11 +28,26 @@ export type InsertUser = typeof users.$inferInsert;
 /**
  * Photos table for portfolio management
  */
+/**
+ * Photo categories table for dynamic category management
+ */
+export const photoCategories = mysqlTable("photo_categories", {
+  id: int("id").autoincrement().primaryKey(),
+  name: varchar("name", { length: 100 }).notNull().unique(),
+  slug: varchar("slug", { length: 100 }).notNull().unique(), // URL-friendly identifier
+  sortOrder: int("sortOrder").default(0).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type PhotoCategory = typeof photoCategories.$inferSelect;
+export type InsertPhotoCategory = typeof photoCategories.$inferInsert;
+
 export const photos = mysqlTable("photos", {
   id: int("id").autoincrement().primaryKey(),
   src: text("src").notNull(), // S3 URL or local path
   alt: text("alt").notNull(),
-  category: mysqlEnum("category", ["Portrait", "Travel", "Editorial"]).notNull(),
+  category: varchar("category", { length: 100 }).notNull(), // Changed from enum to varchar for dynamic categories
   location: varchar("location", { length: 255 }),
   date: varchar("date", { length: 50 }),
   description: text("description"),

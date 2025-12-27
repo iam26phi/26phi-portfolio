@@ -11,6 +11,7 @@ import AdminBlog from "./pages/AdminBlog";
 import AdminBlogEditor from "./pages/AdminBlogEditor";
 import AdminHero from "./pages/AdminHero";
 import AdminAbout from "./pages/AdminAbout";
+import AdminCategories from "./pages/AdminCategories";
 import Blog from "./pages/Blog";
 import BlogPost from "./pages/BlogPost";
 
@@ -25,6 +26,7 @@ function Router() {
       <Route path={"/admin"} component={Admin} />
       <Route path={"/admin/hero"} component={AdminHero} />
       <Route path={"/admin/about"} component={AdminAbout} />
+      <Route path={"/admin/categories"} component={AdminCategories} />
       <Route path={"/admin/blog"} component={AdminBlog} />
       <Route path={"/admin/blog/new"} component={AdminBlogEditor} />
       <Route path={"/admin/blog/edit/:id"} component={AdminBlogEditor} />

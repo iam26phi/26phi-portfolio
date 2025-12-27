@@ -46,7 +46,7 @@ type PhotoFormData = {
   id?: number;
   src: string;
   alt: string;
-  category: "Portrait" | "Travel" | "Editorial";
+  category: string;
   location: string;
   date: string;
   description: string;
@@ -58,7 +58,7 @@ export default function Admin() {
   const { user, loading: authLoading, isAuthenticated } = useAuth();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingPhoto, setEditingPhoto] = useState<PhotoFormData | null>(null);
-  const [uploadCategory, setUploadCategory] = useState<"Portrait" | "Travel" | "Editorial">("Portrait");
+  const [uploadCategory, setUploadCategory] = useState<string>("Portrait");
   const [uploadQueue, setUploadQueue] = useState<Array<{
     id: string;
     filename: string;
@@ -73,7 +73,7 @@ export default function Admin() {
     id: number;
     src: string;
     alt: string;
-    category: "Portrait" | "Travel" | "Editorial";
+    category: string;
     location: string | null;
     date: string | null;
     description: string | null;
@@ -82,10 +82,12 @@ export default function Admin() {
     createdAt: Date;
     updatedAt: Date;
   }>>([]);
-
+  
   const { data: photos, isLoading, refetch } = trpc.photos.listAll.useQuery(undefined, {
     enabled: isAuthenticated && user?.role === "admin",
   });
+  
+  const { data: categories } = trpc.photoCategories.list.useQuery();
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -334,7 +336,7 @@ export default function Admin() {
     const data = {
       src: formData.get("src") as string,
       alt: formData.get("alt") as string,
-      category: formData.get("category") as "Portrait" | "Travel" | "Editorial",
+      category: formData.get("category") as string,
       location: formData.get("location") as string,
       date: formData.get("date") as string,
       description: formData.get("description") as string,
@@ -424,6 +426,13 @@ export default function Admin() {
             >
               About 編輯
             </Button>
+            <Button
+              variant="outline"
+              onClick={() => window.location.href = "/admin/categories"}
+              className="font-mono"
+            >
+              分類管理
+            </Button>
           </div>
           
           <div className="flex flex-col gap-4">
@@ -497,14 +506,14 @@ export default function Admin() {
                 </Button>
               )}
               <div className="flex items-center gap-2">
-              <Select value={uploadCategory} onValueChange={(value) => setUploadCategory(value as "Portrait" | "Travel" | "Editorial")}>
-                <SelectTrigger className="w-32">
-                  <SelectValue />
+              <Select value={uploadCategory} onValueChange={setUploadCategory}>
+                <SelectTrigger className="w-40">
+                  <SelectValue placeholder="選擇分類" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Portrait">Portrait</SelectItem>
-                  <SelectItem value="Travel">Travel</SelectItem>
-                  <SelectItem value="Editorial">Editorial</SelectItem>
+                  {categories?.map((cat) => (
+                    <SelectItem key={cat.id} value={cat.slug}>{cat.name}</SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
               <input
@@ -572,16 +581,18 @@ export default function Admin() {
 
                 <div>
                   <Label htmlFor="category">分類</Label>
-                  <Select name="category" defaultValue={editingPhoto?.category || "Portrait"}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Portrait">Portrait</SelectItem>
-                      <SelectItem value="Travel">Travel</SelectItem>
-                      <SelectItem value="Editorial">Editorial</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <select
+                    id="category"
+                    name="category"
+                    defaultValue={editingPhoto?.category || ""}
+                    required
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    <option value="" disabled>選擇分類</option>
+                    {categories?.map((cat) => (
+                      <option key={cat.id} value={cat.slug}>{cat.name}</option>
+                    ))}
+                  </select>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">

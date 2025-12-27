@@ -47,7 +47,7 @@ export const appRouter = router({
       .input(z.object({
         src: z.string(),
         alt: z.string(),
-        category: z.enum(["Portrait", "Travel", "Editorial"]),
+        category: z.string(),
         location: z.string().optional(),
         date: z.string().optional(),
         description: z.string().optional(),
@@ -66,7 +66,7 @@ export const appRouter = router({
         id: z.number(),
         src: z.string().optional(),
         alt: z.string().optional(),
-        category: z.enum(["Portrait", "Travel", "Editorial"]).optional(),
+        category: z.string().optional(),
         location: z.string().optional(),
         date: z.string().optional(),
         description: z.string().optional(),
@@ -107,7 +107,7 @@ export const appRouter = router({
       .input(z.object({
         file: z.string(), // base64 encoded image
         filename: z.string(),
-        category: z.enum(["Portrait", "Travel", "Editorial"]),
+        category: z.string(),
       }))
       .mutation(async ({ input, ctx }) => {
         if (ctx.user.role !== 'admin') {
@@ -360,6 +360,51 @@ export const appRouter = router({
         return {
           success: true,
         };
+      }),
+  }),
+
+  photoCategories: router({
+    // Public endpoint: get all categories for filtering
+    list: publicProcedure.query(async () => {
+      return await db.listPhotoCategories();
+    }),
+
+    // Admin endpoints: manage categories
+    create: protectedProcedure
+      .input(z.object({
+        name: z.string(),
+        slug: z.string(),
+        sortOrder: z.number().default(0),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        if (ctx.user.role !== 'admin') {
+          throw new Error('Unauthorized');
+        }
+        return await db.createPhotoCategory(input);
+      }),
+
+    update: protectedProcedure
+      .input(z.object({
+        id: z.number(),
+        name: z.string().optional(),
+        slug: z.string().optional(),
+        sortOrder: z.number().optional(),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        if (ctx.user.role !== 'admin') {
+          throw new Error('Unauthorized');
+        }
+        const { id, ...updates } = input;
+        return await db.updatePhotoCategory(id, updates);
+      }),
+
+    delete: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ input, ctx }) => {
+        if (ctx.user.role !== 'admin') {
+          throw new Error('Unauthorized');
+        }
+        return await db.deletePhotoCategory(input.id);
       }),
   }),
 });

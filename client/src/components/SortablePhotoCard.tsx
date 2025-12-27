@@ -7,7 +7,7 @@ type Photo = {
   id: number;
   src: string;
   alt: string;
-  category: "Portrait" | "Travel" | "Editorial";
+  category: string;
   location: string | null;
   date: string | null;
   description: string | null;
