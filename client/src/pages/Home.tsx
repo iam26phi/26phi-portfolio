@@ -186,6 +186,7 @@ export default function Home() {
                   layoutId={`image-${photo.id}`}
                   src={photo.src}
                   alt={photo.alt}
+                  loading="lazy"
                   className="w-full h-auto grayscale group-hover:grayscale-0 transition-all duration-700 ease-out scale-100 group-hover:scale-105"
                 />
                 

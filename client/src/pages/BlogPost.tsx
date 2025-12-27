@@ -73,6 +73,7 @@ export default function BlogPost() {
             <img
               src={post.coverImage}
               alt={post.title}
+              loading="eager"
               className="w-full h-full object-cover"
             />
           </div>
@@ -156,7 +157,7 @@ export default function BlogPost() {
                   />
                 ),
               img: ({ node, ...props }) => (
-                <img className="w-full rounded my-8" {...props} />
+                <img className="w-full rounded my-8" loading="lazy" {...props} />
               ),
             }}
           >
