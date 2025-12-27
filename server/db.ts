@@ -1,6 +1,6 @@
 import { eq, and } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users, photos, InsertPhoto, blogPosts, InsertBlogPost, siteSettings, InsertSiteSetting, photoCategories, InsertPhotoCategory, projects, InsertProject, photoProjects, InsertPhotoProject } from "../drizzle/schema";
+import { InsertUser, users, photos, InsertPhoto, blogPosts, InsertBlogPost, siteSettings, InsertSiteSetting, photoCategories, InsertPhotoCategory, projects, InsertProject, photoProjects, InsertPhotoProject, changelogs, InsertChangelog } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -467,5 +467,47 @@ export async function setPhotoProjects(photoId: number, projectIds: number[]) {
     await db.insert(photoProjects).values(values);
   }
   
+  return { success: true };
+}
+
+// ===== Changelog Functions =====
+
+export async function getAllChangelogs() {
+  const db = await getDb();
+  if (!db) return [];
+  return await db.select().from(changelogs).orderBy(changelogs.date);
+}
+
+export async function getVisibleChangelogs() {
+  const db = await getDb();
+  if (!db) return [];
+  return await db.select().from(changelogs).where(eq(changelogs.isVisible, 1)).orderBy(changelogs.date);
+}
+
+export async function getChangelogById(id: number) {
+  const db = await getDb();
+  if (!db) return null;
+  const result = await db.select().from(changelogs).where(eq(changelogs.id, id)).limit(1);
+  return result[0] || null;
+}
+
+export async function createChangelog(data: InsertChangelog) {
+  const db = await getDb();
+  if (!db) throw new Error('Database not available');
+  const result = await db.insert(changelogs).values(data);
+  return { success: true, id: Number((result as any).insertId) };
+}
+
+export async function updateChangelog(id: number, data: Partial<InsertChangelog>) {
+  const db = await getDb();
+  if (!db) throw new Error('Database not available');
+  await db.update(changelogs).set(data).where(eq(changelogs.id, id));
+  return { success: true };
+}
+
+export async function deleteChangelog(id: number) {
+  const db = await getDb();
+  if (!db) throw new Error('Database not available');
+  await db.delete(changelogs).where(eq(changelogs.id, id));
   return { success: true };
 }

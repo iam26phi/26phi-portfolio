@@ -126,3 +126,21 @@ export const siteSettings = mysqlTable("site_settings", {
 
 export type SiteSetting = typeof siteSettings.$inferSelect;
 export type InsertSiteSetting = typeof siteSettings.$inferInsert;
+
+/**
+ * Changelogs table for version update history
+ */
+export const changelogs = mysqlTable("changelogs", {
+  id: int("id").autoincrement().primaryKey(),
+  version: varchar("version", { length: 50 }).notNull(), // e.g., "v1.0.0", "2024-01-15"
+  date: timestamp("date").notNull(), // Release date
+  description: text("description").notNull(), // Brief description of the update
+  type: mysqlEnum("type", ["feature", "improvement", "bugfix", "design"]).default("feature").notNull(),
+  isVisible: int("isVisible").default(1).notNull(), // 1 = visible, 0 = hidden
+  sortOrder: int("sortOrder").default(0).notNull(), // For manual ordering
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Changelog = typeof changelogs.$inferSelect;
+export type InsertChangelog = typeof changelogs.$inferInsert;

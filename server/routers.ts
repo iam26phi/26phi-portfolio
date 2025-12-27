@@ -658,6 +658,81 @@ export const appRouter = router({
         };
       }),
   }),
+
+  changelogs: router({
+    // Public endpoints: get visible changelogs
+    list: publicProcedure.query(async () => {
+      return await db.getVisibleChangelogs();
+    }),
+
+    // Admin endpoints: manage all changelogs
+    listAll: protectedProcedure.query(async ({ ctx }) => {
+      if (ctx.user.role !== 'admin') {
+        throw new Error('Unauthorized');
+      }
+      return await db.getAllChangelogs();
+    }),
+
+    getById: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .query(async ({ input, ctx }) => {
+        if (ctx.user.role !== 'admin') {
+          throw new Error('Unauthorized');
+        }
+        return await db.getChangelogById(input.id);
+      }),
+
+    create: protectedProcedure
+      .input(z.object({
+        version: z.string(),
+        date: z.string(), // ISO date string
+        description: z.string(),
+        type: z.enum(['feature', 'improvement', 'bugfix', 'design']).default('feature'),
+        isVisible: z.number().default(1),
+        sortOrder: z.number().default(0),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        if (ctx.user.role !== 'admin') {
+          throw new Error('Unauthorized');
+        }
+        const result = await db.createChangelog({
+          ...input,
+          date: new Date(input.date),
+        });
+        return result;
+      }),
+
+    update: protectedProcedure
+      .input(z.object({
+        id: z.number(),
+        version: z.string().optional(),
+        date: z.string().optional(), // ISO date string
+        description: z.string().optional(),
+        type: z.enum(['feature', 'improvement', 'bugfix', 'design']).optional(),
+        isVisible: z.number().optional(),
+        sortOrder: z.number().optional(),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        if (ctx.user.role !== 'admin') {
+          throw new Error('Unauthorized');
+        }
+        const { id, date, ...rest } = input;
+        const updates: any = { ...rest };
+        if (date) {
+          updates.date = new Date(date);
+        }
+        return await db.updateChangelog(id, updates);
+      }),
+
+    delete: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ input, ctx }) => {
+        if (ctx.user.role !== 'admin') {
+          throw new Error('Unauthorized');
+        }
+        return await db.deleteChangelog(input.id);
+      }),
+  }),
 });
 
 export type AppRouter = typeof appRouter;

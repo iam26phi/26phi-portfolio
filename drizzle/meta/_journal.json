@@ -43,6 +43,13 @@
       "when": 1766859322543,
       "tag": "0005_silky_the_executioner",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "5",
+      "when": 1766860148592,
+      "tag": "0006_sweet_galactus",
+      "breakpoints": true
     }
   ]
 }

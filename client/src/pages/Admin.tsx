@@ -447,6 +447,13 @@ export default function Admin() {
             >
               專案管理
             </Button>
+            <Button
+              variant="outline"
+              onClick={() => window.location.href = "/admin/changelogs"}
+              className="font-mono"
+            >
+              更新日誌
+            </Button>
           </div>
           
           <div className="flex flex-col gap-4">

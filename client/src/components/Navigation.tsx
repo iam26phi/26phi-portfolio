@@ -21,6 +21,7 @@ export default function Navigation() {
     { name: "ABOUT", href: "/about" },
     { name: "BLOG", href: "/blog" },
     { name: "PROJECTS", href: "/projects" },
+    { name: "CHANGELOG", href: "/changelog" },
   ];
 
   return (
