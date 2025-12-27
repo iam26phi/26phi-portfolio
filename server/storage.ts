@@ -70,15 +70,23 @@ function buildAuthHeaders(apiKey: string): HeadersInit {
 export async function storagePut(
   relKey: string,
   data: Buffer | Uint8Array | string,
-  contentType = "application/octet-stream"
+  contentType = "application/octet-stream",
+  cacheControl = "public, max-age=31536000, immutable"
 ): Promise<{ key: string; url: string }> {
   const { baseUrl, apiKey } = getStorageConfig();
   const key = normalizeKey(relKey);
   const uploadUrl = buildUploadUrl(baseUrl, key);
   const formData = toFormData(data, contentType, key.split("/").pop() ?? key);
+  
+  // Add Cache-Control header to request
+  const headers = {
+    ...buildAuthHeaders(apiKey),
+    'X-Cache-Control': cacheControl,
+  };
+  
   const response = await fetch(uploadUrl, {
     method: "POST",
-    headers: buildAuthHeaders(apiKey),
+    headers,
     body: formData,
   });
 

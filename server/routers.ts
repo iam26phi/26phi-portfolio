@@ -123,8 +123,8 @@ export const appRouter = router({
         const ext = input.filename.split('.').pop();
         const key = `portfolio/${input.category.toLowerCase()}/${timestamp}-${input.filename}`;
         
-        // Upload to S3
-        const result = await storagePut(key, buffer, `image/${ext}`);
+        // Upload to S3 with cache headers (1 year cache for immutable images)
+        const result = await storagePut(key, buffer, `image/${ext}`, "public, max-age=31536000, immutable");
         
         return {
           success: true,
@@ -250,8 +250,8 @@ export const appRouter = router({
         const ext = input.filename.split('.').pop();
         const key = `blog/covers/${timestamp}-${input.filename}`;
         
-        // Upload to S3
-        const result = await storagePut(key, buffer, `image/${ext}`);
+        // Upload to S3 with cache headers (1 year cache for immutable images)
+        const result = await storagePut(key, buffer, `image/${ext}`, "public, max-age=31536000, immutable");
         
         return {
           success: true,
