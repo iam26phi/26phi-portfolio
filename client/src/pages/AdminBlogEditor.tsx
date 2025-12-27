@@ -7,6 +7,7 @@ import { useLocation, useParams } from "wouter";
 import { toast } from "sonner";
 import SimpleMDE from "react-simplemde-editor";
 import "easymde/dist/easymde.min.css";
+import imageCompression from "browser-image-compression";
 
 export default function AdminBlogEditor() {
   const [, setLocation] = useLocation();
@@ -99,6 +100,30 @@ export default function AdminBlogEditor() {
       return;
     }
 
+    let fileToUpload = file;
+    const fileSizeMB = file.size / (1024 * 1024);
+
+    // Compress image if larger than 10MB
+    if (fileSizeMB > 10) {
+      toast.info("正在壓縮圖片...");
+
+      const options = {
+        maxSizeMB: 10,
+        maxWidthOrHeight: 2400,
+        useWebWorker: true,
+        fileType: file.type,
+      };
+
+      try {
+        fileToUpload = await imageCompression(file, options);
+        const compressedSizeMB = fileToUpload.size / (1024 * 1024);
+        toast.success(`壓縮完成：${fileSizeMB.toFixed(2)}MB → ${compressedSizeMB.toFixed(2)}MB`);
+      } catch (compressionError) {
+        console.error("Compression error:", compressionError);
+        toast.warning("壓縮失敗，將使用原始檔案上傳");
+      }
+    }
+
     const reader = new FileReader();
     reader.onload = async (event) => {
       const base64 = event.target?.result as string;
@@ -107,7 +132,7 @@ export default function AdminBlogEditor() {
         filename: file.name,
       });
     };
-    reader.readAsDataURL(file);
+    reader.readAsDataURL(fileToUpload);
   };
 
   const handleSubmit = (e: React.FormEvent, publishStatus: "draft" | "published") => {
