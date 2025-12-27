@@ -83,12 +83,12 @@ export default function AdminHero() {
     setUploading(true);
     setUploadProgress(0);
 
-    try {
-      const fileSizeMB = selectedFile.size / (1024 * 1024);
-      simulateProgress(fileSizeMB);
+    const fileSizeMB = selectedFile.size / (1024 * 1024);
+    simulateProgress(fileSizeMB);
 
-      const reader = new FileReader();
-      reader.onload = async (e) => {
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      try {
         const base64 = e.target?.result as string;
 
         const result = await uploadMutation.mutateAsync({
@@ -105,18 +105,26 @@ export default function AdminHero() {
             setSelectedFile(null);
             setUploadProgress(0);
             setEstimatedTime(0);
+            setUploading(false);
             refetch();
           }, 500);
         }
-      };
-      reader.readAsDataURL(selectedFile);
-    } catch (error: any) {
-      toast.error(error.message || "上傳失敗");
+      } catch (error: any) {
+        toast.error(error.message || "上傳失敗");
+        setUploadProgress(0);
+        setEstimatedTime(0);
+        setUploading(false);
+      }
+    };
+    
+    reader.onerror = () => {
+      toast.error("讀取檔案失敗");
       setUploadProgress(0);
       setEstimatedTime(0);
-    } finally {
       setUploading(false);
-    }
+    };
+    
+    reader.readAsDataURL(selectedFile);
   };
 
   return (
