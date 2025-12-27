@@ -73,3 +73,9 @@
 ## Bug 修復 - 上傳功能
 - [x] 修正 AdminHero.tsx 異步上傳邏輯錯誤
 - [x] 測試上傳功能正常運作
+
+## Bug 修復 - 大檔案上傳失敗
+- [x] 提高伺服器 body parser 限制到 150MB
+- [x] 安裝 browser-image-compression 套件
+- [x] 在 AdminHero.tsx 實施圖片壓縮
+- [x] 測試上傳大檔案功能

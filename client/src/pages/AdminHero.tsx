@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Upload, ArrowLeft, Loader2, X, Check } from "lucide-react";
 import { toast } from "sonner";
 import { Progress } from "@/components/ui/progress";
+import imageCompression from "browser-image-compression";
 
 export default function AdminHero() {
   const [currentImage, setCurrentImage] = useState<string | null>(null);
@@ -13,6 +14,7 @@ export default function AdminHero() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [estimatedTime, setEstimatedTime] = useState(0);
+  const [compressing, setCompressing] = useState(false);
 
   // Fetch current hero image
   const { data: heroSetting, refetch } = trpc.settings.get.useQuery({ key: "hero_background_image" });
@@ -42,6 +44,12 @@ export default function AdminHero() {
 
     // Store file and preview
     setSelectedFile(file);
+    
+    // Show compression notice for large files
+    const fileSizeMB = file.size / (1024 * 1024);
+    if (fileSizeMB > 10) {
+      toast.info(`圖片大小：${fileSizeMB.toFixed(2)}MB，上傳時將自動壓縮以加快速度`);
+    }
     
     const reader = new FileReader();
     reader.onload = (e) => {
@@ -83,48 +91,86 @@ export default function AdminHero() {
     setUploading(true);
     setUploadProgress(0);
 
-    const fileSizeMB = selectedFile.size / (1024 * 1024);
-    simulateProgress(fileSizeMB);
+    try {
+      let fileToUpload = selectedFile;
+      const fileSizeMB = selectedFile.size / (1024 * 1024);
 
-    const reader = new FileReader();
-    reader.onload = async (e) => {
-      try {
-        const base64 = e.target?.result as string;
+      // Compress image if larger than 10MB
+      if (fileSizeMB > 10) {
+        setCompressing(true);
+        toast.info("正在壓縮圖片...");
 
-        const result = await uploadMutation.mutateAsync({
-          file: base64,
-          filename: selectedFile.name,
-        });
+        const options = {
+          maxSizeMB: 10,
+          maxWidthOrHeight: 2400,
+          useWebWorker: true,
+          fileType: selectedFile.type,
+        };
 
-        if (result.success) {
-          setUploadProgress(100);
-          setTimeout(() => {
-            toast.success("英雄背景圖片已更新");
-            setCurrentImage(result.url);
-            setPreviewImage(null);
-            setSelectedFile(null);
-            setUploadProgress(0);
-            setEstimatedTime(0);
-            setUploading(false);
-            refetch();
-          }, 500);
+        try {
+          fileToUpload = await imageCompression(selectedFile, options);
+          const compressedSizeMB = fileToUpload.size / (1024 * 1024);
+          toast.success(`壓縮完成：${fileSizeMB.toFixed(2)}MB → ${compressedSizeMB.toFixed(2)}MB`);
+        } catch (compressionError) {
+          console.error("Compression error:", compressionError);
+          toast.warning("壓縮失敗，將使用原始檔案上傳");
+        } finally {
+          setCompressing(false);
         }
-      } catch (error: any) {
-        toast.error(error.message || "上傳失敗");
+      }
+
+      const finalSizeMB = fileToUpload.size / (1024 * 1024);
+      simulateProgress(finalSizeMB);
+
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        try {
+          const base64 = e.target?.result as string;
+
+          const result = await uploadMutation.mutateAsync({
+            file: base64,
+            filename: selectedFile.name,
+          });
+
+          if (result.success) {
+            setUploadProgress(100);
+            setTimeout(() => {
+              toast.success("英雄背景圖片已更新");
+              setCurrentImage(result.url);
+              setPreviewImage(null);
+              setSelectedFile(null);
+              setUploadProgress(0);
+              setEstimatedTime(0);
+              setUploading(false);
+              setCompressing(false);
+              refetch();
+            }, 500);
+          }
+        } catch (error: any) {
+          toast.error(error.message || "上傳失敗");
+          setUploadProgress(0);
+          setEstimatedTime(0);
+          setUploading(false);
+          setCompressing(false);
+        }
+      };
+
+      reader.onerror = () => {
+        toast.error("讀取檔案失敗");
         setUploadProgress(0);
         setEstimatedTime(0);
         setUploading(false);
-      }
-    };
-    
-    reader.onerror = () => {
-      toast.error("讀取檔案失敗");
+        setCompressing(false);
+      };
+
+      reader.readAsDataURL(fileToUpload);
+    } catch (error: any) {
+      toast.error(error.message || "處理失敗");
       setUploadProgress(0);
       setEstimatedTime(0);
       setUploading(false);
-    };
-    
-    reader.readAsDataURL(selectedFile);
+      setCompressing(false);
+    }
   };
 
   return (
@@ -217,7 +263,12 @@ export default function AdminHero() {
                   disabled={uploading}
                   className="flex-1"
                 >
-                  {uploading ? (
+                  {compressing ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      壓縮中...
+                    </>
+                  ) : uploading ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                       上傳中...
