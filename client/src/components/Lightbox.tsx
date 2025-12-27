@@ -121,7 +121,7 @@ export default function Lightbox({ photo, onClose, onNext, onPrev, hasNext, hasP
         onTouchMove={onTouchMove}
         onTouchEnd={onTouchEnd}
       >
-        <div className="relative flex-1 w-full h-[50vh] md:h-full flex items-center justify-center">
+        <div className="relative flex-1 w-full flex items-center justify-center overflow-hidden">
           <AnimatePresence mode="wait">
             <motion.img
               key={photo.id}
@@ -131,7 +131,8 @@ export default function Lightbox({ photo, onClose, onNext, onPrev, hasNext, hasP
               transition={{ duration: 0.3 }}
               src={photo.src}
               alt={photo.alt}
-              className="max-w-full max-h-full object-contain shadow-2xl"
+              className="w-full h-full object-contain shadow-2xl"
+              style={{ maxHeight: 'calc(100vh - 8rem)', maxWidth: '100%' }}
             />
           </AnimatePresence>
         </div>
