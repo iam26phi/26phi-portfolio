@@ -93,9 +93,9 @@ export default function AdminBlogEditor() {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Check file size (max 10MB)
-    if (file.size > 10 * 1024 * 1024) {
-      toast.error("檔案大小不能超過 10MB");
+    // Check file size (max 100MB)
+    if (file.size > 100 * 1024 * 1024) {
+      toast.error("檔案大小不能超過 100MB");
       return;
     }
 

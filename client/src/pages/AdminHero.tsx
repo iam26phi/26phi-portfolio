@@ -30,9 +30,9 @@ export default function AdminHero() {
       return;
     }
 
-    // Validate file size (max 50MB)
-    if (file.size > 50 * 1024 * 1024) {
-      toast.error("圖片大小不能超過 50MB");
+    // Validate file size (max 100MB)
+    if (file.size > 100 * 1024 * 1024) {
+      toast.error("圖片大小不能超過 100MB");
       return;
     }
 
@@ -152,7 +152,7 @@ export default function AdminHero() {
                   {uploading ? "上傳中..." : "點擊選擇圖片或拖曳檔案到此處"}
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  支援 JPG、PNG、WebP 格式，檔案大小不超過 50MB
+                  支援 JPG、PNG、WebP 格式，檔案大小不超過 100MB
                 </p>
                 <p className="text-xs text-muted-foreground">
                   建議尺寸：2400 x 1028 像素（21:9 比例）
