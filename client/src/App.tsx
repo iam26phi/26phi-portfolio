@@ -9,6 +9,7 @@ import About from "./pages/About";
 import Admin from "./pages/Admin";
 import AdminBlog from "./pages/AdminBlog";
 import AdminBlogEditor from "./pages/AdminBlogEditor";
+import AdminHero from "./pages/AdminHero";
 import Blog from "./pages/Blog";
 import BlogPost from "./pages/BlogPost";
 
@@ -21,6 +22,7 @@ function Router() {
       <Route path={"/blog"} component={Blog} />
       <Route path={"/blog/:slug"} component={BlogPost} />
       <Route path={"/admin"} component={Admin} />
+      <Route path={"/admin/hero"} component={AdminHero} />
       <Route path={"/admin/blog"} component={AdminBlog} />
       <Route path={"/admin/blog/new"} component={AdminBlogEditor} />
       <Route path={"/admin/blog/edit/:id"} component={AdminBlogEditor} />

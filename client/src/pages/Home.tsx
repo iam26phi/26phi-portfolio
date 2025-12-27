@@ -41,6 +41,9 @@ export default function Home() {
 
   // Fetch photos from backend API
   const { data: photos = [], isLoading } = trpc.photos.list.useQuery();
+  
+  // Fetch hero background image from settings
+  const { data: heroSetting } = trpc.settings.get.useQuery({ key: "hero_background_image" });
 
   // Extract unique locations and years from photos
   const availableLocations = Array.from(
@@ -88,8 +91,8 @@ export default function Home() {
       <section className="relative h-screen w-full overflow-hidden flex items-center justify-center">
         <div className="absolute inset-0 z-0">
           <img 
-            src="https://d2xsxph8kpxj0f.cloudfront.net/310519663123146573/3s8FCUF9BWUfzRwVV77JBG/hero-bg-real.jpg" 
-            alt="Tokyo Bar Background" 
+            src={heroSetting?.settingValue || "https://d2xsxph8kpxj0f.cloudfront.net/310519663123146573/3s8FCUF9BWUfzRwVV77JBG/hero-bg-real.jpg"}
+            alt="Hero Background" 
             className="w-full h-full object-cover opacity-40"
           />
           <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/50 to-black" />

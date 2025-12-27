@@ -260,6 +260,61 @@ export const appRouter = router({
         };
       }),
   }),
+
+  settings: router({
+    // Get a specific setting
+    get: publicProcedure
+      .input(z.object({ key: z.string() }))
+      .query(async ({ input }) => {
+        return await db.getSiteSetting(input.key);
+      }),
+
+    // Update a setting (admin only)
+    update: protectedProcedure
+      .input(z.object({
+        key: z.string(),
+        value: z.string(),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        if (ctx.user.role !== 'admin') {
+          throw new Error('Unauthorized');
+        }
+        return await db.upsertSiteSetting(input.key, input.value);
+      }),
+
+    // Upload hero background image
+    uploadHeroImage: protectedProcedure
+      .input(z.object({
+        file: z.string(), // base64 encoded image
+        filename: z.string(),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        if (ctx.user.role !== 'admin') {
+          throw new Error('Unauthorized');
+        }
+        
+        // Decode base64 and upload to S3
+        const base64Data = input.file.split(',')[1];
+        const buffer = Buffer.from(base64Data, 'base64');
+        
+        // Generate unique filename
+        const timestamp = Date.now();
+        const ext = input.filename.split('.').pop();
+        const key = `hero/${timestamp}-${input.filename}`;
+        
+        // Upload to S3 with cache headers
+        const result = await storagePut(key, buffer, `image/${ext}`, "public, max-age=31536000, immutable");
+        
+        // Save to settings
+        await db.upsertSiteSetting('hero_background_image', result.url);
+        
+        return {
+          success: true,
+          url: result.url,
+          key: result.key,
+        };
+      }),
+  }),
 });
 
 export type AppRouter = typeof appRouter;

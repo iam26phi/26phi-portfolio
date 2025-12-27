@@ -377,7 +377,14 @@ export default function Admin() {
             <h1 className="text-4xl font-bold tracking-tight mb-2">照片管理</h1>
             <p className="text-muted-foreground">管理您的作品集照片</p>
           </div>
-          <div>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              onClick={() => window.location.href = "/admin/hero"}
+              className="font-mono"
+            >
+              英雄區域設定
+            </Button>
             <Button
               variant="outline"
               onClick={() => window.location.href = "/admin/blog"}

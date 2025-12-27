@@ -22,6 +22,13 @@
       "when": 1766553423079,
       "tag": "0002_odd_komodo",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "5",
+      "when": 1766851146514,
+      "tag": "0003_clammy_proudstar",
+      "breakpoints": true
     }
   ]
 }

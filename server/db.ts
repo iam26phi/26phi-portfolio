@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users, photos, InsertPhoto, blogPosts, InsertBlogPost } from "../drizzle/schema";
+import { InsertUser, users, photos, InsertPhoto, blogPosts, InsertBlogPost, siteSettings, InsertSiteSetting } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -248,4 +248,38 @@ export async function incrementBlogPostViews(id: number) {
       .set({ viewCount: (post.viewCount || 0) + 1 })
       .where(eq(blogPosts.id, id));
   }
+}
+
+// Site settings management functions
+export async function getSiteSetting(key: string) {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot get site setting: database not available");
+    return undefined;
+  }
+
+  const result = await db.select().from(siteSettings).where(eq(siteSettings.settingKey, key)).limit(1);
+  return result.length > 0 ? result[0] : undefined;
+}
+
+export async function upsertSiteSetting(key: string, value: string) {
+  const db = await getDb();
+  if (!db) {
+    throw new Error("Database not available");
+  }
+
+  const existing = await getSiteSetting(key);
+  
+  if (existing) {
+    await db.update(siteSettings)
+      .set({ settingValue: value, updatedAt: new Date() })
+      .where(eq(siteSettings.settingKey, key));
+  } else {
+    await db.insert(siteSettings).values({
+      settingKey: key,
+      settingValue: value,
+    });
+  }
+  
+  return await getSiteSetting(key);
 }
