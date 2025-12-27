@@ -85,7 +85,7 @@ export default function Lightbox({ photo, onClose, onNext, onPrev, hasNext, hasP
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 p-4 md:p-10 backdrop-blur-sm"
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 p-2 md:p-4 backdrop-blur-sm"
       onClick={onClose}
     >
       <button
@@ -115,13 +115,13 @@ export default function Lightbox({ photo, onClose, onNext, onPrev, hasNext, hasP
       )}
 
       <div
-        className="relative w-full h-full max-w-6xl flex flex-col md:flex-row items-center justify-center gap-8 md:gap-12 px-8 md:px-16"
+        className="relative w-full h-full flex flex-col md:flex-row items-center justify-center gap-6 md:gap-8 px-4 md:px-8"
         onClick={(e) => e.stopPropagation()}
         onTouchStart={onTouchStart}
         onTouchMove={onTouchMove}
         onTouchEnd={onTouchEnd}
       >
-        <div className="relative flex-1 w-full flex items-center justify-center overflow-hidden">
+        <div className="relative flex-1 w-full h-full flex items-center justify-center">
           <AnimatePresence mode="wait">
             <motion.img
               key={photo.id}
@@ -132,7 +132,7 @@ export default function Lightbox({ photo, onClose, onNext, onPrev, hasNext, hasP
               src={photo.src}
               alt={photo.alt}
               className="w-full h-full object-contain shadow-2xl"
-              style={{ maxHeight: 'calc(100vh - 8rem)', maxWidth: '100%' }}
+              style={{ maxHeight: 'calc(100vh - 4rem)', maxWidth: '100%' }}
             />
           </AnimatePresence>
         </div>
