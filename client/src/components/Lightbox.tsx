@@ -115,7 +115,7 @@ export default function Lightbox({ photo, onClose, onNext, onPrev, hasNext, hasP
       )}
 
       <div
-        className="relative w-full h-full flex flex-col md:flex-row items-center justify-center gap-6 md:gap-8 px-4 md:px-8"
+        className="relative w-full h-full flex flex-col md:flex-row items-center justify-center gap-4 md:gap-6 px-2 md:px-4"
         onClick={(e) => e.stopPropagation()}
         onTouchStart={onTouchStart}
         onTouchMove={onTouchMove}
@@ -132,7 +132,7 @@ export default function Lightbox({ photo, onClose, onNext, onPrev, hasNext, hasP
               src={photo.src}
               alt={photo.alt}
               className="w-full h-full object-contain shadow-2xl"
-              style={{ maxHeight: 'calc(100vh - 4rem)', maxWidth: '100%' }}
+              style={{ maxHeight: 'calc(100vh - 2rem)', maxWidth: '100%' }}
             />
           </AnimatePresence>
         </div>
@@ -142,7 +142,7 @@ export default function Lightbox({ photo, onClose, onNext, onPrev, hasNext, hasP
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.1, duration: 0.4 }}
-          className="w-full md:w-[300px] lg:w-[350px] flex flex-col gap-6 text-white shrink-0"
+          className="w-full md:w-[240px] lg:w-[280px] flex flex-col gap-4 text-white shrink-0"
         >
           <div>
             <p className="text-xs font-mono text-neutral-500 mb-2 tracking-widest uppercase">
