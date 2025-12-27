@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { Loader2, Plus, Edit, Trash2, Eye, EyeOff, Upload, GripVertical, Save, X } from "lucide-react";
+import imageCompression from "browser-image-compression";
 import { SortablePhotoCard } from "@/components/SortablePhotoCard";
 import { useRef } from "react";
 import { getLoginUrl } from "@/const";
@@ -62,7 +63,7 @@ export default function Admin() {
     id: string;
     filename: string;
     progress: number;
-    stage: "reading" | "uploading" | "creating" | "done" | "error";
+    stage: "compressing" | "reading" | "uploading" | "creating" | "done" | "error";
     estimatedTime: number | null;
     error?: string;
   }>>([]);
@@ -221,8 +222,32 @@ export default function Admin() {
       ));
     };
 
+    let fileToUpload = file;
+    const fileSizeMB = file.size / (1024 * 1024);
+
+    // Compress image if larger than 10MB
+    if (fileSizeMB > 10) {
+      updateQueueItem({ stage: "compressing", progress: 0 });
+
+      const options = {
+        maxSizeMB: 10,
+        maxWidthOrHeight: 2400,
+        useWebWorker: true,
+        fileType: file.type,
+      };
+
+      try {
+        fileToUpload = await imageCompression(file, options);
+        const compressedSizeMB = fileToUpload.size / (1024 * 1024);
+        toast.success(`${file.name} 壓縮完成：${fileSizeMB.toFixed(2)}MB → ${compressedSizeMB.toFixed(2)}MB`);
+      } catch (compressionError) {
+        console.error("Compression error:", compressionError);
+        toast.warning(`${file.name} 壓縮失敗，將使用原始檔案`);
+      }
+    }
+
     const startTime = Date.now();
-    const estimatedSeconds = Math.ceil(file.size / (1024 * 1024));
+    const estimatedSeconds = Math.ceil(fileToUpload.size / (1024 * 1024));
 
     return new Promise<void>((resolve, reject) => {
       const reader = new FileReader();
@@ -298,7 +323,7 @@ export default function Admin() {
         reject(new Error("讀取檔案失敗"));
       };
 
-      reader.readAsDataURL(file);
+      reader.readAsDataURL(fileToUpload);
     });
   };
 
@@ -410,6 +435,10 @@ export default function Admin() {
                         <span className="text-muted-foreground flex items-center gap-1">
                           {item.stage === "done" && <span className="text-green-600">✓ 完成</span>}
                           {item.stage === "error" && <span className="text-red-600">✗ 失敗</span>}
+                          {item.stage === "compressing" && <span className="text-blue-600">壓縮中...</span>}
+                          {item.stage === "reading" && <span>讀取中...</span>}
+                          {item.stage === "uploading" && <span>上傳中...</span>}
+                          {item.stage === "creating" && <span>建立中...</span>}
                           {item.stage !== "done" && item.stage !== "error" && (
                             <>
                               {item.progress}%
