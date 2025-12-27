@@ -433,6 +433,13 @@ export default function Admin() {
             >
               分類管理
             </Button>
+            <Button
+              variant="outline"
+              onClick={() => window.location.href = "/admin/watermark"}
+              className="font-mono"
+            >
+              浮水印設定
+            </Button>
           </div>
           
           <div className="flex flex-col gap-4">

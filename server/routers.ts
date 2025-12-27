@@ -5,6 +5,7 @@ import { publicProcedure, router, protectedProcedure } from "./_core/trpc";
 import { z } from "zod";
 import * as db from "./db";
 import { storagePut } from "./storage.js";
+import { applyWatermarkFromSettings } from "./watermark.js";
 
 export const appRouter = router({
     // if you need to use socket.io, read and register route in server/_core/index.ts, all api should start with '/api/' so that the gateway can route correctly
@@ -114,9 +115,17 @@ export const appRouter = router({
           throw new Error('Unauthorized');
         }
         
-        // Decode base64 and upload to S3
+        // Decode base64
         const base64Data = input.file.split(',')[1];
-        const buffer = Buffer.from(base64Data, 'base64');
+        let buffer = Buffer.from(base64Data, 'base64');
+        
+        // Apply watermark if configured
+        try {
+          buffer = await applyWatermarkFromSettings(buffer) as any;
+        } catch (error) {
+          console.error('Watermark application failed:', error);
+          // Continue with original image if watermark fails
+        }
         
         // Generate unique filename
         const timestamp = Date.now();
@@ -312,6 +321,76 @@ export const appRouter = router({
           success: true,
           url: result.url,
           key: result.key,
+        };
+      }),
+
+    // Upload watermark image
+    uploadWatermark: protectedProcedure
+      .input(z.object({
+        file: z.string(), // base64 encoded image
+        filename: z.string(),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        if (ctx.user.role !== 'admin') {
+          throw new Error('Unauthorized');
+        }
+        
+        // Decode base64 and upload to S3
+        const base64Data = input.file.split(',')[1];
+        const buffer = Buffer.from(base64Data, 'base64');
+        
+        // Generate unique filename
+        const timestamp = Date.now();
+        const ext = input.filename.split('.').pop();
+        const key = `watermark/${timestamp}-${input.filename}`;
+        
+        // Upload to S3 with cache headers
+        const result = await storagePut(key, buffer, `image/${ext}`, "public, max-age=31536000, immutable");
+        
+        // Save to settings
+        await db.upsertSiteSetting('watermark_image', result.url);
+        
+        return {
+          success: true,
+          url: result.url,
+          key: result.key,
+        };
+      }),
+
+    // Get watermark settings
+    getWatermarkSettings: publicProcedure
+      .query(async () => {
+        const watermarkImage = await db.getSiteSetting('watermark_image');
+        const watermarkPosition = await db.getSiteSetting('watermark_position');
+        const watermarkOpacity = await db.getSiteSetting('watermark_opacity');
+        const watermarkScale = await db.getSiteSetting('watermark_scale');
+        
+        return {
+          watermarkImage: watermarkImage?.settingValue || null,
+          position: watermarkPosition?.settingValue || 'bottom-right',
+          opacity: watermarkOpacity?.settingValue ? parseFloat(watermarkOpacity.settingValue) : 0.7,
+          scale: watermarkScale?.settingValue ? parseFloat(watermarkScale.settingValue) : 0.15,
+        };
+      }),
+
+    // Update watermark settings
+    updateWatermarkSettings: protectedProcedure
+      .input(z.object({
+        position: z.enum(['top-left', 'top-right', 'bottom-left', 'bottom-right', 'center']),
+        opacity: z.number().min(0).max(1),
+        scale: z.number().min(0.05).max(0.5),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        if (ctx.user.role !== 'admin') {
+          throw new Error('Unauthorized');
+        }
+        
+        await db.upsertSiteSetting('watermark_position', input.position);
+        await db.upsertSiteSetting('watermark_opacity', input.opacity.toString());
+        await db.upsertSiteSetting('watermark_scale', input.scale.toString());
+        
+        return {
+          success: true,
         };
       }),
   }),
