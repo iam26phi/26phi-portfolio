@@ -36,6 +36,13 @@
       "when": 1766855466889,
       "tag": "0004_third_wind_dancer",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "5",
+      "when": 1766859322543,
+      "tag": "0005_silky_the_executioner",
+      "breakpoints": true
     }
   ]
 }

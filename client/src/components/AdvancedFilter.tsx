@@ -15,6 +15,7 @@ export type FilterOptions = {
   category: string;
   location: string;
   year: string;
+  project: string;
 };
 
 type AdvancedFilterProps = {
@@ -23,6 +24,7 @@ type AdvancedFilterProps = {
   availableLocations: string[];
   availableYears: string[];
   availableCategories: Array<{ id: number; name: string; slug: string; }>;
+  availableProjects?: Array<{ id: number; title: string; slug: string; }>;
 };
 
 export function AdvancedFilter({
@@ -31,6 +33,7 @@ export function AdvancedFilter({
   availableLocations,
   availableYears,
   availableCategories,
+  availableProjects = [],
 }: AdvancedFilterProps) {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -39,6 +42,7 @@ export function AdvancedFilter({
       category: "All",
       location: "All",
       year: "All",
+      project: "All",
     });
   };
 
@@ -46,6 +50,7 @@ export function AdvancedFilter({
     filters.category !== "All",
     filters.location !== "All",
     filters.year !== "All",
+    filters.project !== "All",
   ].filter(Boolean).length;
 
   return (
@@ -147,6 +152,31 @@ export function AdvancedFilter({
             </Select>
           </div>
 
+          {/* Project Filter */}
+          {availableProjects.length > 0 && (
+            <div className="space-y-2">
+              <Label htmlFor="project">所屬專案</Label>
+              <Select
+                value={filters.project}
+                onValueChange={(value) =>
+                  onFiltersChange({ ...filters, project: value })
+                }
+              >
+                <SelectTrigger id="project">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="All">全部專案</SelectItem>
+                  {availableProjects.map((project) => (
+                    <SelectItem key={project.id} value={project.id.toString()}>
+                      {project.title}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+
           {/* Active Filters Summary */}
           {activeFiltersCount > 0 && (
             <div className="pt-6 border-t space-y-3">
@@ -168,6 +198,14 @@ export function AdvancedFilter({
                   <div className="flex items-center justify-between">
                     <span>年份</span>
                     <span className="font-medium text-foreground">{filters.year}</span>
+                  </div>
+                )}
+                {filters.project !== "All" && (
+                  <div className="flex items-center justify-between">
+                    <span>專案</span>
+                    <span className="font-medium text-foreground">
+                      {availableProjects.find(p => p.id.toString() === filters.project)?.title || filters.project}
+                    </span>
                   </div>
                 )}
               </div>

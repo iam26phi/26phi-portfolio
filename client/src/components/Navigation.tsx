@@ -20,6 +20,7 @@ export default function Navigation() {
     { name: "PORTFOLIO", href: "/" },
     { name: "ABOUT", href: "/about" },
     { name: "BLOG", href: "/blog" },
+    { name: "PROJECTS", href: "/projects" },
   ];
 
   return (

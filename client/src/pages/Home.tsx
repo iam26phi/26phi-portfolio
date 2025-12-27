@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { trpc } from "@/lib/trpc";
@@ -37,6 +37,7 @@ export default function Home() {
     category: "All",
     location: "All",
     year: "All",
+    project: "All",
   });
 
   // Fetch photos from backend API
@@ -44,6 +45,9 @@ export default function Home() {
   
   // Fetch categories from backend API
   const { data: categories = [] } = trpc.photoCategories.list.useQuery();
+  
+  // Fetch projects from backend API
+  const { data: projects = [] } = trpc.projects.list.useQuery();
   
   // Fetch hero background image from settings
   const { data: heroSetting } = trpc.settings.get.useQuery({ key: "hero_background_image" });
@@ -57,8 +61,31 @@ export default function Home() {
     new Set(photos.map(p => p.date ? new Date(p.date).getFullYear().toString() : null).filter(Boolean))
   ).sort((a, b) => Number(b) - Number(a)) as string[];
 
+  // Get photos by project if project filter is active
+  const [projectPhotos, setProjectPhotos] = useState<number[]>([]);
+  
+  // Fetch project photos when project filter changes
+  useEffect(() => {
+    if (advancedFilters.project !== "All") {
+      const projectId = parseInt(advancedFilters.project);
+      const project = projects.find(p => p.id === projectId);
+      if (project && (project as any).photos) {
+        setProjectPhotos((project as any).photos.map((p: any) => p.id));
+      }
+    } else {
+      setProjectPhotos([]);
+    }
+  }, [advancedFilters.project, projects]);
+
   // Apply filters
   const filteredPhotos = photos.filter(photo => {
+    // Project filter (most specific)
+    if (advancedFilters.project !== "All") {
+      if (!projectPhotos.includes(photo.id)) {
+        return false;
+      }
+    }
+    
     // Category filter
     if (advancedFilters.category !== "All" && photo.category !== advancedFilters.category) {
       return false;
@@ -167,6 +194,7 @@ export default function Home() {
               availableLocations={availableLocations}
               availableYears={availableYears}
               availableCategories={categories}
+              availableProjects={projects}
             />
           </div>
         </div>

@@ -440,6 +440,13 @@ export default function Admin() {
             >
               浮水印設定
             </Button>
+            <Button
+              variant="outline"
+              onClick={() => window.location.href = "/admin/projects"}
+              className="font-mono"
+            >
+              專案管理
+            </Button>
           </div>
           
           <div className="flex flex-col gap-4">

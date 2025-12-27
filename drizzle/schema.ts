@@ -43,11 +43,30 @@ export const photoCategories = mysqlTable("photo_categories", {
 export type PhotoCategory = typeof photoCategories.$inferSelect;
 export type InsertPhotoCategory = typeof photoCategories.$inferInsert;
 
+/**
+ * Projects table for project-based categorization
+ */
+export const projects = mysqlTable("projects", {
+  id: int("id").autoincrement().primaryKey(),
+  title: varchar("title", { length: 255 }).notNull(),
+  slug: varchar("slug", { length: 255 }).notNull().unique(), // URL-friendly identifier
+  description: text("description"),
+  coverImage: text("coverImage"), // S3 URL for cover image
+  isVisible: int("isVisible").default(1).notNull(), // 1 = visible, 0 = hidden
+  sortOrder: int("sortOrder").default(0).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Project = typeof projects.$inferSelect;
+export type InsertProject = typeof projects.$inferInsert;
+
 export const photos = mysqlTable("photos", {
   id: int("id").autoincrement().primaryKey(),
   src: text("src").notNull(), // S3 URL or local path
   alt: text("alt").notNull(),
   category: varchar("category", { length: 100 }).notNull(), // Changed from enum to varchar for dynamic categories
+  projectId: int("projectId"), // Optional reference to projects table
   location: varchar("location", { length: 255 }),
   date: varchar("date", { length: 50 }),
   description: text("description"),
@@ -56,6 +75,19 @@ export const photos = mysqlTable("photos", {
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
+
+/**
+ * Photo-Project junction table for many-to-many relationship
+ */
+export const photoProjects = mysqlTable("photo_projects", {
+  id: int("id").autoincrement().primaryKey(),
+  photoId: int("photoId").notNull(),
+  projectId: int("projectId").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type PhotoProject = typeof photoProjects.$inferSelect;
+export type InsertPhotoProject = typeof photoProjects.$inferInsert;
 
 export type Photo = typeof photos.$inferSelect;
 export type InsertPhoto = typeof photos.$inferInsert;

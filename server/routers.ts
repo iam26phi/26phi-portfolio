@@ -486,6 +486,178 @@ export const appRouter = router({
         return await db.deletePhotoCategory(input.id);
       }),
   }),
+
+  projects: router({
+    // Public endpoints: get visible projects
+    list: publicProcedure.query(async () => {
+      return await db.getVisibleProjects();
+    }),
+
+    getBySlug: publicProcedure
+      .input(z.object({ slug: z.string() }))
+      .query(async ({ input }) => {
+        const project = await db.getProjectBySlug(input.slug);
+        if (!project) {
+          throw new Error('Project not found');
+        }
+        // Also get photos for this project
+        const photos = await db.getPhotosByProjectId(project.id);
+        return { ...project, photos };
+      }),
+
+    // Admin endpoints: manage all projects
+    listAll: protectedProcedure.query(async ({ ctx }) => {
+      if (ctx.user.role !== 'admin') {
+        throw new Error('Unauthorized');
+      }
+      return await db.getAllProjects();
+    }),
+
+    getById: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .query(async ({ input, ctx }) => {
+        if (ctx.user.role !== 'admin') {
+          throw new Error('Unauthorized');
+        }
+        const project = await db.getProjectById(input.id);
+        if (!project) {
+          throw new Error('Project not found');
+        }
+        // Also get photos for this project
+        const photos = await db.getPhotosByProjectId(project.id);
+        return { ...project, photos };
+      }),
+
+    create: protectedProcedure
+      .input(z.object({
+        title: z.string(),
+        slug: z.string(),
+        description: z.string().optional(),
+        coverImage: z.string().optional(),
+        isVisible: z.number().default(1),
+        sortOrder: z.number().default(0),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        if (ctx.user.role !== 'admin') {
+          throw new Error('Unauthorized');
+        }
+        return await db.createProject(input);
+      }),
+
+    update: protectedProcedure
+      .input(z.object({
+        id: z.number(),
+        title: z.string().optional(),
+        slug: z.string().optional(),
+        description: z.string().optional(),
+        coverImage: z.string().optional(),
+        isVisible: z.number().optional(),
+        sortOrder: z.number().optional(),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        if (ctx.user.role !== 'admin') {
+          throw new Error('Unauthorized');
+        }
+        const { id, ...updates } = input;
+        return await db.updateProject(id, updates);
+      }),
+
+    delete: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ input, ctx }) => {
+        if (ctx.user.role !== 'admin') {
+          throw new Error('Unauthorized');
+        }
+        return await db.deleteProject(input.id);
+      }),
+
+    // Photo-Project association endpoints
+    addPhoto: protectedProcedure
+      .input(z.object({
+        photoId: z.number(),
+        projectId: z.number(),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        if (ctx.user.role !== 'admin') {
+          throw new Error('Unauthorized');
+        }
+        return await db.addPhotoToProject(input.photoId, input.projectId);
+      }),
+
+    removePhoto: protectedProcedure
+      .input(z.object({
+        photoId: z.number(),
+        projectId: z.number(),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        if (ctx.user.role !== 'admin') {
+          throw new Error('Unauthorized');
+        }
+        return await db.removePhotoFromProject(input.photoId, input.projectId);
+      }),
+
+    setPhotos: protectedProcedure
+      .input(z.object({
+        projectId: z.number(),
+        photoIds: z.array(z.number()),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        if (ctx.user.role !== 'admin') {
+          throw new Error('Unauthorized');
+        }
+        // Set photos for this project
+        const { projectId, photoIds } = input;
+        
+        // Get current associations
+        const currentPhotos = await db.getPhotosByProjectId(projectId);
+        const currentPhotoIds = currentPhotos.map(p => p.id);
+        
+        // Remove photos that are no longer in the list
+        for (const photoId of currentPhotoIds) {
+          if (!photoIds.includes(photoId)) {
+            await db.removePhotoFromProject(photoId, projectId);
+          }
+        }
+        
+        // Add new photos
+        for (const photoId of photoIds) {
+          if (!currentPhotoIds.includes(photoId)) {
+            await db.addPhotoToProject(photoId, projectId);
+          }
+        }
+        
+        return { success: true };
+      }),
+
+    uploadCoverImage: protectedProcedure
+      .input(z.object({
+        file: z.string(), // base64 encoded image
+        filename: z.string(),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        if (ctx.user.role !== 'admin') {
+          throw new Error('Unauthorized');
+        }
+        
+        // Decode base64 and upload to S3
+        const base64Data = input.file.split(',')[1];
+        const buffer = Buffer.from(base64Data, 'base64');
+        
+        // Generate unique filename
+        const timestamp = Date.now();
+        const ext = input.filename.split('.').pop();
+        const key = `projects/${timestamp}-${input.filename}`;
+        
+        // Upload to S3 with cache headers
+        const result = await storagePut(key, buffer, `image/${ext}`, "public, max-age=31536000, immutable");
+        
+        return {
+          success: true,
+          url: result.url,
+          key: result.key,
+        };
+      }),
+  }),
 });
 
 export type AppRouter = typeof appRouter;

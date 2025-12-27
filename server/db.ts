@@ -1,6 +1,6 @@
-import { eq } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users, photos, InsertPhoto, blogPosts, InsertBlogPost, siteSettings, InsertSiteSetting, photoCategories, InsertPhotoCategory } from "../drizzle/schema";
+import { InsertUser, users, photos, InsertPhoto, blogPosts, InsertBlogPost, siteSettings, InsertSiteSetting, photoCategories, InsertPhotoCategory, projects, InsertProject, photoProjects, InsertPhotoProject } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -337,4 +337,135 @@ export async function deletePhotoCategory(id: number) {
     console.error("[Database] Failed to delete photo category:", error);
     throw error;
   }
+}
+
+// ==================== Projects ====================
+
+export async function getAllProjects() {
+  const db = await getDb();
+  if (!db) return [];
+  return await db.select().from(projects).orderBy(projects.sortOrder);
+}
+
+export async function getVisibleProjects() {
+  const db = await getDb();
+  if (!db) return [];
+  return await db.select().from(projects).where(eq(projects.isVisible, 1)).orderBy(projects.sortOrder);
+}
+
+export async function getProjectById(id: number) {
+  const db = await getDb();
+  if (!db) return null;
+  const result = await db.select().from(projects).where(eq(projects.id, id));
+  return result[0] || null;
+}
+
+export async function getProjectBySlug(slug: string) {
+  const db = await getDb();
+  if (!db) return null;
+  const result = await db.select().from(projects).where(eq(projects.slug, slug));
+  return result[0] || null;
+}
+
+export async function createProject(data: InsertProject) {
+  const db = await getDb();
+  if (!db) throw new Error('Database not available');
+  const result = await db.insert(projects).values(data);
+  return { id: Number(result[0].insertId) };
+}
+
+export async function updateProject(id: number, data: Partial<InsertProject>) {
+  const db = await getDb();
+  if (!db) throw new Error('Database not available');
+  await db.update(projects).set(data).where(eq(projects.id, id));
+  return { success: true };
+}
+
+export async function deleteProject(id: number) {
+  const db = await getDb();
+  if (!db) throw new Error('Database not available');
+  // Also delete all photo-project associations
+  await db.delete(photoProjects).where(eq(photoProjects.projectId, id));
+  await db.delete(projects).where(eq(projects.id, id));
+  return { success: true };
+}
+
+// ==================== Photo-Project Associations ====================
+
+export async function getPhotosByProjectId(projectId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  // Get all photo IDs associated with this project
+  const associations = await db.select().from(photoProjects).where(eq(photoProjects.projectId, projectId));
+  const photoIds = associations.map(a => a.photoId);
+  
+  if (photoIds.length === 0) return [];
+  
+  // Get all photos with these IDs
+  const allPhotos = await db.select().from(photos);
+  return allPhotos.filter(p => photoIds.includes(p.id)).sort((a, b) => a.sortOrder - b.sortOrder);
+}
+
+export async function getProjectsByPhotoId(photoId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  // Get all project IDs associated with this photo
+  const associations = await db.select().from(photoProjects).where(eq(photoProjects.photoId, photoId));
+  const projectIds = associations.map(a => a.projectId);
+  
+  if (projectIds.length === 0) return [];
+  
+  // Get all projects with these IDs
+  const allProjects = await db.select().from(projects);
+  return allProjects.filter(p => projectIds.includes(p.id));
+}
+
+export async function addPhotoToProject(photoId: number, projectId: number) {
+  const db = await getDb();
+  if (!db) throw new Error('Database not available');
+  
+  // Check if association already exists
+  const existing = await db.select().from(photoProjects)
+    .where(and(
+      eq(photoProjects.photoId, photoId),
+      eq(photoProjects.projectId, projectId)
+    ));
+  
+  if (existing.length > 0) {
+    return { success: true, message: 'Association already exists' };
+  }
+  
+  await db.insert(photoProjects).values({ photoId, projectId });
+  return { success: true };
+}
+
+export async function removePhotoFromProject(photoId: number, projectId: number) {
+  const db = await getDb();
+  if (!db) throw new Error('Database not available');
+  
+  await db.delete(photoProjects)
+    .where(and(
+      eq(photoProjects.photoId, photoId),
+      eq(photoProjects.projectId, projectId)
+    ));
+  
+  return { success: true };
+}
+
+export async function setPhotoProjects(photoId: number, projectIds: number[]) {
+  const db = await getDb();
+  if (!db) throw new Error('Database not available');
+  
+  // Remove all existing associations for this photo
+  await db.delete(photoProjects).where(eq(photoProjects.photoId, photoId));
+  
+  // Add new associations
+  if (projectIds.length > 0) {
+    const values = projectIds.map(projectId => ({ photoId, projectId }));
+    await db.insert(photoProjects).values(values);
+  }
+  
+  return { success: true };
 }
