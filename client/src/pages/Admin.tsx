@@ -417,6 +417,13 @@ export default function Admin() {
             >
               部落格管理
             </Button>
+            <Button
+              variant="outline"
+              onClick={() => window.location.href = "/admin/about"}
+              className="font-mono"
+            >
+              About 編輯
+            </Button>
           </div>
           
           <div className="flex flex-col gap-4">

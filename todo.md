@@ -92,3 +92,10 @@
 - [x] 修改封面圖上傳邏輯整合自動壓縮
 - [x] 新增壓縮狀態顯示
 - [x] 測試部落格封面圖上傳和壓縮
+
+## 功能增強 - About 頁面後台編輯
+- [x] 擴充 site_settings 或新增 about_content 欄位
+- [x] 建立後端 API 路由（get, update）
+- [x] 開發後台 About 編輯頁面
+- [x] 修改前台 About 頁面從資料庫讀取內容
+- [x] 測試 About 內容編輯和顯示

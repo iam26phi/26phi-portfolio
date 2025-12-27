@@ -2,8 +2,10 @@ import { motion } from "framer-motion";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import { Camera, Award, Users, MapPin, Calendar, Mail } from "lucide-react";
+import { trpc } from "@/lib/trpc";
 
-const timeline = [
+// Default fallback data
+const defaultTimeline = [
   {
     year: "2024",
     title: "東京據點成立",
@@ -14,52 +16,46 @@ const timeline = [
     title: "品牌合作突破",
     description: "與多個時尚品牌展開合作，作品刊登於各大時尚雜誌"
   },
-  {
-    year: "2022",
-    title: "專業攝影師之路",
-    description: "全職投入攝影事業，專注於人像與編輯攝影領域"
-  },
-  {
-    year: "2020",
-    title: "攝影生涯起點",
-    description: "開始系統性學習攝影，從街頭攝影逐步發展個人風格"
-  }
 ];
 
-const stats = [
-  { icon: Camera, value: "500+", label: "完成專案" },
-  { icon: Users, value: "200+", label: "服務客戶" },
-  { icon: Award, value: "5+", label: "年經驗" },
-  { icon: MapPin, value: "2", label: "工作據點" }
+const defaultStats = [
+  { icon: "Camera", value: "500+", label: "完成專案" },
+  { icon: "Users", value: "200+", label: "服務客戶" },
 ];
 
-const equipment = [
-  { category: "相機", items: ["Sony A7R V", "Sony A1", "Fujifilm X-T5"] },
-  { category: "鏡頭", items: ["Sony 35mm f/1.4 GM", "Sony 85mm f/1.4 GM", "Sony 24-70mm f/2.8 GM II"] },
-  { category: "燈光", items: ["Profoto B10X", "Godox AD600 Pro", "Aputure 600d Pro"] },
-  { category: "配件", items: ["DJI RS3 Pro", "Peak Design 背帶", "Shimoda 背包"] }
+const defaultEquipment = [
+  { category: "相機", items: ["Sony A7R V", "Sony A1"] },
+  { category: "鏡頭", items: ["Sony 35mm f/1.4 GM", "Sony 85mm f/1.4 GM"] },
 ];
 
-const faqs = [
+const defaultFaqs = [
   {
     question: "如何預約拍攝？",
-    answer: "您可以透過網站的聯絡表單或直接發送 Email 預約。我會在 24 小時內回覆您，討論拍攝細節與檔期。"
+    answer: "您可以透過網站的聯絡表單或直接發送 Email 預約。"
   },
-  {
-    question: "拍攝費用如何計算？",
-    answer: "費用依據拍攝類型、時長、地點和後製需求而定。請聯繫我獲取詳細報價，我會根據您的需求提供客製化方案。"
-  },
-  {
-    question: "照片多久可以收到？",
-    answer: "一般人像拍攝約 7-14 個工作天交件，商業專案依複雜度約 2-4 週。急件可另外討論加急費用。"
-  },
-  {
-    question: "可以到其他城市拍攝嗎？",
-    answer: "當然可以！除了台北和東京，我也接受全球各地的拍攝邀約，差旅費用另計。"
-  }
 ];
 
+const defaultIntro = "I am 26phi, a photographer based in Taipei and Tokyo. My work is an exploration of the raw, unfiltered moments that define our existence.";
+const defaultContact = { email: "contact@26phi.com", location: "Taipei & Tokyo" };
+
+const iconMap: Record<string, any> = {
+  Camera,
+  Users,
+  Award,
+  MapPin,
+  Calendar,
+  Mail,
+};
+
 export default function About() {
+  const { data: aboutData } = trpc.about.get.useQuery();
+
+  const timeline = aboutData?.timeline || defaultTimeline;
+  const stats = (aboutData?.stats || defaultStats).map((s: any) => ({ ...s, icon: iconMap[s.icon] || Camera }));
+  const equipment = aboutData?.equipment || defaultEquipment;
+  const faqs = aboutData?.faqs || defaultFaqs;
+  const intro = aboutData?.intro || defaultIntro;
+  const contact = aboutData?.contact || defaultContact;
   return (
     <div className="min-h-screen bg-background text-foreground selection:bg-white selection:text-black">
       <Navigation />
@@ -96,17 +92,7 @@ export default function About() {
               </h1>
 
               <div className="space-y-8 text-lg md:text-xl font-light text-neutral-300 leading-relaxed">
-                <p>
-                  I am 26phi, a photographer based in Taipei and Tokyo. My work is an exploration of the raw, unfiltered moments that define our existence.
-                </p>
-                
-                <p>
-                  "Living itself is a havoc, dreaming is the only relief in this world." This philosophy drives every shutter click. I seek to capture the tension between the chaos of reality and the serenity of our dreams.
-                </p>
-
-                <p>
-                  Specializing in portrait, editorial, and travel photography, I strive to reveal the authentic narrative within each subject. Whether it's the neon-lit streets of Shinjuku or the quiet intimacy of a studio session, my goal is to freeze time in its most honest form.
-                </p>
+                <p>{intro}</p>
               </div>
 
               <div className="mt-16 grid grid-cols-2 gap-8 font-mono text-sm tracking-widest text-neutral-500">
@@ -136,7 +122,7 @@ export default function About() {
         <section className="py-20 bg-neutral-900">
           <div className="container mx-auto px-6">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-              {stats.map((stat, index) => (
+              {stats.map((stat: any, index: number) => (
                 <motion.div
                   key={stat.label}
                   initial={{ opacity: 0, y: 20 }}
@@ -169,7 +155,7 @@ export default function About() {
             {/* Timeline Line */}
             <div className="absolute left-0 md:left-1/2 top-0 bottom-0 w-px bg-neutral-800 transform md:-translate-x-1/2" />
             
-            {timeline.map((item, index) => (
+            {timeline.map((item: any, index: number) => (
               <motion.div
                 key={item.year}
                 initial={{ opacity: 0, x: index % 2 === 0 ? -20 : 20 }}
@@ -209,7 +195,7 @@ export default function About() {
             </motion.h2>
             
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
-              {equipment.map((category, index) => (
+              {equipment.map((category: any, index: number) => (
                 <motion.div
                   key={category.category}
                   initial={{ opacity: 0, y: 20 }}
@@ -219,7 +205,7 @@ export default function About() {
                 >
                   <h3 className="text-xl font-bold tracking-tight mb-6">{category.category}</h3>
                   <ul className="space-y-3 text-neutral-400">
-                    {category.items.map((item) => (
+                    {category.items.map((item: string) => (
                       <li key={item} className="flex items-center gap-2">
                         <span className="w-1 h-1 bg-neutral-500 rounded-full" />
                         {item}
@@ -244,7 +230,7 @@ export default function About() {
           </motion.h2>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-            {faqs.map((faq, index) => (
+            {faqs.map((faq: any, index: number) => (
               <motion.div
                 key={index}
                 initial={{ opacity: 0, y: 20 }}

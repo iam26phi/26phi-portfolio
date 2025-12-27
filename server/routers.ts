@@ -315,6 +315,53 @@ export const appRouter = router({
         };
       }),
   }),
+
+  about: router({
+    // Public endpoint: get about content
+    get: publicProcedure.query(async () => {
+      const setting = await db.getSiteSetting('about_content');
+      return setting?.settingValue ? JSON.parse(setting.settingValue) : null;
+    }),
+
+    // Admin endpoint: update about content
+    update: protectedProcedure
+      .input(z.object({
+        intro: z.string(),
+        timeline: z.array(z.object({
+          year: z.string(),
+          title: z.string(),
+          description: z.string(),
+        })),
+        stats: z.array(z.object({
+          icon: z.string(),
+          value: z.string(),
+          label: z.string(),
+        })),
+        equipment: z.array(z.object({
+          category: z.string(),
+          items: z.array(z.string()),
+        })),
+        faqs: z.array(z.object({
+          question: z.string(),
+          answer: z.string(),
+        })),
+        contact: z.object({
+          email: z.string(),
+          location: z.string(),
+        }),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        if (ctx.user.role !== 'admin') {
+          throw new Error('Unauthorized');
+        }
+        
+        await db.upsertSiteSetting('about_content', JSON.stringify(input));
+        
+        return {
+          success: true,
+        };
+      }),
+  }),
 });
 
 export type AppRouter = typeof appRouter;
