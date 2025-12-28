@@ -187,7 +187,7 @@ export default function Lightbox({ photo, onClose, onNext, onPrev, hasNext, hasP
     >
       <button
         onClick={onClose}
-        className="absolute top-4 right-4 sm:top-6 sm:right-6 text-white/50 hover:text-white active:text-white transition-colors z-50 p-2 sm:p-3 touch-manipulation"
+        className="absolute top-6 right-6 text-white/50 hover:text-white transition-colors z-50 p-2"
       >
         <X size={32} />
       </button>
@@ -196,7 +196,7 @@ export default function Lightbox({ photo, onClose, onNext, onPrev, hasNext, hasP
       {hasPrev && (
         <button
           onClick={(e) => { e.stopPropagation(); onPrev(); }}
-          className="absolute left-2 sm:left-4 md:left-8 top-1/2 -translate-y-1/2 text-white/50 hover:text-white active:text-white transition-colors z-50 p-2 sm:p-3 touch-manipulation"
+          className="absolute left-4 md:left-8 top-1/2 -translate-y-1/2 text-white/50 hover:text-white transition-colors z-50 p-2"
         >
           <ChevronLeft size={48} strokeWidth={1} />
         </button>
@@ -205,7 +205,7 @@ export default function Lightbox({ photo, onClose, onNext, onPrev, hasNext, hasP
       {hasNext && (
         <button
           onClick={(e) => { e.stopPropagation(); onNext(); }}
-          className="absolute right-2 sm:right-4 md:right-8 top-1/2 -translate-y-1/2 text-white/50 hover:text-white active:text-white transition-colors z-50 p-2 sm:p-3 touch-manipulation"
+          className="absolute right-4 md:right-8 top-1/2 -translate-y-1/2 text-white/50 hover:text-white transition-colors z-50 p-2"
         >
           <ChevronRight size={48} strokeWidth={1} />
         </button>
@@ -251,20 +251,20 @@ export default function Lightbox({ photo, onClose, onNext, onPrev, hasNext, hasP
           </AnimatePresence>
           
           {/* Zoom Controls */}
-          <div className="absolute bottom-4 sm:bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-1 sm:gap-2 bg-black/60 backdrop-blur-sm rounded-full px-3 sm:px-4 py-2 z-50">
+          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2 bg-black/60 backdrop-blur-sm rounded-full px-4 py-2 z-50">
             <button
               onClick={(e) => { e.stopPropagation(); handleZoomOut(); }}
-              className="text-white/70 hover:text-white active:text-white transition-colors p-1 sm:p-1.5 touch-manipulation"
+              className="text-white/70 hover:text-white transition-colors p-1"
               disabled={scale === 1}
             >
               <ZoomOut size={20} />
             </button>
-            <span className="text-white/70 text-xs sm:text-sm font-mono min-w-[2.5rem] sm:min-w-[3rem] text-center">
+            <span className="text-white/70 text-sm font-mono min-w-[3rem] text-center">
               {Math.round(scale * 100)}%
             </span>
             <button
               onClick={(e) => { e.stopPropagation(); handleZoomIn(); }}
-              className="text-white/70 hover:text-white active:text-white transition-colors p-1 sm:p-1.5 touch-manipulation"
+              className="text-white/70 hover:text-white transition-colors p-1"
               disabled={scale === 3}
             >
               <ZoomIn size={20} />
@@ -272,7 +272,7 @@ export default function Lightbox({ photo, onClose, onNext, onPrev, hasNext, hasP
             {scale > 1 && (
               <button
                 onClick={(e) => { e.stopPropagation(); handleResetZoom(); }}
-                className="text-white/70 hover:text-white active:text-white transition-colors p-1 sm:p-1.5 ml-1 sm:ml-2 touch-manipulation"
+                className="text-white/70 hover:text-white transition-colors p-1 ml-2"
               >
                 <Maximize2 size={20} />
               </button>
@@ -285,20 +285,20 @@ export default function Lightbox({ photo, onClose, onNext, onPrev, hasNext, hasP
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.1, duration: 0.4 }}
-          className="w-full md:w-[240px] lg:w-[280px] flex flex-col gap-3 sm:gap-4 text-white shrink-0"
+          className="w-full md:w-[240px] lg:w-[280px] flex flex-col gap-4 text-white shrink-0"
         >
           <div>
-            <p className="text-[10px] sm:text-xs font-mono text-neutral-500 mb-1 sm:mb-2 tracking-widest uppercase">
+            <p className="text-xs font-mono text-neutral-500 mb-2 tracking-widest uppercase">
               {photo.category}
             </p>
-            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tighter leading-none text-white">
+            <h2 className="text-3xl md:text-4xl font-bold tracking-tighter leading-none text-white">
               {photo.alt}
             </h2>
           </div>
 
           <div className="h-px w-full bg-neutral-800" />
 
-          <div className="grid grid-cols-2 gap-4 sm:gap-6 text-xs sm:text-sm font-mono text-neutral-400">
+          <div className="grid grid-cols-2 gap-6 text-sm font-mono text-neutral-400">
             <div>
               <span className="block text-neutral-600 text-xs mb-1 uppercase">Date</span>
               {photo.date || "Unknown"}
@@ -309,7 +309,7 @@ export default function Lightbox({ photo, onClose, onNext, onPrev, hasNext, hasP
             </div>
           </div>
           
-          <div className="text-neutral-400 text-xs sm:text-sm leading-relaxed font-light">
+          <div className="text-neutral-400 text-sm leading-relaxed font-light">
             <p>
               Captured in {photo.location}, this piece is part of the {photo.category} collection. 
               It reflects the raw and unfiltered perspective that defines 26phi's work.

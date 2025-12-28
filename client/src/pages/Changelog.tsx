@@ -29,18 +29,18 @@ export default function Changelog() {
     <div className="min-h-screen bg-black text-white">
       <Navigation />
       
-      <div className="container mx-auto px-4 sm:px-6 py-20 sm:py-24">
+      <div className="container mx-auto px-4 py-24">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          className="text-center mb-12 sm:mb-16 md:mb-20"
+          className="text-center mb-20"
         >
-          <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-4 sm:mb-6 tracking-tight">
+          <h1 className="text-5xl md:text-7xl font-bold mb-6 tracking-tight">
             更新日誌
           </h1>
-          <p className="text-sm sm:text-base md:text-lg lg:text-xl text-zinc-400 max-w-2xl mx-auto px-4">
+          <p className="text-xl text-zinc-400 max-w-2xl mx-auto">
             記錄網站的每一次進化與改進
           </p>
         </motion.div>
@@ -58,10 +58,10 @@ export default function Changelog() {
           ) : (
             <div className="relative">
               {/* Timeline line */}
-              <div className="absolute left-2 md:left-1/2 top-0 bottom-0 w-px bg-gradient-to-b from-zinc-800 via-zinc-700 to-zinc-800 transform md:-translate-x-1/2" />
+              <div className="absolute left-0 md:left-1/2 top-0 bottom-0 w-px bg-gradient-to-b from-zinc-800 via-zinc-700 to-zinc-800 transform md:-translate-x-1/2" />
 
               {/* Timeline items */}
-              <div className="space-y-8 sm:space-y-10 md:space-y-12">
+              <div className="space-y-12">
                 {changelogs.map((changelog: any, index: number) => (
                   <motion.div
                     key={changelog.id}
@@ -73,10 +73,10 @@ export default function Changelog() {
                     }`}
                   >
                     {/* Timeline dot */}
-                    <div className="absolute left-2 md:left-1/2 w-3 h-3 sm:w-4 sm:h-4 bg-white rounded-full border-2 sm:border-4 border-black transform -translate-x-1/2 md:-translate-x-1/2 z-10" />
+                    <div className="absolute left-0 md:left-1/2 w-4 h-4 bg-white rounded-full border-4 border-black transform md:-translate-x-1/2 z-10" />
 
                     {/* Content */}
-                    <div className={`flex-1 pl-8 sm:pl-10 md:pl-0 ${index % 2 === 0 ? "md:pr-12 md:text-right" : "md:pl-12"}`}>
+                    <div className={`flex-1 pl-12 md:pl-0 ${index % 2 === 0 ? "md:pr-12 md:text-right" : "md:pl-12"}`}>
                       <div className={`inline-block ${index % 2 === 0 ? "md:text-right" : "md:text-left"} text-left`}>
                         {/* Date */}
                         <div className="text-sm text-zinc-500 mb-2 font-mono">

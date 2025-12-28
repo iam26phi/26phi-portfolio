@@ -62,7 +62,7 @@ export default function About() {
 
       <main>
         {/* Hero Section */}
-        <section className="container mx-auto px-4 sm:px-6 pt-24 sm:pt-28 md:pt-32 pb-12 sm:pb-16 md:pb-20">
+        <section className="container mx-auto px-6 pt-32 pb-20">
           <div className="flex flex-col lg:flex-row gap-16 lg:gap-24">
             {/* Left Column: Image */}
             <motion.div 
@@ -87,15 +87,15 @@ export default function About() {
               transition={{ duration: 0.8, delay: 0.2 }}
               className="w-full lg:w-7/12 flex flex-col justify-center"
             >
-              <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tighter mb-8 sm:mb-10 md:mb-12">
+              <h1 className="text-5xl md:text-7xl font-bold tracking-tighter mb-12">
                 BEHIND <br /> THE LENS
               </h1>
 
-              <div className="space-y-6 sm:space-y-8 text-base sm:text-lg md:text-xl font-light text-neutral-300 leading-relaxed">
+              <div className="space-y-8 text-lg md:text-xl font-light text-neutral-300 leading-relaxed">
                 <p>{intro}</p>
               </div>
 
-              <div className="mt-10 sm:mt-12 md:mt-16 grid grid-cols-2 gap-6 sm:gap-8 font-mono text-xs sm:text-sm tracking-widest text-neutral-500">
+              <div className="mt-16 grid grid-cols-2 gap-8 font-mono text-sm tracking-widest text-neutral-500">
                 <div>
                   <h3 className="text-white mb-4">SERVICES</h3>
                   <ul className="space-y-2">
@@ -119,7 +119,7 @@ export default function About() {
         </section>
 
         {/* Stats Section */}
-        <section className="py-12 sm:py-16 md:py-20 bg-neutral-900">
+        <section className="py-20 bg-neutral-900">
           <div className="container mx-auto px-6">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
               {stats.map((stat: any, index: number) => (
@@ -141,7 +141,7 @@ export default function About() {
         </section>
 
         {/* Timeline Section */}
-        <section className="py-16 sm:py-24 md:py-32 container mx-auto px-4 sm:px-6">
+        <section className="py-32 container mx-auto px-6">
           <motion.h2 
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
@@ -183,7 +183,7 @@ export default function About() {
         </section>
 
         {/* Equipment Section */}
-        <section className="py-16 sm:py-24 md:py-32 bg-neutral-900">
+        <section className="py-32 bg-neutral-900">
           <div className="container mx-auto px-6">
             <motion.h2 
               initial={{ opacity: 0 }}
@@ -219,7 +219,7 @@ export default function About() {
         </section>
 
         {/* FAQ Section */}
-        <section className="py-16 sm:py-24 md:py-32 container mx-auto px-4 sm:px-6">
+        <section className="py-32 container mx-auto px-6">
           <motion.h2 
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
@@ -247,7 +247,7 @@ export default function About() {
         </section>
 
         {/* CTA Section */}
-        <section className="py-16 sm:py-24 md:py-32 bg-white text-black">
+        <section className="py-32 bg-white text-black">
           <div className="container mx-auto px-6 text-center">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
