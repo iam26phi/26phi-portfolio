@@ -1,0 +1,14 @@
+{
+  "query": "SELECT isVisible, COUNT(*) as count FROM photos GROUP BY isVisible;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3KMh2yGgHww6rVT.root --database 3s8FCUF9BWUfzRwVV77JBG --execute SELECT isVisible, COUNT(*) as count FROM photos GROUP BY isVisible;",
+  "rows": [
+    {
+      "isVisible": "1",
+      "count": "90"
+    }
+  ],
+  "messages": [],
+  "stdout": "isVisible\tcount\n1\t90\n",
+  "stderr": "",
+  "execution_time_ms": 1515
+}

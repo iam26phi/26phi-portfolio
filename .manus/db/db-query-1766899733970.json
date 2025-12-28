@@ -1,0 +1,45 @@
+{
+  "query": "SELECT id, alt, category, isVisible, src FROM photos LIMIT 5;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3KMh2yGgHww6rVT.root --database 3s8FCUF9BWUfzRwVV77JBG --execute SELECT id, alt, category, isVisible, src FROM photos LIMIT 5;",
+  "rows": [
+    {
+      "id": "1",
+      "alt": "Portrait Photo 1",
+      "category": "Portrait",
+      "isVisible": "1",
+      "src": "https://d2xsxph8kpxj0f.cloudfront.net/310519663123146573/3s8FCUF9BWUfzRwVV77JBG/photos/portrait/KILLER_劇照_10.jpg"
+    },
+    {
+      "id": "2",
+      "alt": "Portrait Photo 2",
+      "category": "Portrait",
+      "isVisible": "1",
+      "src": "https://d2xsxph8kpxj0f.cloudfront.net/310519663123146573/3s8FCUF9BWUfzRwVV77JBG/photos/portrait/KILLER_劇照_101.jpg"
+    },
+    {
+      "id": "3",
+      "alt": "Portrait Photo 3",
+      "category": "Portrait",
+      "isVisible": "1",
+      "src": "https://d2xsxph8kpxj0f.cloudfront.net/310519663123146573/3s8FCUF9BWUfzRwVV77JBG/photos/portrait/KILLER_劇照_1.jpg"
+    },
+    {
+      "id": "8",
+      "alt": "Editorial Photo 8",
+      "category": "Editorial",
+      "isVisible": "1",
+      "src": "https://d2xsxph8kpxj0f.cloudfront.net/310519663123146573/3s8FCUF9BWUfzRwVV77JBG/photos/editorial/XRAGE_01_10.jpg"
+    },
+    {
+      "id": "9",
+      "alt": "Editorial Photo 9",
+      "category": "Editorial",
+      "isVisible": "1",
+      "src": "https://d2xsxph8kpxj0f.cloudfront.net/310519663123146573/3s8FCUF9BWUfzRwVV77JBG/photos/editorial/XRAGE_01_1.jpg"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\talt\tcategory\tisVisible\tsrc\n1\tPortrait Photo 1\tPortrait\t1\thttps://d2xsxph8kpxj0f.cloudfront.net/310519663123146573/3s8FCUF9BWUfzRwVV77JBG/photos/portrait/KILLER_劇照_10.jpg\n2\tPortrait Photo 2\tPortrait\t1\thttps://d2xsxph8kpxj0f.cloudfront.net/310519663123146573/3s8FCUF9BWUfzRwVV77JBG/photos/portrait/KILLER_劇照_101.jpg\n3\tPortrait Photo 3\tPortrait\t1\thttps://d2xsxph8kpxj0f.cloudfront.net/310519663123146573/3s8FCUF9BWUfzRwVV77JBG/photos/portrait/KILLER_劇照_1.jpg\n8\tEditorial Photo 8\tEditorial\t1\thttps://d2xsxph8kpxj0f.cloudfront.net/310519663123146573/3s8FCUF9BWUfzRwVV77JBG/photos/editorial/XRAGE_01_10.jpg\n9\tEditorial Photo 9\tEditorial\t1\thttps://d2xsxph8kpxj0f.cloudfront.net/310519663123146573/3s8FCUF9BWUfzRwVV77JBG/photos/editorial/XRAGE_01_1.jpg\n",
+  "stderr": "",
+  "execution_time_ms": 1511
+}

@@ -1,0 +1,14 @@
+{
+  "query": "SELECT COUNT(*) as total, SUM(CASE WHEN isVisible = 1 THEN 1 ELSE 0 END) as visible FROM photos;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3KMh2yGgHww6rVT.root --database 3s8FCUF9BWUfzRwVV77JBG --execute SELECT COUNT(*) as total, SUM(CASE WHEN isVisible = 1 THEN 1 ELSE 0 END) as visible FROM photos;",
+  "rows": [
+    {
+      "total": "90",
+      "visible": "90"
+    }
+  ],
+  "messages": [],
+  "stdout": "total\tvisible\n90\t90\n",
+  "stderr": "",
+  "execution_time_ms": 1794
+}
