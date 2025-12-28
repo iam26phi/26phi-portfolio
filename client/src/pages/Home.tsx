@@ -338,7 +338,6 @@ export default function Home() {
                 ? filteredPhotos[filteredPhotos.findIndex(p => p.id === selectedPhoto.id) - 1].src
                 : undefined
             }
-            isGrayscale={isGrayscale}
           />
         )}
       </AnimatePresence>

@@ -25,10 +25,9 @@ interface LightboxProps {
   hasPrev: boolean;
   nextPhotoSrc?: string;
   prevPhotoSrc?: string;
-  isGrayscale?: boolean;
 }
 
-export default function Lightbox({ photo, onClose, onNext, onPrev, hasNext, hasPrev, nextPhotoSrc, prevPhotoSrc, isGrayscale = false }: LightboxProps) {
+export default function Lightbox({ photo, onClose, onNext, onPrev, hasNext, hasPrev, nextPhotoSrc, prevPhotoSrc }: LightboxProps) {
   // Swipe Handling
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const [touchEnd, setTouchEnd] = useState<number | null>(null);
@@ -132,7 +131,7 @@ export default function Lightbox({ photo, onClose, onNext, onPrev, hasNext, hasP
               transition={{ duration: 0.3 }}
               src={photo.src}
               alt={photo.alt}
-              className={`w-full h-full object-contain shadow-2xl ${isGrayscale ? 'grayscale' : ''}`}
+              className="w-full h-full object-contain shadow-2xl"
               style={{ maxHeight: 'calc(100vh - 2rem)', maxWidth: '100%' }}
             />
           </AnimatePresence>
