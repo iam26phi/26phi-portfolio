@@ -17,7 +17,7 @@ export default function Projects() {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-sm border-b border-border">
-        <div className="container mx-auto px-6 py-4 flex justify-between items-center">
+        <div className="container mx-auto px-4 sm:px-6 py-3 sm:py-4 flex justify-between items-center">
           <Link href="/">
             <a className="text-2xl font-bold tracking-tight hover:opacity-80 transition-opacity">
               26phi
@@ -49,22 +49,22 @@ export default function Projects() {
       </header>
 
       {/* Hero Section */}
-      <section className="pt-32 pb-16 px-6">
+      <section className="pt-24 sm:pt-28 md:pt-32 pb-12 sm:pb-14 md:pb-16 px-4 sm:px-6">
         <div className="container mx-auto max-w-4xl text-center">
-          <h1 className="text-5xl md:text-6xl font-bold mb-6">
-            攝影專案
+          <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-4 sm:mb-6">
+            攀影專案
           </h1>
-          <p className="text-xl text-muted-foreground">
-            探索我的攝影專案，每個專案都講述著獨特的故事
+          <p className="text-base sm:text-lg md:text-xl text-muted-foreground">
+            探索我的攀影專案，每個專案都講述著獨特的故事
           </p>
         </div>
       </section>
 
       {/* Projects Grid */}
-      <section className="pb-24 px-6">
+      <section className="pb-16 sm:pb-20 md:pb-24 px-4 sm:px-6">
         <div className="container mx-auto">
           {projects && projects.length > 0 ? (
-            <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-6 sm:gap-8 sm:grid-cols-2 lg:grid-cols-3">
               {projects.map((project) => (
                 <Link key={project.id} href={`/projects/${project.slug}`}>
                   <a className="group block">

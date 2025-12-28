@@ -133,22 +133,22 @@ export default function Home() {
           <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/50 to-black" />
         </div>
 
-        <div className="relative z-10 container mx-auto px-6 h-full flex flex-col justify-center items-start">
+        <div className="relative z-10 container mx-auto px-4 sm:px-6 h-full flex flex-col justify-center items-start">
           <motion.h1 
             initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: "easeOut" }}
-            className="text-5xl md:text-7xl lg:text-8xl font-bold tracking-tighter leading-tight mb-6 mix-blend-difference whitespace-pre-line"
+            className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl xl:text-8xl font-bold tracking-tighter leading-tight mb-4 sm:mb-6 mix-blend-difference"
           >
-            活著本身就是一場浩劫，<br />
-            夢是這世界唯一的解脫。
+            <span className="block">活著本身就是一場浩劫，</span>
+            <span className="block">夢是這世界唯一的解脫。</span>
           </motion.h1>
           
           <motion.p 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.5, duration: 0.8 }}
-            className="text-lg md:text-xl font-mono max-w-md text-neutral-300 mb-12"
+            className="text-sm sm:text-base md:text-lg lg:text-xl font-mono max-w-md text-neutral-300 mb-8 sm:mb-12"
           >
             "Living itself is a havoc, dreaming is the only relief in this world."
           </motion.p>
@@ -158,16 +158,16 @@ export default function Home() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.8, duration: 0.8 }}
-            className="group flex items-center gap-4 text-white font-mono tracking-widest text-sm hover:text-neutral-300 transition-colors"
+            className="group flex items-center gap-2 sm:gap-4 text-white font-mono tracking-widest text-xs sm:text-sm hover:text-neutral-300 transition-colors"
           >
             EXPLORE WORKS
-            <ArrowRight className="group-hover:translate-x-2 transition-transform" />
+            <ArrowRight className="group-hover:translate-x-2 transition-transform w-4 h-4 sm:w-5 sm:h-5" />
           </motion.a>
         </div>
       </section>
 
       {/* Portfolio Section */}
-      <section id="portfolio" className="py-32 container">
+      <section id="portfolio" className="py-16 sm:py-24 md:py-32 container">
         {isLoading && (
           <div className="flex justify-center py-12">
             <Loader2 className="animate-spin h-8 w-8" />
@@ -175,17 +175,18 @@ export default function Home() {
         )}
         {!isLoading && (
         <>
-        <div className="flex flex-col md:flex-row justify-between items-end mb-20 gap-8">
-          <h2 className="text-5xl md:text-7xl font-bold tracking-tighter">工作記錄</h2>
+        <div className="flex flex-col gap-6 sm:gap-8 mb-12 sm:mb-16 md:mb-20">
+          <h2 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tighter">工作記錄</h2>
           
-          <div className="flex flex-col md:flex-row gap-4 md:gap-8 items-start md:items-center">
-            <div className="flex gap-8 font-mono text-sm tracking-widest">
+          <div className="flex flex-col gap-4">
+            {/* Category Filter */}
+            <div className="flex gap-4 sm:gap-6 md:gap-8 font-mono text-xs sm:text-sm tracking-widest overflow-x-auto pb-2 scrollbar-hide">
               {[{ name: "All", slug: "All" }, ...categories].map((cat) => (
                 <button
                   key={cat.slug}
                   onClick={() => handleCategoryClick(cat.slug)}
                   className={cn(
-                    "hover:line-through decoration-1 underline-offset-4 transition-all",
+                    "hover:line-through decoration-1 underline-offset-4 transition-all whitespace-nowrap",
                     advancedFilters.category === cat.slug ? "line-through text-white" : "text-neutral-500"
                   )}
                 >
@@ -193,7 +194,9 @@ export default function Home() {
                 </button>
               ))}
             </div>
-            <div className="flex items-center gap-4 flex-wrap">
+            
+            {/* Advanced Filters */}
+            <div className="flex items-center gap-3 sm:gap-4 flex-wrap">
               <AdvancedFilter
                 filters={advancedFilters}
                 onFiltersChange={setAdvancedFilters}
@@ -208,9 +211,9 @@ export default function Home() {
                   setIsGrayscale(newMode);
                   localStorage.setItem('photoViewMode', newMode ? 'grayscale' : 'color');
                 }}
-                className="flex items-center gap-2 px-4 py-2 border border-white/20 rounded-full hover:bg-white/10 transition-colors text-sm font-mono"
+                className="flex items-center gap-2 px-3 sm:px-4 py-2 border border-white/20 rounded-full hover:bg-white/10 transition-colors text-xs sm:text-sm font-mono"
               >
-                <Palette size={16} />
+                <Palette size={14} className="sm:w-4 sm:h-4" />
                 {isGrayscale ? '黑白' : '彩色'}
               </button>
             </div>
@@ -219,7 +222,7 @@ export default function Home() {
 
         <motion.div 
           layout
-          className="columns-1 md:columns-2 lg:columns-3 gap-8 space-y-8"
+          className="columns-1 sm:columns-2 lg:columns-3 gap-4 sm:gap-6 md:gap-8 space-y-4 sm:space-y-6 md:space-y-8"
         >
           <AnimatePresence>
             {filteredPhotos.map((photo) => (
@@ -247,13 +250,13 @@ export default function Home() {
                 />
                 
                 <div className={cn(
-                  "absolute inset-0 bg-black/60 flex flex-col justify-end p-6 transition-opacity duration-300",
+                  "absolute inset-0 bg-black/60 flex flex-col justify-end p-3 sm:p-4 md:p-6 transition-opacity duration-300",
                   hoveredPhoto === photo.id ? "opacity-100" : "opacity-0"
                 )}>
-                  <p className="text-xs font-mono text-neutral-400 mb-2">
+                  <p className="text-[10px] sm:text-xs font-mono text-neutral-400 mb-1 sm:mb-2">
                     {photo.date} — {photo.location}
                   </p>
-                  <h3 className="text-xl font-bold tracking-tight text-white">
+                  <h3 className="text-sm sm:text-base md:text-lg lg:text-xl font-bold tracking-tight text-white">
                     {photo.alt}
                   </h3>
                 </div>
@@ -266,11 +269,11 @@ export default function Home() {
       </section>
 
       {/* Reviews Section */}
-      <section className="py-32 bg-neutral-900 text-white">
+      <section className="py-16 sm:py-24 md:py-32 bg-neutral-900 text-white">
         <div className="container">
-          <h2 className="text-sm font-mono tracking-widest text-neutral-500 mb-16">CLIENT WORDS</h2>
+          <h2 className="text-xs sm:text-sm font-mono tracking-widest text-neutral-500 mb-8 sm:mb-12 md:mb-16">CLIENT WORDS</h2>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 sm:gap-10 md:gap-12">
             {reviews.map((review) => (
               <div key={review.id} className="flex flex-col gap-6">
                 <div className="flex gap-1 text-white">
