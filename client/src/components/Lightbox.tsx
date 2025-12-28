@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { X, ChevronLeft, ChevronRight } from "lucide-react";
+import { X, ChevronLeft, ChevronRight, ZoomIn, ZoomOut, Maximize2 } from "lucide-react";
 import { useEffect, useState } from "react";
 
 type Photo = {
@@ -28,23 +28,34 @@ interface LightboxProps {
 }
 
 export default function Lightbox({ photo, onClose, onNext, onPrev, hasNext, hasPrev, nextPhotoSrc, prevPhotoSrc }: LightboxProps) {
+  // Zoom State
+  const [scale, setScale] = useState(1);
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+
   // Swipe Handling
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const [touchEnd, setTouchEnd] = useState<number | null>(null);
+  const [pinchDistance, setPinchDistance] = useState<number | null>(null);
 
   const minSwipeDistance = 50;
 
   const onTouchStart = (e: React.TouchEvent) => {
-    setTouchEnd(null);
-    setTouchStart(e.targetTouches[0].clientX);
+    if (e.touches.length === 1 && scale === 1) {
+      setTouchEnd(null);
+      setTouchStart(e.targetTouches[0].clientX);
+    }
   };
 
   const onTouchMove = (e: React.TouchEvent) => {
-    setTouchEnd(e.targetTouches[0].clientX);
+    if (e.touches.length === 1 && scale === 1) {
+      setTouchEnd(e.targetTouches[0].clientX);
+    }
   };
 
   const onTouchEnd = () => {
-    if (!touchStart || !touchEnd) return;
+    if (!touchStart || !touchEnd || scale > 1) return;
     const distance = touchStart - touchEnd;
     const isLeftSwipe = distance > minSwipeDistance;
     const isRightSwipe = distance < -minSwipeDistance;
@@ -73,12 +84,98 @@ export default function Lightbox({ photo, onClose, onNext, onPrev, hasNext, hasP
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
-      if (e.key === "ArrowRight" && hasNext) onNext();
-      if (e.key === "ArrowLeft" && hasPrev) onPrev();
+      if (e.key === "ArrowRight" && hasNext && scale === 1) onNext();
+      if (e.key === "ArrowLeft" && hasPrev && scale === 1) onPrev();
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [onClose, onNext, onPrev, hasNext, hasPrev]);
+  }, [onClose, onNext, onPrev, hasNext, hasPrev, scale]);
+
+  // Reset zoom when photo changes
+  useEffect(() => {
+    setScale(1);
+    setPosition({ x: 0, y: 0 });
+  }, [photo.id]);
+
+  // Zoom Functions
+  const handleZoomIn = () => {
+    setScale(prev => Math.min(prev + 0.5, 3));
+  };
+
+  const handleZoomOut = () => {
+    setScale(prev => {
+      const newScale = Math.max(prev - 0.5, 1);
+      if (newScale === 1) {
+        setPosition({ x: 0, y: 0 });
+      }
+      return newScale;
+    });
+  };
+
+  const handleResetZoom = () => {
+    setScale(1);
+    setPosition({ x: 0, y: 0 });
+  };
+
+  // Mouse Wheel Zoom
+  const handleWheel = (e: React.WheelEvent) => {
+    e.preventDefault();
+    const delta = e.deltaY > 0 ? -0.1 : 0.1;
+    setScale(prev => {
+      const newScale = Math.max(1, Math.min(prev + delta, 3));
+      if (newScale === 1) {
+        setPosition({ x: 0, y: 0 });
+      }
+      return newScale;
+    });
+  };
+
+  // Drag Functions
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (scale > 1) {
+      setIsDragging(true);
+      setDragStart({ x: e.clientX - position.x, y: e.clientY - position.y });
+    }
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (isDragging && scale > 1) {
+      setPosition({
+        x: e.clientX - dragStart.x,
+        y: e.clientY - dragStart.y
+      });
+    }
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+  };
+
+  // Touch Pinch Zoom
+  const getTouchDistance = (touches: React.TouchList) => {
+    const touch1 = touches[0];
+    const touch2 = touches[1];
+    return Math.hypot(touch2.clientX - touch1.clientX, touch2.clientY - touch1.clientY);
+  };
+
+  const handleTouchStartZoom = (e: React.TouchEvent) => {
+    if (e.touches.length === 2) {
+      setPinchDistance(getTouchDistance(e.touches));
+    }
+  };
+
+  const handleTouchMoveZoom = (e: React.TouchEvent) => {
+    if (e.touches.length === 2 && pinchDistance) {
+      const newDistance = getTouchDistance(e.touches);
+      const scaleChange = newDistance / pinchDistance;
+      setScale(prev => Math.max(1, Math.min(prev * scaleChange, 3)));
+      setPinchDistance(newDistance);
+    }
+  };
+
+  const handleTouchEndZoom = () => {
+    setPinchDistance(null);
+  };
 
   return (
     <motion.div
@@ -121,20 +218,66 @@ export default function Lightbox({ photo, onClose, onNext, onPrev, hasNext, hasP
         onTouchMove={onTouchMove}
         onTouchEnd={onTouchEnd}
       >
-        <div className="relative flex-1 w-full h-full flex items-center justify-center">
+        <div 
+          className="relative flex-1 w-full h-full flex items-center justify-center overflow-hidden"
+          onWheel={handleWheel}
+          onMouseDown={handleMouseDown}
+          onMouseMove={handleMouseMove}
+          onMouseUp={handleMouseUp}
+          onMouseLeave={handleMouseUp}
+          onTouchStart={handleTouchStartZoom}
+          onTouchMove={handleTouchMoveZoom}
+          onTouchEnd={handleTouchEndZoom}
+          style={{ cursor: scale > 1 ? (isDragging ? 'grabbing' : 'grab') : 'default' }}
+        >
           <AnimatePresence mode="wait">
             <motion.img
               key={photo.id}
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
               transition={{ duration: 0.3 }}
               src={photo.src}
               alt={photo.alt}
               className="w-full h-full object-contain shadow-2xl"
-              style={{ maxHeight: 'calc(100vh - 2rem)', maxWidth: '100%' }}
+              style={{ 
+                maxHeight: 'calc(100vh - 2rem)', 
+                maxWidth: '100%',
+                transform: `scale(${scale}) translate(${position.x / scale}px, ${position.y / scale}px)`,
+                transition: isDragging ? 'none' : 'transform 0.2s ease-out'
+              }}
+              draggable={false}
             />
           </AnimatePresence>
+          
+          {/* Zoom Controls */}
+          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2 bg-black/60 backdrop-blur-sm rounded-full px-4 py-2 z-50">
+            <button
+              onClick={(e) => { e.stopPropagation(); handleZoomOut(); }}
+              className="text-white/70 hover:text-white transition-colors p-1"
+              disabled={scale === 1}
+            >
+              <ZoomOut size={20} />
+            </button>
+            <span className="text-white/70 text-sm font-mono min-w-[3rem] text-center">
+              {Math.round(scale * 100)}%
+            </span>
+            <button
+              onClick={(e) => { e.stopPropagation(); handleZoomIn(); }}
+              className="text-white/70 hover:text-white transition-colors p-1"
+              disabled={scale === 3}
+            >
+              <ZoomIn size={20} />
+            </button>
+            {scale > 1 && (
+              <button
+                onClick={(e) => { e.stopPropagation(); handleResetZoom(); }}
+                className="text-white/70 hover:text-white transition-colors p-1 ml-2"
+              >
+                <Maximize2 size={20} />
+              </button>
+            )}
+          </div>
         </div>
 
         <motion.div
