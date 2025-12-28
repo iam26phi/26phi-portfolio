@@ -6,7 +6,7 @@ import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import Lightbox from "@/components/Lightbox";
 import { reviews } from "@/lib/data";
-import { ArrowRight, Star, Loader2 } from "lucide-react";
+import { ArrowRight, Star, Loader2, Palette } from "lucide-react";
 import { AdvancedFilter, FilterOptions } from "@/components/AdvancedFilter";
 import { cn } from "@/lib/utils";
 
@@ -38,6 +38,11 @@ export default function Home() {
     location: "All",
     year: "All",
     project: "All",
+  });
+  const [isGrayscale, setIsGrayscale] = useState<boolean>(() => {
+    // Load from localStorage
+    const saved = localStorage.getItem('photoViewMode');
+    return saved === 'grayscale';
   });
 
   // Fetch photos from backend API
@@ -188,14 +193,27 @@ export default function Home() {
                 </button>
               ))}
             </div>
-            <AdvancedFilter
-              filters={advancedFilters}
-              onFiltersChange={setAdvancedFilters}
-              availableLocations={availableLocations}
-              availableYears={availableYears}
-              availableCategories={categories}
-              availableProjects={projects}
-            />
+            <div className="flex items-center gap-4 flex-wrap">
+              <AdvancedFilter
+                filters={advancedFilters}
+                onFiltersChange={setAdvancedFilters}
+                availableLocations={availableLocations}
+                availableYears={availableYears}
+                availableCategories={categories}
+                availableProjects={projects}
+              />
+              <button
+                onClick={() => {
+                  const newMode = !isGrayscale;
+                  setIsGrayscale(newMode);
+                  localStorage.setItem('photoViewMode', newMode ? 'grayscale' : 'color');
+                }}
+                className="flex items-center gap-2 px-4 py-2 border border-white/20 rounded-full hover:bg-white/10 transition-colors text-sm font-mono"
+              >
+                <Palette size={16} />
+                {isGrayscale ? '黑白' : '彩色'}
+              </button>
+            </div>
           </div>
         </div>
 
@@ -222,7 +240,10 @@ export default function Home() {
                   src={photo.src}
                   alt={photo.alt}
                   loading="lazy"
-                  className="w-full h-auto grayscale group-hover:grayscale-0 transition-all duration-700 ease-out scale-100 group-hover:scale-105"
+                  className={cn(
+                    "w-full h-auto transition-all duration-700 ease-out scale-100 group-hover:scale-105",
+                    isGrayscale ? "grayscale group-hover:grayscale-0" : ""
+                  )}
                 />
                 
                 <div className={cn(
@@ -317,6 +338,7 @@ export default function Home() {
                 ? filteredPhotos[filteredPhotos.findIndex(p => p.id === selectedPhoto.id) - 1].src
                 : undefined
             }
+            isGrayscale={isGrayscale}
           />
         )}
       </AnimatePresence>
