@@ -28,7 +28,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
-import { Loader2, Plus, Edit, Trash2, Eye, EyeOff, Upload, GripVertical, Save, X, Menu, Settings, FileText, Image, Palette, FolderOpen, History, Mail } from "lucide-react";
+import { Loader2, Plus, Edit, Trash2, Eye, EyeOff, Upload, GripVertical, Save, X, Menu, Settings, FileText, Image, Palette, FolderOpen, History, Mail, Users } from "lucide-react";
 import imageCompression from "browser-image-compression";
 import { SortablePhotoCard } from "@/components/SortablePhotoCard";
 import { useRef } from "react";
@@ -55,6 +55,7 @@ type PhotoFormData = {
   src: string;
   alt: string;
   category: string;
+  collaboratorId?: number | null;
   location: string;
   date: string;
   description: string;
@@ -96,6 +97,9 @@ export default function Admin() {
   });
   
   const { data: categories } = trpc.photoCategories.list.useQuery();
+  const { data: collaborators } = trpc.collaborators.listAll.useQuery(undefined, {
+    enabled: isAuthenticated && user?.role === "admin",
+  });
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -341,10 +345,12 @@ export default function Admin() {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
     
+    const collaboratorIdValue = formData.get("collaboratorId") as string;
     const data = {
       src: formData.get("src") as string,
       alt: formData.get("alt") as string,
       category: formData.get("category") as string,
+      collaboratorId: collaboratorIdValue && collaboratorIdValue !== "" ? Number(collaboratorIdValue) : null,
       location: formData.get("location") as string,
       date: formData.get("date") as string,
       description: formData.get("description") as string,
@@ -444,6 +450,10 @@ export default function Admin() {
               <DropdownMenuItem onClick={() => window.location.href = "/admin/projects"}>
                 <FolderOpen className="w-4 h-4 mr-2" />
                 專案管理
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => window.location.href = "/admin/collaborators"}>
+                <Users className="w-4 h-4 mr-2" />
+                合作對象
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuLabel>系統設定</DropdownMenuLabel>
@@ -619,6 +629,21 @@ export default function Admin() {
                     <option value="" disabled>選擇分類</option>
                     {categories?.map((cat) => (
                       <option key={cat.id} value={cat.slug}>{cat.name}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <Label htmlFor="collaboratorId">合作對象（可選）</Label>
+                  <select
+                    id="collaboratorId"
+                    name="collaboratorId"
+                    defaultValue={String(editingPhoto?.collaboratorId || "")}
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    <option value="">無</option>
+                    {collaborators?.map((collab) => (
+                      <option key={collab.id} value={String(collab.id)}>{collab.name}</option>
                     ))}
                   </select>
                 </div>

@@ -1,6 +1,6 @@
 import { eq, and } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users, photos, InsertPhoto, blogPosts, InsertBlogPost, siteSettings, InsertSiteSetting, photoCategories, InsertPhotoCategory, projects, InsertProject, photoProjects, InsertPhotoProject, changelogs, InsertChangelog, contactSubmissions, InsertContactSubmission } from "../drizzle/schema";
+import { InsertUser, users, photos, InsertPhoto, blogPosts, InsertBlogPost, siteSettings, InsertSiteSetting, photoCategories, InsertPhotoCategory, projects, InsertProject, photoProjects, InsertPhotoProject, changelogs, InsertChangelog, contactSubmissions, InsertContactSubmission, collaborators, InsertCollaborator, Collaborator } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -558,4 +558,103 @@ export async function deleteContactSubmission(id: number) {
   if (!db) throw new Error('Database not available');
   await db.delete(contactSubmissions).where(eq(contactSubmissions.id, id));
   return { success: true };
+}
+
+// Collaborator management functions
+export async function getAllCollaborators() {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot get collaborators: database not available");
+    return [];
+  }
+
+  return await db.select().from(collaborators).orderBy(collaborators.sortOrder);
+}
+
+export async function getVisibleCollaborators() {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot get visible collaborators: database not available");
+    return [];
+  }
+
+  return await db.select().from(collaborators).where(eq(collaborators.isVisible, 1)).orderBy(collaborators.sortOrder);
+}
+
+export async function getCollaboratorById(id: number) {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot get collaborator: database not available");
+    return null;
+  }
+
+  const result = await db.select().from(collaborators).where(eq(collaborators.id, id)).limit(1);
+  if (result.length === 0) {
+    return null;
+  }
+  return result[0];
+}
+
+export async function getCollaboratorBySlug(slug: string) {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot get collaborator: database not available");
+    return undefined;
+  }
+
+  const result = await db.select().from(collaborators).where(eq(collaborators.slug, slug)).limit(1);
+  return result.length > 0 ? result[0] : undefined;
+}
+
+export async function createCollaborator(collaborator: InsertCollaborator) {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot create collaborator: database not available");
+    return undefined;
+  }
+
+  const result = await db.insert(collaborators).values(collaborator);
+  const insertId = Number(result[0].insertId);
+  return await getCollaboratorById(insertId);
+}
+
+export async function updateCollaborator(id: number, updates: Partial<InsertCollaborator>) {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot update collaborator: database not available");
+    return undefined;
+  }
+
+  await db.update(collaborators).set(updates).where(eq(collaborators.id, id));
+  return await getCollaboratorById(id);
+}
+
+export async function deleteCollaborator(id: number) {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot delete collaborator: database not available");
+    return;
+  }
+
+  await db.delete(collaborators).where(eq(collaborators.id, id));
+}
+
+export async function getPhotosByCollaboratorId(collaboratorId: number) {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot get photos by collaborator: database not available");
+    return [];
+  }
+
+  return await db.select().from(photos).where(eq(photos.collaboratorId, collaboratorId)).orderBy(photos.sortOrder);
+}
+
+export async function getVisiblePhotosByCollaboratorId(collaboratorId: number) {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot get visible photos by collaborator: database not available");
+    return [];
+  }
+
+  return await db.select().from(photos).where(and(eq(photos.collaboratorId, collaboratorId), eq(photos.isVisible, 1))).orderBy(photos.sortOrder);
 }

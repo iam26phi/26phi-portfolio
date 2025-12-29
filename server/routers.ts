@@ -49,6 +49,7 @@ export const appRouter = router({
         src: z.string(),
         alt: z.string(),
         category: z.string(),
+        collaboratorId: z.number().nullable().optional(),
         location: z.string().optional(),
         date: z.string().optional(),
         description: z.string().optional(),
@@ -68,6 +69,7 @@ export const appRouter = router({
         src: z.string().optional(),
         alt: z.string().optional(),
         category: z.string().optional(),
+        collaboratorId: z.number().nullable().optional(),
         location: z.string().optional(),
         date: z.string().optional(),
         description: z.string().optional(),
@@ -815,6 +817,101 @@ export const appRouter = router({
           throw new Error('Unauthorized');
         }
         return await db.deleteContactSubmission(id);
+      }),
+  }),
+
+  collaborators: router({
+    // Public endpoint: get visible collaborators for display
+    list: publicProcedure.query(async () => {
+      return await db.getVisibleCollaborators();
+    }),
+
+    // Public endpoint: get collaborator by slug with photos
+    getBySlug: publicProcedure
+      .input(z.object({ slug: z.string() }))
+      .query(async ({ input }) => {
+        const collaborator = await db.getCollaboratorBySlug(input.slug);
+        if (!collaborator) {
+          throw new Error('Collaborator not found');
+        }
+        const photos = await db.getVisiblePhotosByCollaboratorId(collaborator.id);
+        return { collaborator, photos };
+      }),
+
+    // Admin endpoints: manage all collaborators
+    listAll: protectedProcedure.query(async ({ ctx }) => {
+      if (ctx.user.role !== 'admin') {
+        throw new Error('Unauthorized');
+      }
+      return await db.getAllCollaborators();
+    }),
+
+    getById: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .query(async ({ input, ctx }) => {
+        if (ctx.user.role !== 'admin') {
+          throw new Error('Unauthorized');
+        }
+        return await db.getCollaboratorById(input.id);
+      }),
+
+    create: protectedProcedure
+      .input(z.object({
+        name: z.string(),
+        slug: z.string(),
+        description: z.string().optional(),
+        avatar: z.string().optional(),
+        website: z.string().optional(),
+        instagram: z.string().optional(),
+        email: z.string().optional(),
+        isVisible: z.number().optional(),
+        sortOrder: z.number().optional(),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        if (ctx.user.role !== 'admin') {
+          throw new Error('Unauthorized');
+        }
+        return await db.createCollaborator(input);
+      }),
+
+    update: protectedProcedure
+      .input(z.object({
+        id: z.number(),
+        name: z.string().optional(),
+        slug: z.string().optional(),
+        description: z.string().optional(),
+        avatar: z.string().optional(),
+        website: z.string().optional(),
+        instagram: z.string().optional(),
+        email: z.string().optional(),
+        isVisible: z.number().optional(),
+        sortOrder: z.number().optional(),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        if (ctx.user.role !== 'admin') {
+          throw new Error('Unauthorized');
+        }
+        const { id, ...updates } = input;
+        return await db.updateCollaborator(id, updates);
+      }),
+
+    delete: protectedProcedure
+      .input(z.number())
+      .mutation(async ({ input: id, ctx }) => {
+        if (ctx.user.role !== 'admin') {
+          throw new Error('Unauthorized');
+        }
+        return await db.deleteCollaborator(id);
+      }),
+
+    // Get photos by collaborator ID
+    getPhotos: protectedProcedure
+      .input(z.object({ collaboratorId: z.number() }))
+      .query(async ({ input, ctx }) => {
+        if (ctx.user.role !== 'admin') {
+          throw new Error('Unauthorized');
+        }
+        return await db.getPhotosByCollaboratorId(input.collaboratorId);
       }),
   }),
 });

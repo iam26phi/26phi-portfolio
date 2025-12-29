@@ -49,6 +49,7 @@ const iconMap: Record<string, any> = {
 
 export default function About() {
   const { data: aboutData } = trpc.about.get.useQuery();
+  const { data: collaborators } = trpc.collaborators.list.useQuery();
 
   const timeline = aboutData?.timeline || defaultTimeline;
   const stats = (aboutData?.stats || defaultStats).map((s: any) => ({ ...s, icon: iconMap[s.icon] || Camera }));
@@ -217,6 +218,58 @@ export default function About() {
             </div>
           </div>
         </section>
+
+        {/* Collaborators Section */}
+        {collaborators && collaborators.length > 0 && (
+          <section className="py-16 sm:py-24 md:py-32 bg-neutral-900">
+            <div className="container mx-auto px-6">
+              <motion.h2 
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
+                viewport={{ once: true }}
+                className="text-sm font-mono tracking-widest text-neutral-500 mb-16"
+              >
+                COLLABORATORS
+              </motion.h2>
+              
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+                {collaborators.map((collaborator: any, index: number) => (
+                  <motion.a
+                    key={collaborator.id}
+                    href={`/collaborators/${collaborator.slug}`}
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: index * 0.1 }}
+                    viewport={{ once: true }}
+                    className="group cursor-pointer"
+                  >
+                    <div className="aspect-square overflow-hidden bg-neutral-800 mb-4">
+                      {collaborator.avatar ? (
+                        <img
+                          src={collaborator.avatar}
+                          alt={collaborator.name}
+                          className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-neutral-600">
+                          <Users className="w-12 h-12" />
+                        </div>
+                      )}
+                    </div>
+                    <h3 className="text-lg font-bold tracking-tight mb-1 group-hover:text-neutral-300 transition-colors">
+                      {collaborator.name}
+                    </h3>
+                    {collaborator.description && (
+                      <p className="text-sm text-neutral-500 line-clamp-2">
+                        {collaborator.description}
+                      </p>
+                    )}
+                  </motion.a>
+                ))}
+              </div>
+            </div>
+          </section>
+        )}
 
         {/* FAQ Section */}
         <section className="py-16 sm:py-24 md:py-32 container mx-auto px-4 sm:px-6">

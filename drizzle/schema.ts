@@ -67,6 +67,7 @@ export const photos = mysqlTable("photos", {
   alt: text("alt").notNull(),
   category: varchar("category", { length: 100 }).notNull(), // Changed from enum to varchar for dynamic categories
   projectId: int("projectId"), // Optional reference to projects table
+  collaboratorId: int("collaboratorId"), // Optional reference to collaborators table
   location: varchar("location", { length: 255 }),
   date: varchar("date", { length: 50 }),
   description: text("description"),
@@ -162,3 +163,24 @@ export const contactSubmissions = mysqlTable("contact_submissions", {
 
 export type ContactSubmission = typeof contactSubmissions.$inferSelect;
 export type InsertContactSubmission = typeof contactSubmissions.$inferInsert;
+
+/**
+ * Collaborators table for managing collaboration partners
+ */
+export const collaborators = mysqlTable("collaborators", {
+  id: int("id").autoincrement().primaryKey(),
+  name: varchar("name", { length: 100 }).notNull(),
+  slug: varchar("slug", { length: 100 }).notNull().unique(), // URL-friendly identifier
+  description: text("description"), // Brief bio or description
+  avatar: text("avatar"), // S3 URL for avatar image
+  website: varchar("website", { length: 255 }), // Personal website
+  instagram: varchar("instagram", { length: 100 }), // Instagram handle
+  email: varchar("email", { length: 320 }), // Contact email
+  isVisible: int("isVisible").default(1).notNull(), // 1 = visible, 0 = hidden
+  sortOrder: int("sortOrder").default(0).notNull(), // For manual ordering
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Collaborator = typeof collaborators.$inferSelect;
+export type InsertCollaborator = typeof collaborators.$inferInsert;

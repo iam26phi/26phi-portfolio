@@ -17,6 +17,8 @@ import AdminProjects from "./pages/AdminProjects";
 import AdminProjectPhotos from "./pages/AdminProjectPhotos";
 import AdminChangelogs from "./pages/AdminChangelogs";
 import AdminContact from "./pages/AdminContact";
+import AdminCollaborators from "./pages/AdminCollaborators";
+import CollaboratorDetail from "./pages/CollaboratorDetail";
 import Projects from "./pages/Projects";
 import ProjectDetail from "./pages/ProjectDetail";
 import Changelog from "./pages/Changelog";
@@ -36,6 +38,7 @@ function Router() {
       <Route path={"/projects/:slug"} component={ProjectDetail} />
       <Route path={"/changelog"} component={Changelog} />
       <Route path={"/contact"} component={Contact} />
+      <Route path={"/collaborators/:slug"} component={CollaboratorDetail} />
       <Route path={"/admin"} component={Admin} />
       <Route path={"/admin/hero"} component={AdminHero} />
       <Route path={"/admin/about"} component={AdminAbout} />
@@ -45,6 +48,7 @@ function Router() {
       <Route path={"/admin/projects/:id/photos"} component={AdminProjectPhotos} />
       <Route path={"/admin/changelogs"} component={AdminChangelogs} />
       <Route path={"/admin/contact"} component={AdminContact} />
+      <Route path={"/admin/collaborators"} component={AdminCollaborators} />
       <Route path={"/admin/blog"} component={AdminBlog} />
       <Route path={"/admin/blog/new"} component={AdminBlogEditor} />
       <Route path={"/admin/blog/edit/:id"} component={AdminBlogEditor} />
