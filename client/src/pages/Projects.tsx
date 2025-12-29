@@ -52,10 +52,10 @@ export default function Projects() {
       <section className="pt-24 sm:pt-28 md:pt-32 pb-12 sm:pb-14 md:pb-16 px-4 sm:px-6">
         <div className="container mx-auto max-w-4xl text-center">
           <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-4 sm:mb-6">
-            攀影專案
+            攝影專案
           </h1>
           <p className="text-base sm:text-lg md:text-xl text-muted-foreground">
-            探索我的攀影專案，每個專案都講述著獨特的故事
+            專案記錄（文字待更新）
           </p>
         </div>
       </section>
