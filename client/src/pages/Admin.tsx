@@ -19,8 +19,16 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
-import { Loader2, Plus, Edit, Trash2, Eye, EyeOff, Upload, GripVertical, Save, X } from "lucide-react";
+import { Loader2, Plus, Edit, Trash2, Eye, EyeOff, Upload, GripVertical, Save, X, Menu, Settings, FileText, Image, Palette, FolderOpen, History, Mail } from "lucide-react";
 import imageCompression from "browser-image-compression";
 import { SortablePhotoCard } from "@/components/SortablePhotoCard";
 import { useRef } from "react";
@@ -404,64 +412,56 @@ export default function Admin() {
             <h1 className="text-4xl font-bold tracking-tight mb-2">照片管理</h1>
             <p className="text-muted-foreground">管理您的作品集照片</p>
           </div>
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              onClick={() => window.location.href = "/admin/hero"}
-              className="font-mono"
-            >
-              英雄區域設定
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => window.location.href = "/admin/blog"}
-              className="font-mono"
-            >
-              部落格管理
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => window.location.href = "/admin/about"}
-              className="font-mono"
-            >
-              About 編輯
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => window.location.href = "/admin/categories"}
-              className="font-mono"
-            >
-              分類管理
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => window.location.href = "/admin/watermark"}
-              className="font-mono"
-            >
-              浮水印設定
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => window.location.href = "/admin/projects"}
-              className="font-mono"
-            >
-              專案管理
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => window.location.href = "/admin/changelogs"}
-              className="font-mono"
-            >
-              更新日誌
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => window.location.href = "/admin/contact"}
-              className="font-mono"
-            >
-              聯絡表單
-            </Button>
-          </div>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" className="font-mono">
+                <Menu className="w-4 h-4 mr-2" />
+                管理選單
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuLabel>網站管理</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => window.location.href = "/admin/hero"}>
+                <Image className="w-4 h-4 mr-2" />
+                英雄區域設定
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => window.location.href = "/admin/blog"}>
+                <FileText className="w-4 h-4 mr-2" />
+                部落格管理
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => window.location.href = "/admin/about"}>
+                <FileText className="w-4 h-4 mr-2" />
+                About 編輯
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuLabel>內容管理</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => window.location.href = "/admin/categories"}>
+                <FolderOpen className="w-4 h-4 mr-2" />
+                分類管理
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => window.location.href = "/admin/projects"}>
+                <FolderOpen className="w-4 h-4 mr-2" />
+                專案管理
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuLabel>系統設定</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => window.location.href = "/admin/watermark"}>
+                <Palette className="w-4 h-4 mr-2" />
+                浮水印設定
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => window.location.href = "/admin/changelogs"}>
+                <History className="w-4 h-4 mr-2" />
+                更新日誌
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => window.location.href = "/admin/contact"}>
+                <Mail className="w-4 h-4 mr-2" />
+                聯絡表單
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
           
           <div className="flex flex-col gap-4">
             {uploadQueue.length > 0 && (
