@@ -53,12 +53,16 @@ export default function Navigation() {
               </a>
             </Link>
           ))}
-          <a 
-            href="mailto:contact@26phi.com"
-            className="text-xs lg:text-sm font-mono tracking-widest hover:line-through decoration-1 underline-offset-4 transition-all"
-          >
-            CONTACT
-          </a>
+          <Link href="/contact">
+            <a
+              className={cn(
+                "text-xs lg:text-sm font-mono tracking-widest hover:line-through decoration-1 underline-offset-4 transition-all",
+                location === "/contact" && "line-through"
+              )}
+            >
+              CONTACT
+            </a>
+          </Link>
         </div>
 
         {/* Mobile Menu Button */}
@@ -105,19 +109,26 @@ export default function Navigation() {
                 </Link>
               </motion.div>
             ))}
-            <motion.a 
+            <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: navLinks.length * 0.05 }}
-              href="mailto:contact@26phi.com"
-              className="text-xl sm:text-2xl font-mono tracking-widest active:text-gray-400 transition-colors"
-              onClick={(e) => {
-                e.stopPropagation();
-                setIsMobileMenuOpen(false);
-              }}
             >
-              CONTACT
-            </motion.a>
+              <Link href="/contact">
+                <a
+                  className={cn(
+                    "text-xl sm:text-2xl font-mono tracking-widest active:text-gray-400 transition-colors",
+                    location === "/contact" && "text-gray-400"
+                  )}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setIsMobileMenuOpen(false);
+                  }}
+                >
+                  CONTACT
+                </a>
+              </Link>
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>

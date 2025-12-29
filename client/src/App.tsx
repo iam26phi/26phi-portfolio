@@ -16,11 +16,13 @@ import AdminWatermark from "./pages/AdminWatermark";
 import AdminProjects from "./pages/AdminProjects";
 import AdminProjectPhotos from "./pages/AdminProjectPhotos";
 import AdminChangelogs from "./pages/AdminChangelogs";
+import AdminContact from "./pages/AdminContact";
 import Projects from "./pages/Projects";
 import ProjectDetail from "./pages/ProjectDetail";
 import Changelog from "./pages/Changelog";
 import Blog from "./pages/Blog";
 import BlogPost from "./pages/BlogPost";
+import Contact from "./pages/Contact";
 
 function Router() {
   // make sure to consider if you need authentication for certain routes
@@ -33,6 +35,7 @@ function Router() {
       <Route path={"/projects"} component={Projects} />
       <Route path={"/projects/:slug"} component={ProjectDetail} />
       <Route path={"/changelog"} component={Changelog} />
+      <Route path={"/contact"} component={Contact} />
       <Route path={"/admin"} component={Admin} />
       <Route path={"/admin/hero"} component={AdminHero} />
       <Route path={"/admin/about"} component={AdminAbout} />
@@ -41,6 +44,7 @@ function Router() {
       <Route path={"/admin/projects"} component={AdminProjects} />
       <Route path={"/admin/projects/:id/photos"} component={AdminProjectPhotos} />
       <Route path={"/admin/changelogs"} component={AdminChangelogs} />
+      <Route path={"/admin/contact"} component={AdminContact} />
       <Route path={"/admin/blog"} component={AdminBlog} />
       <Route path={"/admin/blog/new"} component={AdminBlogEditor} />
       <Route path={"/admin/blog/edit/:id"} component={AdminBlogEditor} />

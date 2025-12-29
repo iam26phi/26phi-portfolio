@@ -144,3 +144,21 @@ export const changelogs = mysqlTable("changelogs", {
 
 export type Changelog = typeof changelogs.$inferSelect;
 export type InsertChangelog = typeof changelogs.$inferInsert;
+
+/**
+ * Contact submissions table for storing contact form submissions
+ */
+export const contactSubmissions = mysqlTable("contact_submissions", {
+  id: int("id").autoincrement().primaryKey(),
+  name: varchar("name", { length: 100 }).notNull(),
+  email: varchar("email", { length: 320 }).notNull(),
+  shootingType: varchar("shootingType", { length: 100 }).notNull(), // 拍攝類型
+  budget: varchar("budget", { length: 100 }).notNull(), // 預算範圍
+  message: text("message").notNull(),
+  status: mysqlEnum("status", ["new", "read", "replied", "archived"]).default("new").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type ContactSubmission = typeof contactSubmissions.$inferSelect;
+export type InsertContactSubmission = typeof contactSubmissions.$inferInsert;

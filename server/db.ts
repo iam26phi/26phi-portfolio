@@ -1,6 +1,6 @@
 import { eq, and } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users, photos, InsertPhoto, blogPosts, InsertBlogPost, siteSettings, InsertSiteSetting, photoCategories, InsertPhotoCategory, projects, InsertProject, photoProjects, InsertPhotoProject, changelogs, InsertChangelog } from "../drizzle/schema";
+import { InsertUser, users, photos, InsertPhoto, blogPosts, InsertBlogPost, siteSettings, InsertSiteSetting, photoCategories, InsertPhotoCategory, projects, InsertProject, photoProjects, InsertPhotoProject, changelogs, InsertChangelog, contactSubmissions, InsertContactSubmission } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -509,5 +509,53 @@ export async function deleteChangelog(id: number) {
   const db = await getDb();
   if (!db) throw new Error('Database not available');
   await db.delete(changelogs).where(eq(changelogs.id, id));
+  return { success: true };
+}
+
+
+// ============ Contact Submissions ============
+
+export async function createContactSubmission(submission: InsertContactSubmission) {
+  const db = await getDb();
+  if (!db) throw new Error('Database not available');
+  const result = await db.insert(contactSubmissions).values(submission);
+  const insertId = Number(result[0].insertId);
+  // Fetch the complete record from database to get all fields including timestamps
+  const created = await db.select().from(contactSubmissions).where(eq(contactSubmissions.id, insertId));
+  return created[0];
+}
+
+export async function getAllContactSubmissions() {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot get contact submissions: database not available");
+    return [];
+  }
+  return await db.select().from(contactSubmissions).orderBy(contactSubmissions.createdAt);
+}
+
+export async function getContactSubmissionById(id: number) {
+  const db = await getDb();
+  if (!db) throw new Error('Database not available');
+  const results = await db.select().from(contactSubmissions).where(eq(contactSubmissions.id, id));
+  if (!results[0]) {
+    throw new Error(`Contact submission with id ${id} not found`);
+  }
+  return results[0];
+}
+
+export async function updateContactSubmissionStatus(id: number, status: 'new' | 'read' | 'replied' | 'archived') {
+  const db = await getDb();
+  if (!db) throw new Error('Database not available');
+  await db.update(contactSubmissions).set({ status, updatedAt: new Date() }).where(eq(contactSubmissions.id, id));
+  // Fetch the updated record to return complete data
+  const updated = await db.select().from(contactSubmissions).where(eq(contactSubmissions.id, id));
+  return updated[0];
+}
+
+export async function deleteContactSubmission(id: number) {
+  const db = await getDb();
+  if (!db) throw new Error('Database not available');
+  await db.delete(contactSubmissions).where(eq(contactSubmissions.id, id));
   return { success: true };
 }

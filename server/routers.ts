@@ -733,6 +733,59 @@ export const appRouter = router({
         return await db.deleteChangelog(input.id);
       }),
   }),
+
+  // Contact submissions router
+  contact: router({
+    create: publicProcedure
+      .input(z.object({
+        name: z.string().min(1, "Name is required"),
+        email: z.string().email("Invalid email address"),
+        shootingType: z.string().min(1, "Shooting type is required"),
+        budget: z.string().min(1, "Budget is required"),
+        message: z.string().min(10, "Message must be at least 10 characters"),
+      }))
+      .mutation(async ({ input }) => {
+        return await db.createContactSubmission(input);
+      }),
+    
+    listAll: protectedProcedure
+      .query(async ({ ctx }) => {
+        if (ctx.user.role !== 'admin') {
+          throw new Error('Unauthorized');
+        }
+        return await db.getAllContactSubmissions();
+      }),
+    
+    getById: protectedProcedure
+      .input(z.number())
+      .query(async ({ input: id, ctx }) => {
+        if (ctx.user.role !== 'admin') {
+          throw new Error('Unauthorized');
+        }
+        return await db.getContactSubmissionById(id);
+      }),
+    
+    updateStatus: protectedProcedure
+      .input(z.object({
+        id: z.number(),
+        status: z.enum(['new', 'read', 'replied', 'archived']),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        if (ctx.user.role !== 'admin') {
+          throw new Error('Unauthorized');
+        }
+        return await db.updateContactSubmissionStatus(input.id, input.status);
+      }),
+    
+    delete: protectedProcedure
+      .input(z.number())
+      .mutation(async ({ input: id, ctx }) => {
+        if (ctx.user.role !== 'admin') {
+          throw new Error('Unauthorized');
+        }
+        return await db.deleteContactSubmission(id);
+      }),
+  }),
 });
 
 export type AppRouter = typeof appRouter;

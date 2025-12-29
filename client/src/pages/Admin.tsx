@@ -454,6 +454,13 @@ export default function Admin() {
             >
               更新日誌
             </Button>
+            <Button
+              variant="outline"
+              onClick={() => window.location.href = "/admin/contact"}
+              className="font-mono"
+            >
+              聯絡表單
+            </Button>
           </div>
           
           <div className="flex flex-col gap-4">
