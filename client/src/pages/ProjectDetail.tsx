@@ -3,6 +3,8 @@ import { useParams } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { Loader2 } from "lucide-react";
 import { Link } from "wouter";
+import { AnimatedPhotoGrid } from "@/components/AnimatedPhotoGrid";
+import Lightbox from "@/components/Lightbox";
 
 export default function ProjectDetail() {
   const { slug } = useParams<{ slug: string }>();
@@ -92,28 +94,21 @@ export default function ProjectDetail() {
       <section className="pb-24 px-6">
         <div className="container mx-auto">
           {project.photos && project.photos.length > 0 ? (
-            <div className="columns-1 md:columns-2 lg:columns-3 gap-4 space-y-4">
-              {project.photos.map((photo: any, index: number) => (
-                <div
-                  key={photo.id}
-                  className="break-inside-avoid cursor-pointer group"
-                  onClick={() => openLightbox(index)}
-                >
-                  <div className="relative overflow-hidden rounded-lg bg-neutral-900">
-                    <img
-                      src={photo.src}
-                      alt={photo.alt}
-                      className="w-full h-auto transition-transform duration-500 group-hover:scale-105"
-                      loading="lazy"
-                    />
-                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300" />
-                  </div>
-                  {photo.alt && (
-                    <p className="mt-2 text-sm text-muted-foreground">{photo.alt}</p>
-                  )}
-                </div>
-              ))}
-            </div>
+            <AnimatedPhotoGrid
+              photos={project.photos.map((photo: any) => ({
+                id: photo.id,
+                src: photo.src,
+                alt: photo.alt,
+                category: photo.category,
+                location: photo.location,
+                date: photo.date,
+              }))}
+              onPhotoClick={(photo) => {
+                const index = project.photos.findIndex((p: any) => p.id === photo.id);
+                openLightbox(index);
+              }}
+              columns={{ default: 1, md: 2, lg: 3 }}
+            />
           ) : (
             <div className="text-center py-16">
               <p className="text-xl text-muted-foreground">此專案尚無照片</p>
@@ -123,53 +118,30 @@ export default function ProjectDetail() {
       </section>
 
       {/* Lightbox */}
-      {lightboxOpen && project.photos && project.photos.length > 0 && (
-        <div className="fixed inset-0 z-50 bg-black flex items-center justify-center">
-          <button
-            onClick={() => setLightboxOpen(false)}
-            className="absolute top-4 right-4 text-white hover:text-gray-300 z-10"
-          >
-            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-          {lightboxIndex > 0 && (
-            <button
-              onClick={() => setLightboxIndex(lightboxIndex - 1)}
-              className="absolute left-4 text-white hover:text-gray-300 z-10"
-            >
-              <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-              </svg>
-            </button>
-          )}
-          {lightboxIndex < project.photos.length - 1 && (
-            <button
-              onClick={() => setLightboxIndex(lightboxIndex + 1)}
-              className="absolute right-4 text-white hover:text-gray-300 z-10"
-            >
-              <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
-            </button>
-          )}
-          <div className="relative w-full h-full flex items-center justify-center p-2 md:p-4">
-            <img
-              src={project.photos[lightboxIndex].src}
-              alt={project.photos[lightboxIndex].alt}
-              className="max-w-full max-h-full object-contain"
-              style={{ maxHeight: 'calc(100vh - 4rem)' }}
-            />
-          </div>
-        </div>
+      {lightboxOpen && project.photos && project.photos.length > 0 && project.photos[lightboxIndex] && (
+        <Lightbox
+          photo={{
+            id: project.photos[lightboxIndex].id,
+            src: project.photos[lightboxIndex].src,
+            alt: project.photos[lightboxIndex].alt,
+            category: project.photos[lightboxIndex].category || '',
+            location: project.photos[lightboxIndex].location || null,
+            date: project.photos[lightboxIndex].date || null,
+            description: project.photos[lightboxIndex].description || null,
+            isVisible: 1,
+            sortOrder: 0,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          }}
+          onClose={() => setLightboxOpen(false)}
+          onNext={() => setLightboxIndex(lightboxIndex + 1)}
+          onPrev={() => setLightboxIndex(lightboxIndex - 1)}
+          hasNext={lightboxIndex < project.photos.length - 1}
+          hasPrev={lightboxIndex > 0}
+          nextPhotoSrc={lightboxIndex < project.photos.length - 1 ? project.photos[lightboxIndex + 1].src : undefined}
+          prevPhotoSrc={lightboxIndex > 0 ? project.photos[lightboxIndex - 1].src : undefined}
+        />
       )}
-
-      {/* Footer */}
-      <footer className="border-t border-border py-8">
-        <div className="container mx-auto px-6 text-center text-sm text-muted-foreground">
-          <p>© 2024 26phi. All rights reserved.</p>
-        </div>
-      </footer>
     </div>
   );
 }

@@ -9,6 +9,7 @@ import { reviews } from "@/lib/data";
 import { ArrowRight, Star, Loader2, Palette } from "lucide-react";
 import { AdvancedFilter, FilterOptions } from "@/components/AdvancedFilter";
 import { cn } from "@/lib/utils";
+import { AnimatedPhotoGrid } from "@/components/AnimatedPhotoGrid";
 
 type Category = "All" | string;
 type Photo = {
@@ -220,50 +221,24 @@ export default function Home() {
           </div>
         </div>
 
-        <motion.div 
-          layout
-          className="columns-1 sm:columns-2 lg:columns-3 gap-4 sm:gap-6 md:gap-8"
-        >
-          <AnimatePresence>
-            {filteredPhotos.map((photo) => (
-              <motion.div
-                layout
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.9 }}
-                transition={{ duration: 0.5 }}
-                key={photo.id}
-                className="relative group break-inside-avoid cursor-pointer overflow-hidden mb-4 sm:mb-6 md:mb-8"
-                onMouseEnter={() => setHoveredPhoto(photo.id)}
-                onMouseLeave={() => setHoveredPhoto(null)}
-                onClick={() => setSelectedPhoto(photo)}
-              >
-                <motion.img
-                  layoutId={`image-${photo.id}`}
-                  src={photo.src}
-                  alt={photo.alt}
-                  loading="lazy"
-                  className={cn(
-                    "w-full h-auto transition-all duration-700 ease-out scale-100 group-hover:scale-105",
-                    isGrayscale ? "grayscale group-hover:grayscale-0" : ""
-                  )}
-                />
-                
-                <div className={cn(
-                  "absolute inset-0 bg-black/60 flex flex-col justify-end p-3 sm:p-4 md:p-6 transition-opacity duration-300",
-                  hoveredPhoto === photo.id ? "opacity-100" : "opacity-0"
-                )}>
-                  <p className="text-[10px] sm:text-xs font-mono text-neutral-400 mb-1 sm:mb-2">
-                    {photo.date} — {photo.location}
-                  </p>
-                  <h3 className="text-sm sm:text-base md:text-lg lg:text-xl font-bold tracking-tight text-white">
-                    {photo.alt}
-                  </h3>
-                </div>
-              </motion.div>
-            ))}
-          </AnimatePresence>
-        </motion.div>
+        <AnimatedPhotoGrid
+          photos={filteredPhotos}
+          isGrayscale={isGrayscale}
+          onPhotoClick={(photo) => setSelectedPhoto({
+            id: photo.id,
+            src: photo.src,
+            alt: photo.alt,
+            category: photo.category || '',
+            location: photo.location ?? null,
+            date: photo.date ?? null,
+            description: photo.description ?? null,
+            isVisible: 1,
+            sortOrder: 0,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          })}
+          columns={{ default: 1, sm: 2, lg: 3 }}
+        />
         </>
         )}
       </section>
