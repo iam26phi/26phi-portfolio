@@ -11,6 +11,7 @@ import { ArrowLeft, Loader2, Plus, Trash2 } from "lucide-react";
 
 type AboutContent = {
   intro: string;
+  profileImage?: string;
   timeline: Array<{ year: string; title: string; description: string }>;
   stats: Array<{ icon: string; value: string; label: string }>;
   equipment: Array<{ category: string; items: string[] }>;
@@ -20,6 +21,7 @@ type AboutContent = {
 
 const defaultContent: AboutContent = {
   intro: "I am 26phi, a photographer based in Taipei and Tokyo. My work is an exploration of the raw, unfiltered moments that define our existence.",
+  profileImage: "/images/portfolio/portrait/KILLER_劇照_1.jpg",
   timeline: [
     { year: "2024", title: "東京據點成立", description: "正式在東京設立工作室，拓展日本市場的人像與商業攝影業務" },
     { year: "2023", title: "品牌合作突破", description: "與多個時尚品牌展開合作，作品刊登於各大時尚雜誌" },
@@ -41,6 +43,9 @@ const defaultContent: AboutContent = {
 export default function AdminAbout() {
   const [, setLocation] = useLocation();
   const [content, setContent] = useState<AboutContent>(defaultContent);
+  const [profileImageFile, setProfileImageFile] = useState<File | null>(null);
+  const [profileImagePreview, setProfileImagePreview] = useState<string>("");
+  const [isUploading, setIsUploading] = useState(false);
 
   const { data: aboutData, isLoading } = trpc.about.get.useQuery();
   const updateMutation = trpc.about.update.useMutation({
@@ -55,12 +60,76 @@ export default function AdminAbout() {
   useEffect(() => {
     if (aboutData) {
       setContent(aboutData);
+      if (aboutData.profileImage) {
+        setProfileImagePreview(aboutData.profileImage);
+      }
     }
   }, [aboutData]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleProfileImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setProfileImageFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setProfileImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const uploadProfileImage = async (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = async () => {
+        try {
+          const base64 = reader.result as string;
+          const response = await fetch('/api/upload', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              file: base64,
+              filename: file.name,
+              folder: 'about',
+            }),
+          });
+          
+          if (!response.ok) throw new Error('Upload failed');
+          
+          const data = await response.json();
+          resolve(data.url);
+        } catch (error) {
+          reject(error);
+        }
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    updateMutation.mutate(content);
+    
+    try {
+      setIsUploading(true);
+      
+      let profileImageUrl = content.profileImage;
+      
+      // If user selected a new profile image, upload it
+      if (profileImageFile) {
+        profileImageUrl = await uploadProfileImage(profileImageFile);
+      }
+
+      const dataToSubmit = {
+        ...content,
+        profileImage: profileImageUrl,
+      };
+
+      updateMutation.mutate(dataToSubmit);
+    } catch (error) {
+      toast.error("照片上傳失敗");
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   const addTimelineItem = () => {
@@ -172,6 +241,35 @@ export default function AdminAbout() {
         <h1 className="text-3xl font-bold mb-8">編輯 About 頁面</h1>
 
         <form onSubmit={handleSubmit} className="space-y-8">
+          {/* Profile Image Section */}
+          <Card className="p-6">
+            <h2 className="text-xl font-semibold mb-4">個人照片</h2>
+            <div className="space-y-4">
+              {profileImagePreview && (
+                <div className="flex justify-center">
+                  <img
+                    src={profileImagePreview}
+                    alt="個人照片預覽"
+                    className="w-64 h-80 object-cover border-2 border-border"
+                  />
+                </div>
+              )}
+              <div>
+                <Label htmlFor="profileImage">上傳照片</Label>
+                <Input
+                  id="profileImage"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleProfileImageChange}
+                  className="cursor-pointer"
+                />
+                <p className="text-sm text-muted-foreground mt-2">
+                  建議尺寸：3:4 比例（例如 900x1200px），支援 JPG、PNG 等格式
+                </p>
+              </div>
+            </div>
+          </Card>
+
           {/* Intro Section */}
           <Card className="p-6">
             <h2 className="text-xl font-semibold mb-4">個人簡介</h2>
@@ -376,8 +474,8 @@ export default function AdminAbout() {
             >
               取消
             </Button>
-            <Button type="submit" disabled={updateMutation.isPending}>
-              {updateMutation.isPending && (
+            <Button type="submit" disabled={updateMutation.isPending || isUploading}>
+              {(updateMutation.isPending || isUploading) && (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               )}
               儲存變更

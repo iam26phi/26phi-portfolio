@@ -57,6 +57,7 @@ export default function About() {
   const faqs = aboutData?.faqs || defaultFaqs;
   const intro = aboutData?.intro || defaultIntro;
   const contact = aboutData?.contact || defaultContact;
+  const profileImage = aboutData?.profileImage || "/images/portfolio/portrait/KILLER_劇照_1.jpg";
   return (
     <div className="min-h-screen bg-background text-foreground selection:bg-white selection:text-black">
       <Navigation />
@@ -74,7 +75,7 @@ export default function About() {
             >
               <div className="relative aspect-[3/4] overflow-hidden bg-neutral-900">
                 <img 
-                  src="/images/portfolio/portrait/KILLER_劇照_1.jpg" 
+                  src={profileImage} 
                   alt="26phi Portrait" 
                   className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-700"
                 />
