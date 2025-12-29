@@ -33,6 +33,9 @@ type Collaborator = {
 export default function AdminCollaborators() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingCollaborator, setEditingCollaborator] = useState<Collaborator | null>(null);
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [avatarPreview, setAvatarPreview] = useState<string>("");
+  const [isUploading, setIsUploading] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     slug: "",
@@ -83,6 +86,8 @@ export default function AdminCollaborators() {
   const handleOpenDialog = (collaborator?: Collaborator) => {
     if (collaborator) {
       setEditingCollaborator(collaborator);
+      setAvatarPreview(collaborator.avatar || "");
+      setAvatarFile(null);
       setFormData({
         name: collaborator.name,
         slug: collaborator.slug,
@@ -96,6 +101,8 @@ export default function AdminCollaborators() {
       });
     } else {
       setEditingCollaborator(null);
+      setAvatarPreview("");
+      setAvatarFile(null);
       setFormData({
         name: "",
         slug: "",
@@ -114,9 +121,51 @@ export default function AdminCollaborators() {
   const handleCloseDialog = () => {
     setIsDialogOpen(false);
     setEditingCollaborator(null);
+    setAvatarFile(null);
+    setAvatarPreview("");
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setAvatarFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setAvatarPreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const uploadAvatar = async (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = async () => {
+        try {
+          const base64 = reader.result as string;
+          const response = await fetch('/api/upload', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              file: base64,
+              filename: file.name,
+              folder: 'collaborators',
+            }),
+          });
+          
+          if (!response.ok) throw new Error('Upload failed');
+          
+          const data = await response.json();
+          resolve(data.url);
+        } catch (error) {
+          reject(error);
+        }
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!formData.name || !formData.slug) {
@@ -124,13 +173,33 @@ export default function AdminCollaborators() {
       return;
     }
 
-    if (editingCollaborator) {
-      updateMutation.mutate({
-        id: editingCollaborator.id,
+    try {
+      setIsUploading(true);
+      
+      let avatarUrl = formData.avatar;
+      
+      // If user selected a new avatar file, upload it
+      if (avatarFile) {
+        avatarUrl = await uploadAvatar(avatarFile);
+      }
+
+      const dataToSubmit = {
         ...formData,
-      });
-    } else {
-      createMutation.mutate(formData);
+        avatar: avatarUrl || undefined,
+      };
+
+      if (editingCollaborator) {
+        updateMutation.mutate({
+          id: editingCollaborator.id,
+          ...dataToSubmit,
+        });
+      } else {
+        createMutation.mutate(dataToSubmit);
+      }
+    } catch (error) {
+      toast.error("頭像上傳失敗");
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -281,15 +350,28 @@ export default function AdminCollaborators() {
               </div>
 
               <div>
-                <Label htmlFor="avatar">頭像 URL</Label>
-                <Input
-                  id="avatar"
-                  type="url"
-                  value={formData.avatar}
-                  onChange={(e) =>
-                    setFormData({ ...formData, avatar: e.target.value })
-                  }
-                />
+                <Label htmlFor="avatar">頭像圖片</Label>
+                <div className="space-y-4">
+                  {avatarPreview && (
+                    <div className="flex justify-center">
+                      <img
+                        src={avatarPreview}
+                        alt="頭像預覽"
+                        className="w-32 h-32 rounded-full object-cover border-2 border-border"
+                      />
+                    </div>
+                  )}
+                  <Input
+                    id="avatar"
+                    type="file"
+                    accept="image/*"
+                    onChange={handleAvatarChange}
+                    className="cursor-pointer"
+                  />
+                  <p className="text-sm text-muted-foreground">
+                    支援 JPG、PNG、GIF 等圖片格式
+                  </p>
+                </div>
               </div>
 
               <div>
@@ -370,9 +452,9 @@ export default function AdminCollaborators() {
               </Button>
               <Button
                 type="submit"
-                disabled={createMutation.isPending || updateMutation.isPending}
+                disabled={createMutation.isPending || updateMutation.isPending || isUploading}
               >
-                {createMutation.isPending || updateMutation.isPending ? (
+                {(createMutation.isPending || updateMutation.isPending || isUploading) ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                     處理中...
