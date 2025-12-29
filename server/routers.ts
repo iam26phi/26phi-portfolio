@@ -745,7 +745,38 @@ export const appRouter = router({
         message: z.string().min(10, "Message must be at least 10 characters"),
       }))
       .mutation(async ({ input }) => {
-        return await db.createContactSubmission(input);
+        const submission = await db.createContactSubmission(input);
+        
+        // Send notification to owner
+        try {
+          const { notifyOwner } = await import('./_core/notification');
+          
+          const shootingTypeLabels: Record<string, string> = {
+            portrait: '人像攝影',
+            wedding: '婚禮紀錄',
+            commercial: '商業攝影',
+            event: '活動紀錄',
+            product: '商品攝影',
+            other: '其他',
+          };
+          
+          const shootingTypeLabel = shootingTypeLabels[input.shootingType] || input.shootingType;
+          
+          await notifyOwner({
+            title: `新的聯絡表單提交：${input.name}`,
+            content: `收到來自 ${input.name} 的聯絡請求\n\n` +
+              `📧 Email: ${input.email}\n` +
+              `📷 拍攝類型: ${shootingTypeLabel}\n` +
+              `💰 預算範圍: ${input.budget}\n\n` +
+              `訊息內容:\n${input.message}\n\n` +
+              `請前往後台管理頁面查看詳細資訊並回覆。`,
+          });
+        } catch (error) {
+          console.error('Failed to send notification:', error);
+          // Don't fail the submission if notification fails
+        }
+        
+        return submission;
       }),
     
     listAll: protectedProcedure
