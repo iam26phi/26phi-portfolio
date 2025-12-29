@@ -2,6 +2,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { photoItemVariants } from "@/lib/animations";
+import { ProgressiveImage } from "@/components/ProgressiveImage";
 
 type Photo = {
   id: number;
@@ -68,11 +69,10 @@ export function AnimatedPhotoGrid({
             onMouseLeave={() => setHoveredPhoto(null)}
             onClick={() => onPhotoClick?.(photo)}
           >
-            <motion.img
-              layoutId={`image-${photo.id}`}
+            <ProgressiveImage
               src={photo.src}
               alt={photo.alt}
-              loading="lazy"
+              rootMargin="200px"
               className={cn(
                 "w-full h-auto transition-all duration-700 ease-out scale-100 group-hover:scale-105",
                 isGrayscale ? "grayscale group-hover:grayscale-0" : ""

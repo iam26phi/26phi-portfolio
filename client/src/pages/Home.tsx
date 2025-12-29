@@ -11,6 +11,7 @@ import { AdvancedFilter, FilterOptions } from "@/components/AdvancedFilter";
 import { cn } from "@/lib/utils";
 import { AnimatedPhotoGrid } from "@/components/AnimatedPhotoGrid";
 import { photoItemVariants } from "@/lib/animations";
+import { ProgressiveImage } from "@/components/ProgressiveImage";
 
 type Category = "All" | string;
 type Photo = {
@@ -240,11 +241,10 @@ export default function Home() {
                 onMouseLeave={() => setHoveredPhoto(null)}
                 onClick={() => setSelectedPhoto(photo)}
               >
-                <motion.img
-                  layoutId={`image-${photo.id}`}
+                <ProgressiveImage
                   src={photo.src}
                   alt={photo.alt}
-                  loading="lazy"
+                  rootMargin="200px"
                   className={cn(
                     "w-full h-auto transition-all duration-700 ease-out scale-100 group-hover:scale-105",
                     isGrayscale ? "grayscale group-hover:grayscale-0" : ""

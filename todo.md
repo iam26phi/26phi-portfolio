@@ -230,3 +230,12 @@
 - [x] 修正首頁照片顯示方式，恢復瀑布流（masonry）佈局
 - [x] 確保照片以多排方式顯示，根據螢幕大小自動調整
 - [x] 測試不同螢幕尺寸的顯示效果
+
+## 效能優化 - 進階懶加載策略
+- [x] 設計懶加載策略架構（預載入、LQIP）
+- [x] 建立 useLazyLoad hook 處理 Intersection Observer
+- [x] 建立 ProgressiveImage 組件支援 LQIP
+- [x] 應用到首頁作品集
+- [x] 應用到專案詳細頁面（透過 AnimatedPhotoGrid）
+- [x] 測試載入效能改善
+- [x] 測試不同網速下的使用者體驗
