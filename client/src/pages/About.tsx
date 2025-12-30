@@ -77,7 +77,7 @@ export default function About() {
                 <img 
                   src={profileImage} 
                   alt="26phi Portrait" 
-                  className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-700"
+                  className="w-full h-full object-cover transition-all duration-700"
                 />
               </div>
             </motion.div>
@@ -249,7 +249,7 @@ export default function About() {
                         <img
                           src={collaborator.avatar}
                           alt={collaborator.name}
-                          className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500"
+                          className="w-full h-full object-cover transition-all duration-500"
                         />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center text-neutral-600">

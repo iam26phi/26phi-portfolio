@@ -870,6 +870,39 @@ export const appRouter = router({
   }),
 
   collaborators: router({
+    fetchInstagramAvatar: publicProcedure
+      .input(z.object({ username: z.string() }))
+      .mutation(async ({ input }) => {
+        try {
+          // Fetch Instagram profile page
+          const response = await fetch(`https://www.instagram.com/${input.username}/?__a=1&__d=dis`, {
+            headers: {
+              'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+              'Accept': 'application/json',
+            },
+          });
+
+          if (!response.ok) {
+            throw new Error('Failed to fetch Instagram profile');
+          }
+
+          const data = await response.json();
+          const profilePicUrl = data?.graphql?.user?.profile_pic_url_hd || 
+                                data?.graphql?.user?.profile_pic_url ||
+                                data?.user?.profile_pic_url_hd ||
+                                data?.user?.profile_pic_url;
+
+          if (!profilePicUrl) {
+            throw new Error('Profile picture not found');
+          }
+
+          return { avatarUrl: profilePicUrl };
+        } catch (error) {
+          console.error('Instagram fetch error:', error);
+          throw new Error('無法抓取 Instagram 頭貜，請確認帳號是否正確且為公開帳號');
+        }
+      }),
+
     // Public endpoint: get visible collaborators for display
     list: publicProcedure.query(async () => {
       return await db.getVisibleCollaborators();

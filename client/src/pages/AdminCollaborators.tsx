@@ -36,6 +36,20 @@ export default function AdminCollaborators() {
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string>("");
   const [isUploading, setIsUploading] = useState(false);
+  const [isFetchingInstagram, setIsFetchingInstagram] = useState(false);
+
+  const fetchInstagramAvatarMutation = trpc.collaborators.fetchInstagramAvatar.useMutation({
+    onSuccess: (data) => {
+      setFormData({ ...formData, avatar: data.avatarUrl });
+      setAvatarPreview(data.avatarUrl);
+      toast.success("成功抓取 Instagram 頭貜");
+      setIsFetchingInstagram(false);
+    },
+    onError: (error) => {
+      toast.error(error.message);
+      setIsFetchingInstagram(false);
+    },
+  });
   const [formData, setFormData] = useState({
     name: "",
     slug: "",
@@ -385,14 +399,36 @@ export default function AdminCollaborators() {
 
               <div>
                 <Label htmlFor="instagram">Instagram 帳號</Label>
-                <Input
-                  id="instagram"
-                  value={formData.instagram}
-                  onChange={(e) =>
-                    setFormData({ ...formData, instagram: e.target.value })
-                  }
-                  placeholder="@username"
-                />
+                <div className="flex gap-2">
+                  <Input
+                    id="instagram"
+                    value={formData.instagram}
+                    onChange={(e) =>
+                      setFormData({ ...formData, instagram: e.target.value })
+                    }
+                    placeholder="@username"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => {
+                      const username = formData.instagram.replace('@', '').trim();
+                      if (!username) {
+                        toast.error("請先輸入 Instagram 帳號");
+                        return;
+                      }
+                      setIsFetchingInstagram(true);
+                      fetchInstagramAvatarMutation.mutate({ username });
+                    }}
+                    disabled={isFetchingInstagram || !formData.instagram}
+                  >
+                    {isFetchingInstagram ? (
+                      <><Loader2 className="w-4 h-4 animate-spin" /></>
+                    ) : (
+                      "抓取頭貜"
+                    )}
+                  </Button>
+                </div>
               </div>
 
               <div>
