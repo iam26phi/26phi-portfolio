@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { trpc } from "@/lib/trpc";
@@ -71,13 +71,17 @@ export default function Home() {
   const { data: heroSetting } = trpc.settings.get.useQuery({ key: "hero_background_image" });
 
   // Extract unique locations and years from photos
-  const availableLocations = Array.from(
-    new Set(photos.map(p => p.location).filter(Boolean))
-  ).sort() as string[];
+  const availableLocations = useMemo(() => {
+    return Array.from(
+      new Set(photos.map(p => p.location).filter(Boolean))
+    ).sort() as string[];
+  }, [photos]);
   
-  const availableYears = Array.from(
-    new Set(photos.map(p => p.date ? new Date(p.date).getFullYear().toString() : null).filter(Boolean))
-  ).sort((a, b) => Number(b) - Number(a)) as string[];
+  const availableYears = useMemo(() => {
+    return Array.from(
+      new Set(photos.map(p => p.date ? new Date(p.date).getFullYear().toString() : null).filter(Boolean))
+    ).sort((a, b) => Number(b) - Number(a)) as string[];
+  }, [photos]);
 
   // Get photos by project if project filter is active
   const [projectPhotos, setProjectPhotos] = useState<number[]>([]);
