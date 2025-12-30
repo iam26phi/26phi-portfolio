@@ -5,6 +5,7 @@ import { Loader2 } from "lucide-react";
 import { Link } from "wouter";
 import { AnimatedPhotoGrid } from "@/components/AnimatedPhotoGrid";
 import Lightbox from "@/components/Lightbox";
+import Navigation from "@/components/Navigation";
 
 export default function ProjectDetail() {
   const { slug } = useParams<{ slug: string }>();
@@ -38,38 +39,7 @@ export default function ProjectDetail() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-sm border-b border-border">
-        <div className="container mx-auto px-6 py-4 flex justify-between items-center">
-          <Link href="/">
-            <a className="text-2xl font-bold tracking-tight hover:opacity-80 transition-opacity">
-              26phi
-            </a>
-          </Link>
-          <nav className="flex gap-8">
-            <Link href="/">
-              <a className="text-sm font-bold tracking-wider hover:text-primary transition-colors">
-                PORTFOLIO
-              </a>
-            </Link>
-            <Link href="/about">
-              <a className="text-sm font-bold tracking-wider hover:text-primary transition-colors">
-                ABOUT
-              </a>
-            </Link>
-            <Link href="/blog">
-              <a className="text-sm font-bold tracking-wider hover:text-primary transition-colors">
-                BLOG
-              </a>
-            </Link>
-            <Link href="/projects">
-              <a className="text-sm font-bold tracking-wider text-primary">
-                PROJECTS
-              </a>
-            </Link>
-          </nav>
-        </div>
-      </header>
+      <Navigation />
 
       {/* Project Hero */}
       <section className="pt-32 pb-16 px-6">
