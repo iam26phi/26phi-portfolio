@@ -192,6 +192,37 @@ export const appRouter = router({
           key: result.key,
         };
       }),
+
+    // Upload avatar (without watermark)
+    uploadAvatar: protectedProcedure
+      .input(z.object({
+        file: z.string(), // base64 encoded image
+        filename: z.string(),
+        category: z.string(),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        if (ctx.user.role !== 'admin') {
+          throw new Error('Unauthorized');
+        }
+        
+        // Decode base64
+        const base64Data = input.file.split(',')[1];
+        const buffer = Buffer.from(base64Data, 'base64');
+        
+        // Generate unique filename
+        const timestamp = Date.now();
+        const ext = input.filename.split('.').pop();
+        const key = `avatars/${input.category.toLowerCase()}/${timestamp}-${input.filename}`;
+        
+        // Upload to S3 with cache headers (1 year cache for immutable images)
+        const result = await storagePut(key, buffer, `image/${ext}`, "public, max-age=31536000, immutable");
+        
+        return {
+          success: true,
+          url: result.url,
+          key: result.key,
+        };
+      }),
   }),
 
   blog: router({

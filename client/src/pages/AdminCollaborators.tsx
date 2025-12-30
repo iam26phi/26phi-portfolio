@@ -151,7 +151,7 @@ export default function AdminCollaborators() {
     }
   };
 
-  const uploadMutation = trpc.photos.upload.useMutation();
+  const uploadMutation = trpc.photos.uploadAvatar.useMutation();
 
   const uploadAvatar = async (file: File): Promise<string> => {
     return new Promise((resolve, reject) => {

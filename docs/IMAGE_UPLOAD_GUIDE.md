@@ -4,7 +4,12 @@
 
 ## 核心原則
 
-所有圖片上傳功能必須使用 **tRPC photos.upload API**，不得直接呼叫 `/api/upload` 端點或使用其他上傳方式。
+所有圖片上傳功能必須使用 **tRPC photos API**，不得直接呼叫 `/api/upload` 端點或使用其他上傳方式。
+
+### API 選擇指南
+
+- **`photos.upload`**: 用於上傳**作品集照片**，會自動套用浮水印（如果後台有設定）
+- **`photos.uploadAvatar`**: 用於上傳**頭像類圖片**（合作對象、About 個人照片），**不會**套用浮水印
 
 ## 標準實作流程
 
@@ -20,8 +25,14 @@ const [isUploading, setIsUploading] = useState(false);
 
 #### 1.2 引入 Upload Mutation
 
+**作品集照片（帶浮水印）**
 ```typescript
 const uploadMutation = trpc.photos.upload.useMutation();
+```
+
+**頭像類圖片（不帶浮水印）**
+```typescript
+const uploadMutation = trpc.photos.uploadAvatar.useMutation();
 ```
 
 #### 1.3 檔案選擇處理函數
@@ -147,21 +158,23 @@ const handleSubmit = async (e: React.FormEvent) => {
 
 ### 2. Category 命名規範
 
-不同功能模組使用不同的 category 值，用於組織 S3 儲存結構：
+不同功能模塊使用不同的 category 值，用於組織 S3 儲存結構：
 
-| 功能模組 | Category 值 | 說明 |
-|---------|------------|------|
-| 作品照片 | 依分類名稱 | 例如: 'portrait', 'landscape', 'street' |
-| 合作對象頭像 | `collaborators` | 合作對象的頭像照片 |
-| About 個人照片 | `about` | About 頁面的個人照片 |
-| 部落格圖片 | `blog` | 部落格文章的配圖 |
-| 英雄區域背景 | `hero` | 首頁英雄區域的背景圖 |
+| 功能模塊 | API | Category 值 | S3 路徑 | 浮水印 |
+|---------|-----|------------|---------|------|
+| 作品照片 | `photos.upload` | 依分類名稱 | `portfolio/{category}/` | ✅ 是 |
+| 合作對象頭像 | `photos.uploadAvatar` | `collaborators` | `avatars/collaborators/` | ❌ 否 |
+| About 個人照片 | `photos.uploadAvatar` | `about` | `avatars/about/` | ❌ 否 |
+| 部落格圖片 | `photos.upload` | `blog` | `portfolio/blog/` | ✅ 是 |
+| 英雄區域背景 | `photos.upload` | `hero` | `portfolio/hero/` | ✅ 是 |
 
 ### 3. 後端 API 規格
 
-#### 3.1 Upload Mutation
+#### 3.1 photos.upload（帶浮水印）
 
 **路徑**: `trpc.photos.upload`
+
+**用途**: 上傳作品集照片，會自動套用浮水印（如果後台有設定）
 
 **輸入參數**:
 ```typescript
@@ -175,11 +188,37 @@ const handleSubmit = async (e: React.FormEvent) => {
 **返回值**:
 ```typescript
 {
+  success: boolean;
   url: string;       // 上傳後的圖片 URL
+  key: string;       // S3 儲存路徑
 }
 ```
 
-#### 3.2 錯誤處理
+#### 3.2 photos.uploadAvatar（不帶浮水印）
+
+**路徑**: `trpc.photos.uploadAvatar`
+
+**用途**: 上傳頭像類圖片（合作對象、About 個人照片），**不會**套用浮水印
+
+**輸入參數**:
+```typescript
+{
+  file: string;      // Base64 編碼的圖片資料
+  filename: string;  // 原始檔案名稱
+  category: string;  // 分類名稱（例如: 'collaborators', 'about'）
+}
+```
+
+**返回值**:
+```typescript
+{
+  success: boolean;
+  url: string;       // 上傳後的圖片 URL
+  key: string;       // S3 儲存路徑
+}
+```
+
+#### 3.3 錯誤處理
 
 - 檔案格式錯誤: 前端應在選擇檔案時驗證 `file.type.startsWith('image/')`
 - 上傳失敗: 顯示 toast 錯誤訊息，不影響表單其他欄位
@@ -215,7 +254,7 @@ const compressImage = async (file: File): Promise<File> => {
 ### ❌ 錯誤做法
 
 ```typescript
-// 直接呼叫 /api/upload（已棄用）
+// 錯誤 1: 直接呼叫 /api/upload（已棄用）
 const response = await fetch('/api/upload', {
   method: 'POST',
   body: JSON.stringify({ file: base64, filename: file.name }),
@@ -223,7 +262,7 @@ const response = await fetch('/api/upload', {
 ```
 
 ```typescript
-// 未使用 FileReader 讀取檔案
+// 錯誤 2: 未使用 FileReader 讀取檔案
 const result = await uploadMutation.mutateAsync({
   file: file, // 錯誤：應該是 base64 字串
   filename: file.name,
@@ -231,17 +270,43 @@ const result = await uploadMutation.mutateAsync({
 });
 ```
 
+```typescript
+// 錯誤 3: 頭像上傳使用 photos.upload（會套用浮水印）
+const uploadMutation = trpc.photos.upload.useMutation(); // 應該使用 uploadAvatar
+const result = await uploadMutation.mutateAsync({
+  file: base64,
+  filename: 'avatar.png',
+  category: 'collaborators', // 頭像不應該有浮水印
+});
+```
+
 ### ✅ 正確做法
 
 ```typescript
-// 使用 tRPC mutation
+// 正確 1: 上傳作品集照片（帶浮水印）
+const uploadMutation = trpc.photos.upload.useMutation();
 const reader = new FileReader();
 reader.onload = async (event) => {
   const base64 = event.target?.result as string;
   const result = await uploadMutation.mutateAsync({
     file: base64,
     filename: file.name,
-    category: 'test',
+    category: 'portrait', // 作品集分類
+  });
+};
+reader.readAsDataURL(file);
+```
+
+```typescript
+// 正確 2: 上傳頭像（不帶浮水印）
+const uploadMutation = trpc.photos.uploadAvatar.useMutation();
+const reader = new FileReader();
+reader.onload = async (event) => {
+  const base64 = event.target?.result as string;
+  const result = await uploadMutation.mutateAsync({
+    file: base64,
+    filename: file.name,
+    category: 'collaborators', // 或 'about'
   });
 };
 reader.readAsDataURL(file);
@@ -251,7 +316,9 @@ reader.readAsDataURL(file);
 
 在實作新的圖片上傳功能時，請確認以下項目：
 
-- [ ] 使用 `trpc.photos.upload` mutation
+- [ ] 選擇正確的 API：
+  - 作品集照片 → `trpc.photos.upload`（帶浮水印）
+  - 頭像類圖片 → `trpc.photos.uploadAvatar`（不帶浮水印）
 - [ ] 使用 FileReader 將檔案轉換為 base64
 - [ ] 正確設定 category 參數
 - [ ] 實作圖片預覽功能
@@ -265,10 +332,19 @@ reader.readAsDataURL(file);
 
 完整的參考實作可以在以下檔案中找到：
 
+### 作品集照片（帶浮水印）
 - **標準照片上傳**: `client/src/pages/Admin.tsx` (uploadSingleFile 函數)
+- **API 實作**: `server/routers.ts` (photos.upload)
+
+### 頭像類圖片（不帶浮水印）
 - **合作對象頭像**: `client/src/pages/AdminCollaborators.tsx` (uploadAvatar 函數)
 - **About 個人照片**: `client/src/pages/AdminAbout.tsx` (uploadProfileImage 函數)
+- **API 實作**: `server/routers.ts` (photos.uploadAvatar)
+
+### 單元測試
+- **uploadAvatar 測試**: `server/photos.uploadAvatar.test.ts`
 
 ## 更新記錄
 
 - **2025-01-01**: 建立初始版本，統一圖片上傳規範
+- **2025-01-30**: 新增 `photos.uploadAvatar` API，區分作品集照片（帶浮水印）和頭像類圖片（不帶浮水印）

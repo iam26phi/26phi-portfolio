@@ -78,7 +78,7 @@ export default function AdminAbout() {
     }
   };
 
-  const uploadMutation = trpc.photos.upload.useMutation();
+  const uploadMutation = trpc.photos.uploadAvatar.useMutation();
 
   const uploadProfileImage = async (file: File): Promise<string> => {
     return new Promise((resolve, reject) => {
