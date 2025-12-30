@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import Navigation from "@/components/Navigation";
 import { motion } from "framer-motion";
 import { Mail, Phone, MapPin, Send, CheckCircle2 } from "lucide-react";
+import { Link } from "wouter";
 
 export default function Contact() {
   const [formData, setFormData] = useState({
@@ -245,7 +246,14 @@ export default function Contact() {
 
                   {packages && packages.length > 0 && (
                     <div>
-                      <Label htmlFor="package" className="text-sm sm:text-base">拍攝方案（可選）</Label>
+                      <div className="flex justify-between items-center mb-2">
+                        <Label htmlFor="package" className="text-sm sm:text-base">拍攝方案（可選）</Label>
+                        <Link href="/packages">
+                          <a className="text-xs sm:text-sm text-neutral-400 hover:text-white transition-colors underline">
+                            查看方案詳情 →
+                          </a>
+                        </Link>
+                      </div>
                       <Select value={formData.packageId} onValueChange={handlePackageChange}>
                         <SelectTrigger className="mt-2 bg-white/5 border-white/10 text-white text-sm sm:text-base h-10 sm:h-11">
                           <SelectValue placeholder="選擇預設方案或自訂預算" />
