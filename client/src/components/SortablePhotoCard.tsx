@@ -1,7 +1,7 @@
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { Button } from "@/components/ui/button";
-import { Edit, Trash2, Eye, EyeOff, GripVertical, Star } from "lucide-react";
+import { Edit, Trash2, Eye, EyeOff, GripVertical, Star, PlayCircle } from "lucide-react";
 
 type Photo = {
   id: number;
@@ -24,6 +24,7 @@ type SortablePhotoCardProps = {
   onDelete: (id: number) => void;
   onToggleVisibility: (photo: Photo) => void;
   onToggleFeatured: (photo: Photo) => void;
+  onAddToCarousel?: (photoId: number) => void;
   isSorting: boolean;
 };
 
@@ -33,6 +34,7 @@ export function SortablePhotoCard({
   onDelete,
   onToggleVisibility,
   onToggleFeatured,
+  onAddToCarousel,
   isSorting,
 }: SortablePhotoCardProps) {
   const {
@@ -90,40 +92,54 @@ export function SortablePhotoCard({
           <p className="text-sm text-muted-foreground">{photo.category}</p>
         </div>
         {!isSorting && (
-          <div className="flex gap-2">
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => onEdit(photo)}
-            >
-              <Edit className="h-4 w-4" />
-            </Button>
-            <Button
-              size="sm"
-              variant={photo.featured === 1 ? "default" : "outline"}
-              onClick={() => onToggleFeatured(photo)}
-              title={photo.featured === 1 ? "取消精選" : "設為精選"}
-            >
-              <Star className={`h-4 w-4 ${photo.featured === 1 ? "fill-current" : ""}`} />
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => onToggleVisibility(photo)}
-            >
-              {photo.isVisible ? (
-                <Eye className="h-4 w-4" />
-              ) : (
-                <EyeOff className="h-4 w-4" />
-              )}
-            </Button>
-            <Button
-              size="sm"
-              variant="destructive"
-              onClick={() => onDelete(photo.id)}
-            >
-              <Trash2 className="h-4 w-4" />
-            </Button>
+          <div className="space-y-2">
+            <div className="flex gap-2">
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => onEdit(photo)}
+              >
+                <Edit className="h-4 w-4" />
+              </Button>
+              <Button
+                size="sm"
+                variant={photo.featured === 1 ? "default" : "outline"}
+                onClick={() => onToggleFeatured(photo)}
+                title={photo.featured === 1 ? "取消精選" : "設為精選"}
+              >
+                <Star className={`h-4 w-4 ${photo.featured === 1 ? "fill-current" : ""}`} />
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => onToggleVisibility(photo)}
+              >
+                {photo.isVisible ? (
+                  <Eye className="h-4 w-4" />
+                ) : (
+                  <EyeOff className="h-4 w-4" />
+                )}
+              </Button>
+              <Button
+                size="sm"
+                variant="destructive"
+                onClick={() => onDelete(photo.id)}
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </div>
+            {onAddToCarousel && (
+              <Button
+                size="sm"
+                variant="secondary"
+                className="w-full"
+                onClick={() => onAddToCarousel(photo.id)}
+                title="加入首頁輪播"
+              >
+                <PlayCircle className="h-4 w-4 mr-2" />
+                加入輪播
+              </Button>
+            )}
           </div>
         )}
       </div>

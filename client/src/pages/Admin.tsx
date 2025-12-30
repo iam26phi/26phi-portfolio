@@ -230,13 +230,27 @@ export default function Admin() {
       toast.success(`批次修改可見性完成：成功 ${result.succeeded} 張，失敗 ${result.failed} 張`);
       refetch();
       setSelectedPhotoIds(new Set());
+      setIsBatchMode(false);
     },
     onError: (error) => {
       toast.error(`批次修改可見性失敗: ${error.message}`);
     },
   });
 
-  // Batch operation handlers
+  const addToCarouselMutation = trpc.hero.addSlideFromPhoto.useMutation({
+    onSuccess: () => {
+      toast.success("照片已成功加入首頁輪播");
+    },
+    onError: (error) => {
+      if (error.message.includes("already in carousel")) {
+        toast.error("此照片已在輪播中");
+      } else {
+        toast.error(`加入輪播失敗: ${error.message}`);
+      }
+    },
+  });
+
+  // Operation handlers
   const togglePhotoSelection = (photoId: number) => {
     setSelectedPhotoIds(prev => {
       const newSet = new Set(prev);
@@ -520,6 +534,10 @@ export default function Admin() {
       id: photo.id,
       featured: photo.featured === 1 ? 0 : 1,
     });
+  };
+
+  const handleAddToCarousel = (photoId: number) => {
+    addToCarouselMutation.mutate({ photoId });
   };
 
   if (authLoading) {
@@ -1023,6 +1041,7 @@ export default function Admin() {
                       onDelete={handleDelete}
                       onToggleVisibility={toggleVisibility}
                       onToggleFeatured={toggleFeatured}
+                      onAddToCarousel={handleAddToCarousel}
                       isSorting={isSorting}
                     />
                   </div>

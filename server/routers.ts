@@ -1140,6 +1140,42 @@ export const appRouter = router({
         return await db.deleteHeroSlide(id);
       }),
 
+    // Quick add: add a photo to hero carousel
+    addSlideFromPhoto: protectedProcedure
+      .input(z.object({
+        photoId: z.number(),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        if (ctx.user.role !== 'admin') {
+          throw new Error('Unauthorized');
+        }
+        
+        // Get the photo
+        const photo = await db.getPhotoById(input.photoId);
+        if (!photo) {
+          throw new Error('Photo not found');
+        }
+        
+        // Check if photo is already in carousel
+        const existingSlides = await db.getAllHeroSlides();
+        const alreadyExists = existingSlides.some(slide => slide.imageUrl === photo.src);
+        if (alreadyExists) {
+          throw new Error('Photo is already in carousel');
+        }
+        
+        // Get max sortOrder and add 1
+        const maxSortOrder = existingSlides.reduce((max, slide) => 
+          Math.max(max, slide.sortOrder), 0);
+        
+        // Create new slide
+        return await db.createHeroSlide({
+          imageUrl: photo.src,
+          title: photo.displayTitle || photo.alt,
+          isActive: 1,
+          sortOrder: maxSortOrder + 1,
+        });
+      }),
+
     // Admin endpoints: manage hero quotes
     listAllQuotes: protectedProcedure.query(async ({ ctx }) => {
       if (ctx.user.role !== 'admin') {
