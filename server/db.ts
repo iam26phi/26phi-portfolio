@@ -1,6 +1,6 @@
 import { eq, and } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users, photos, InsertPhoto, blogPosts, InsertBlogPost, siteSettings, InsertSiteSetting, photoCategories, InsertPhotoCategory, projects, InsertProject, photoProjects, InsertPhotoProject, changelogs, InsertChangelog, contactSubmissions, InsertContactSubmission, collaborators, InsertCollaborator, Collaborator, photoCollaborators, InsertPhotoCollaborator } from "../drizzle/schema";
+import { InsertUser, users, photos, InsertPhoto, blogPosts, InsertBlogPost, siteSettings, InsertSiteSetting, photoCategories, InsertPhotoCategory, projects, InsertProject, photoProjects, InsertPhotoProject, changelogs, InsertChangelog, contactSubmissions, InsertContactSubmission, collaborators, InsertCollaborator, Collaborator, photoCollaborators, InsertPhotoCollaborator, heroSlides, InsertHeroSlide, heroQuotes, InsertHeroQuote } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -751,4 +751,128 @@ export async function getPhotoCollaborators(photoId: number) {
     .where(eq(photoCollaborators.photoId, photoId));
 
   return result.filter((c) => c.id !== null);
+}
+
+// Hero Slides management functions
+export async function getAllHeroSlides() {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot get hero slides: database not available");
+    return [];
+  }
+
+  return await db.select().from(heroSlides).orderBy(heroSlides.sortOrder);
+}
+
+export async function getActiveHeroSlides() {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot get active hero slides: database not available");
+    return [];
+  }
+
+  return await db.select().from(heroSlides).where(eq(heroSlides.isActive, 1)).orderBy(heroSlides.sortOrder);
+}
+
+export async function getHeroSlideById(id: number) {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot get hero slide: database not available");
+    return undefined;
+  }
+
+  const result = await db.select().from(heroSlides).where(eq(heroSlides.id, id)).limit(1);
+  return result.length > 0 ? result[0] : undefined;
+}
+
+export async function createHeroSlide(slide: InsertHeroSlide) {
+  const db = await getDb();
+  if (!db) {
+    throw new Error("Database not available");
+  }
+
+  const result = await db.insert(heroSlides).values(slide);
+  const insertId = Number(result[0].insertId);
+  return await getHeroSlideById(insertId);
+}
+
+export async function updateHeroSlide(id: number, updates: Partial<InsertHeroSlide>) {
+  const db = await getDb();
+  if (!db) {
+    throw new Error("Database not available");
+  }
+
+  await db.update(heroSlides).set(updates).where(eq(heroSlides.id, id));
+  return await getHeroSlideById(id);
+}
+
+export async function deleteHeroSlide(id: number) {
+  const db = await getDb();
+  if (!db) {
+    throw new Error("Database not available");
+  }
+
+  await db.delete(heroSlides).where(eq(heroSlides.id, id));
+}
+
+// Hero Quotes management functions
+export async function getAllHeroQuotes() {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot get hero quotes: database not available");
+    return [];
+  }
+
+  return await db.select().from(heroQuotes);
+}
+
+export async function getActiveHeroQuotes() {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot get active hero quotes: database not available");
+    return [];
+  }
+
+  return await db.select().from(heroQuotes).where(eq(heroQuotes.isActive, 1));
+}
+
+export async function getHeroQuoteById(id: number) {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot get hero quote: database not available");
+    return undefined;
+  }
+
+  const result = await db.select().from(heroQuotes).where(eq(heroQuotes.id, id)).limit(1);
+  return result.length > 0 ? result[0] : undefined;
+}
+
+export async function createHeroQuote(quote: InsertHeroQuote) {
+  const db = await getDb();
+  if (!db) {
+    throw new Error("Database not available");
+  }
+
+  const result = await db.insert(heroQuotes).values(quote);
+  const insertId = Number(result[0].insertId);
+  return await getHeroQuoteById(insertId);
+}
+
+export async function updateHeroQuote(id: number, updates: Partial<InsertHeroQuote>) {
+  const db = await getDb();
+  if (!db) {
+    throw new Error("Database not available");
+  }
+
+  await db.update(heroQuotes).set(updates).where(eq(heroQuotes.id, id));
+  return await getHeroQuoteById(id);
+}
+
+export async function deleteHeroQuote(id: number) {
+  const db = await getDb();
+  if (!db) {
+    throw new Error("Database not available");
+  }
+
+  await db.delete(heroQuotes).where(eq(heroQuotes.id, id));
 }

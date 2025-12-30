@@ -1,0 +1,9 @@
+{
+  "query": "INSERT INTO hero_quotes (textZh, textEn, isActive) VALUES\n('活著本身就是一場浩劫，夢是這世界唯一的解脫。', 'Living itself is a havoc, dreaming is the only relief in this world.', 1),\n('用鏡頭捕捉瞬間，用光影訴說故事。', 'Capturing moments through the lens, telling stories with light and shadow.', 1),\n('每一次快門，都是對生命的致敬。', 'Every shutter click is a tribute to life.', 1);",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3KMh2yGgHww6rVT.root --database 3s8FCUF9BWUfzRwVV77JBG --execute INSERT INTO hero_quotes (textZh, textEn, isActive) VALUES\n('活著本身就是一場浩劫，夢是這世界唯一的解脫。', 'Living itself is a havoc, dreaming is the only relief in this world.', 1),\n('用鏡頭捕捉瞬間，用光影訴說故事。', 'Capturing moments through the lens, telling stories with light and shadow.', 1),\n('每一次快門，都是對生命的致敬。', 'Every shutter click is a tribute to life.', 1);",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 1553
+}

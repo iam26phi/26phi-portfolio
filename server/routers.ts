@@ -1081,6 +1081,109 @@ export const appRouter = router({
         return await db.getPhotosByCollaboratorId(input.collaboratorId);
       }),
   }),
+
+  hero: router({
+    // Public endpoints: get active hero slides and quotes
+    getActiveSlides: publicProcedure.query(async () => {
+      return await db.getActiveHeroSlides();
+    }),
+
+    getActiveQuotes: publicProcedure.query(async () => {
+      return await db.getActiveHeroQuotes();
+    }),
+
+    // Admin endpoints: manage hero slides
+    listAllSlides: protectedProcedure.query(async ({ ctx }) => {
+      if (ctx.user.role !== 'admin') {
+        throw new Error('Unauthorized');
+      }
+      return await db.getAllHeroSlides();
+    }),
+
+    createSlide: protectedProcedure
+      .input(z.object({
+        imageUrl: z.string(),
+        title: z.string().optional(),
+        isActive: z.number().optional(),
+        sortOrder: z.number().optional(),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        if (ctx.user.role !== 'admin') {
+          throw new Error('Unauthorized');
+        }
+        return await db.createHeroSlide(input);
+      }),
+
+    updateSlide: protectedProcedure
+      .input(z.object({
+        id: z.number(),
+        imageUrl: z.string().optional(),
+        title: z.string().optional(),
+        isActive: z.number().optional(),
+        sortOrder: z.number().optional(),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        if (ctx.user.role !== 'admin') {
+          throw new Error('Unauthorized');
+        }
+        const { id, ...updates } = input;
+        return await db.updateHeroSlide(id, updates);
+      }),
+
+    deleteSlide: protectedProcedure
+      .input(z.number())
+      .mutation(async ({ input: id, ctx }) => {
+        if (ctx.user.role !== 'admin') {
+          throw new Error('Unauthorized');
+        }
+        return await db.deleteHeroSlide(id);
+      }),
+
+    // Admin endpoints: manage hero quotes
+    listAllQuotes: protectedProcedure.query(async ({ ctx }) => {
+      if (ctx.user.role !== 'admin') {
+        throw new Error('Unauthorized');
+      }
+      return await db.getAllHeroQuotes();
+    }),
+
+    createQuote: protectedProcedure
+      .input(z.object({
+        textZh: z.string(),
+        textEn: z.string(),
+        isActive: z.number().optional(),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        if (ctx.user.role !== 'admin') {
+          throw new Error('Unauthorized');
+        }
+        return await db.createHeroQuote(input);
+      }),
+
+    updateQuote: protectedProcedure
+      .input(z.object({
+        id: z.number(),
+        textZh: z.string().optional(),
+        textEn: z.string().optional(),
+        isActive: z.number().optional(),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        if (ctx.user.role !== 'admin') {
+          throw new Error('Unauthorized');
+        }
+        const { id, ...updates } = input;
+        return await db.updateHeroQuote(id, updates);
+      }),
+
+    deleteQuote: protectedProcedure
+      .input(z.number())
+      .mutation(async ({ input: id, ctx }) => {
+        if (ctx.user.role !== 'admin') {
+          throw new Error('Unauthorized');
+        }
+        return await db.deleteHeroQuote(id);
+      }),
+  }),
 });
 
 export type AppRouter = typeof appRouter;

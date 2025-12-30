@@ -78,6 +78,13 @@
       "when": 1767109473559,
       "tag": "0010_mute_blonde_phantom",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "5",
+      "when": 1767111455099,
+      "tag": "0011_parallel_rogue",
+      "breakpoints": true
     }
   ]
 }

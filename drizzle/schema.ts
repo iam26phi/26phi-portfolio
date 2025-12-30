@@ -201,3 +201,34 @@ export const photoCollaborators = mysqlTable("photo_collaborators", {
 
 export type PhotoCollaborator = typeof photoCollaborators.$inferSelect;
 export type InsertPhotoCollaborator = typeof photoCollaborators.$inferInsert;
+
+/**
+ * Hero Slides table for homepage background carousel
+ */
+export const heroSlides = mysqlTable("hero_slides", {
+  id: int("id").autoincrement().primaryKey(),
+  imageUrl: text("imageUrl").notNull(), // S3 URL for slide image
+  title: varchar("title", { length: 200 }), // Optional title for the slide
+  isActive: int("isActive").default(1).notNull(), // 1 = active, 0 = inactive
+  sortOrder: int("sortOrder").default(0).notNull(), // For manual ordering
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type HeroSlide = typeof heroSlides.$inferSelect;
+export type InsertHeroSlide = typeof heroSlides.$inferInsert;
+
+/**
+ * Hero Quotes table for dynamic homepage slogans
+ */
+export const heroQuotes = mysqlTable("hero_quotes", {
+  id: int("id").autoincrement().primaryKey(),
+  textZh: text("textZh").notNull(), // Chinese quote
+  textEn: text("textEn").notNull(), // English quote
+  isActive: int("isActive").default(1).notNull(), // 1 = active, 0 = inactive
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type HeroQuote = typeof heroQuotes.$inferSelect;
+export type InsertHeroQuote = typeof heroQuotes.$inferInsert;
