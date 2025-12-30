@@ -874,11 +874,12 @@ export const appRouter = router({
       .input(z.object({ username: z.string() }))
       .mutation(async ({ input }) => {
         try {
-          // Fetch Instagram profile page
-          const response = await fetch(`https://www.instagram.com/${input.username}/?__a=1&__d=dis`, {
+          // Fetch Instagram profile page HTML
+          const response = await fetch(`https://www.instagram.com/${input.username}/`, {
             headers: {
-              'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-              'Accept': 'application/json',
+              'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+              'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+              'Accept-Language': 'en-US,en;q=0.5',
             },
           });
 
@@ -886,20 +887,46 @@ export const appRouter = router({
             throw new Error('Failed to fetch Instagram profile');
           }
 
-          const data = await response.json();
-          const profilePicUrl = data?.graphql?.user?.profile_pic_url_hd || 
-                                data?.graphql?.user?.profile_pic_url ||
-                                data?.user?.profile_pic_url_hd ||
-                                data?.user?.profile_pic_url;
-
-          if (!profilePicUrl) {
-            throw new Error('Profile picture not found');
+          const html = await response.text();
+          
+          // Try to extract profile picture URL from meta tags
+          const ogImageMatch = html.match(/<meta property="og:image" content="([^"]+)"/);
+          if (ogImageMatch && ogImageMatch[1]) {
+            return { avatarUrl: ogImageMatch[1] };
           }
 
-          return { avatarUrl: profilePicUrl };
+          // Try to extract from JSON-LD structured data
+          const jsonLdMatch = html.match(/<script type="application\/ld\+json">([^<]+)<\/script>/);
+          if (jsonLdMatch && jsonLdMatch[1]) {
+            try {
+              const jsonData = JSON.parse(jsonLdMatch[1]);
+              if (jsonData.image) {
+                return { avatarUrl: jsonData.image };
+              }
+            } catch (e) {
+              // Continue to next method
+            }
+          }
+
+          // Try to extract from shared data
+          const sharedDataMatch = html.match(/window\._sharedData = ({.+?});<\/script>/);
+          if (sharedDataMatch && sharedDataMatch[1]) {
+            try {
+              const sharedData = JSON.parse(sharedDataMatch[1]);
+              const profilePicUrl = sharedData?.entry_data?.ProfilePage?.[0]?.graphql?.user?.profile_pic_url_hd ||
+                                    sharedData?.entry_data?.ProfilePage?.[0]?.graphql?.user?.profile_pic_url;
+              if (profilePicUrl) {
+                return { avatarUrl: profilePicUrl };
+              }
+            } catch (e) {
+              // Continue
+            }
+          }
+
+          throw new Error('Profile picture not found');
         } catch (error) {
           console.error('Instagram fetch error:', error);
-          throw new Error('無法抓取 Instagram 頭貜，請確認帳號是否正確且為公開帳號');
+          throw new Error('無法抓取 Instagram 頭貜，請確認帳號是否正確且為公開帳號。如果問題持續，請手動上傳頭貜圖片。');
         }
       }),
 

@@ -296,3 +296,10 @@
 - [x] 在合作對象管理頁面新增 Instagram 帳號輸入
 - [x] 實作自動抓取頭貜按鈕
 - [x] 測試 Instagram 頭貜抓取功能
+
+## Bug 修復 - Instagram 頭貜抓取功能
+- [x] 測試現有 Instagram API 實作
+- [x] 研究替代的 Instagram 頭貜抓取方法
+- [x] 修正後端 API 實作
+- [x] 新增頭像設定雙模式（Instagram 抓取 / 手動上傳）
+- [x] 測試修正後的功能

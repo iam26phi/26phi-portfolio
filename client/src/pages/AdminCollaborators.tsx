@@ -361,7 +361,7 @@ export default function AdminCollaborators() {
               </div>
 
               <div>
-                <Label htmlFor="avatar">頭像圖片</Label>
+                <Label>頭像設定</Label>
                 <div className="space-y-4">
                   {avatarPreview && (
                     <div className="flex justify-center">
@@ -372,16 +372,48 @@ export default function AdminCollaborators() {
                       />
                     </div>
                   )}
-                  <Input
-                    id="avatar"
-                    type="file"
-                    accept="image/*"
-                    onChange={handleAvatarChange}
-                    className="cursor-pointer"
-                  />
-                  <p className="text-sm text-muted-foreground">
-                    支援 JPG、PNG、GIF 等圖片格式
-                  </p>
+                  
+                  {/* 頭像設定模式切換 */}
+                  <div className="flex gap-2 border border-border rounded-lg p-1">
+                    <Button
+                      type="button"
+                      variant={avatarFile ? "default" : "ghost"}
+                      size="sm"
+                      className="flex-1"
+                      onClick={() => {
+                        setAvatarFile(null);
+                        document.getElementById('avatar-upload')?.focus();
+                      }}
+                    >
+                      手動上傳
+                    </Button>
+                    <Button
+                      type="button"
+                      variant={!avatarFile ? "default" : "ghost"}
+                      size="sm"
+                      className="flex-1"
+                      onClick={() => {
+                        document.getElementById('instagram')?.focus();
+                      }}
+                    >
+                      Instagram 抓取
+                    </Button>
+                  </div>
+
+                  {/* 手動上傳模式 */}
+                  <div>
+                    <Label htmlFor="avatar-upload">選擇圖片檔案</Label>
+                    <Input
+                      id="avatar-upload"
+                      type="file"
+                      accept="image/*"
+                      onChange={handleAvatarChange}
+                      className="cursor-pointer"
+                    />
+                    <p className="text-sm text-muted-foreground">
+                      支援 JPG、PNG、GIF 等圖片格式
+                    </p>
+                  </div>
                 </div>
               </div>
 
