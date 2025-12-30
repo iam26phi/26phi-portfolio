@@ -1,6 +1,6 @@
 import { eq, and } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users, photos, InsertPhoto, blogPosts, InsertBlogPost, siteSettings, InsertSiteSetting, photoCategories, InsertPhotoCategory, projects, InsertProject, photoProjects, InsertPhotoProject, changelogs, InsertChangelog, contactSubmissions, InsertContactSubmission, collaborators, InsertCollaborator, Collaborator, photoCollaborators, InsertPhotoCollaborator, heroSlides, InsertHeroSlide, heroQuotes, InsertHeroQuote, bookingPackages, InsertBookingPackage } from "../drizzle/schema";
+import { InsertUser, users, photos, InsertPhoto, blogPosts, InsertBlogPost, siteSettings, InsertSiteSetting, photoCategories, InsertPhotoCategory, projects, InsertProject, photoProjects, InsertPhotoProject, changelogs, InsertChangelog, contactSubmissions, InsertContactSubmission, collaborators, InsertCollaborator, Collaborator, photoCollaborators, InsertPhotoCollaborator, heroSlides, InsertHeroSlide, heroQuotes, InsertHeroQuote, bookingPackages, InsertBookingPackage, photoPackageRelations, InsertPhotoPackageRelation } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -948,4 +948,76 @@ export async function updateBookingPackagesOrder(updates: Array<{ id: number; so
   for (const update of updates) {
     await db.update(bookingPackages).set({ sortOrder: update.sortOrder }).where(eq(bookingPackages.id, update.id));
   }
+}
+
+// ============================================
+// Photo-Package Relations Management
+// ============================================
+
+export async function getPhotoPackages(photoId: number) {
+  const db = await getDb();
+  if (!db) return [];
+
+  const relations = await db
+    .select()
+    .from(photoPackageRelations)
+    .where(eq(photoPackageRelations.photoId, photoId));
+
+  return relations.map(r => r.packageId);
+}
+
+export async function updatePhotoPackages(photoId: number, packageIds: number[]) {
+  const db = await getDb();
+  if (!db) return;
+
+  // Delete existing relations
+  await db
+    .delete(photoPackageRelations)
+    .where(eq(photoPackageRelations.photoId, photoId));
+
+  // Remove duplicates from packageIds
+  const uniquePackageIds = Array.from(new Set(packageIds));
+
+  // Insert new relations
+  if (uniquePackageIds.length > 0) {
+    await db.insert(photoPackageRelations).values(
+      uniquePackageIds.map(packageId => ({
+        photoId,
+        packageId,
+      }))
+    );
+  }
+}
+
+export async function getPackagePhotos(packageId: number) {
+  const db = await getDb();
+  if (!db) return [];
+
+  const relations = await db
+    .select()
+    .from(photoPackageRelations)
+    .where(eq(photoPackageRelations.packageId, packageId));
+
+  if (relations.length === 0) return [];
+
+  // Fetch photos
+  const photoIds = relations.map(r => r.photoId);
+  const packagePhotos = await db
+    .select()
+    .from(photos)
+    .where(eq(photos.id, photoIds[0])); // Start with first photo
+
+  // Fetch all photos with matching IDs
+  const allPhotos = [];
+  for (const photoId of photoIds) {
+    const photo = await db
+      .select()
+      .from(photos)
+      .where(eq(photos.id, photoId));
+    if (photo.length > 0) {
+      allPhotos.push(photo[0]);
+    }
+  }
+
+  return allPhotos;
 }

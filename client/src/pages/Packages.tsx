@@ -98,6 +98,9 @@ type PackageCardProps = {
 function PackageCard({ package: pkg }: PackageCardProps) {
   const features = pkg.description?.split('\n').filter(line => line.trim()) || [];
   const isSpecialOffer = pkg.name.includes("第一組") || pkg.price < 3000;
+  
+  // Load photos associated with this package
+  const { data: photos } = trpc.bookingPackages.getPhotos.useQuery({ packageId: pkg.id });
 
   return (
     <div className="group relative bg-white/5 border border-white/10 rounded-2xl p-6 sm:p-8 hover:bg-white/10 hover:border-white/20 transition-all duration-300 h-full flex flex-col">
@@ -142,6 +145,27 @@ function PackageCard({ package: pkg }: PackageCardProps) {
               </li>
             ))}
           </ul>
+        </div>
+      )}
+      
+      {/* Sample Photos */}
+      {photos && photos.length > 0 && (
+        <div className="mb-6">
+          <h4 className="text-sm font-semibold text-neutral-400 mb-3">作品範例</h4>
+          <div className="grid grid-cols-3 gap-2">
+            {photos.slice(0, 3).map((photo) => (
+              <div key={photo.id} className="aspect-square overflow-hidden rounded-lg bg-neutral-900">
+                <img
+                  src={photo.src}
+                  alt={photo.displayTitle || photo.alt}
+                  className="w-full h-full object-cover hover:scale-110 transition-transform duration-300"
+                />
+              </div>
+            ))}
+          </div>
+          {photos.length > 3 && (
+            <p className="text-xs text-neutral-500 mt-2 text-center">及其他 {photos.length - 3} 張作品</p>
+          )}
         </div>
       )}
 

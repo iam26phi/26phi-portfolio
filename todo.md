@@ -554,3 +554,35 @@
 - [x] 測試專案列表頁面導航（成功顯示所有連結）
 - [x] 測試專案詳情頁面導航（使用統一 Navigation）
 - [x] 確認導航連結功能正常（PORTFOLIO/ABOUT/BLOG/PROJECTS/PACKAGES/CHANGELOG/CONTACT）
+
+## 功能開發 - 照片與拍攝方案關聯
+
+### 資料庫設計
+- [x] 建立 photo_package_relations 關聯表（photoId, packageId, createdAt）
+- [x] 執行資料庫遷移（drizzle-kit generate & migrate）
+
+### 後端 API
+- [x] photos.getPackages API（查詢照片關聯的方案 ID 陣列）
+- [x] photos.updatePackages API（更新照片的方案標籤，支援多選）
+- [x] bookingPackages.getPhotos API（查詢方案關聯的照片完整資料）
+
+### 後台照片管理
+- [ ] Admin 照片卡片新增「方案標籤」顯示（待實作）
+- [x] 照片編輯對話框新增方案多選選擇器
+- [x] 載入現有照片的方案標籤（handleEdit）
+- [x] 更新方案標籤（handleSubmit + updatePackagesMutation）
+- [ ] 批次操作新增「設定方案標籤」功能（待實作）
+
+### 方案頁面展示
+- [x] Packages 頁面方案卡片顯示關聯照片
+- [x] 照片網格展示（3x3 格局，最多顯示 3 張）
+- [x] 照片 hover 縮放效果
+- [x] 顯示其他照片數量提示
+- [ ] AdminPackages 顯示方案照片數量（待實作）
+
+### 測試
+- [x] 測試照片方案關聯 CRUD（8 個單元測試全部通過）
+- [x] 測試多對多關聯（多張照片對應一個方案）
+- [x] 測試方案照片查詢（getPackagePhotos）
+- [x] 測試重複 ID 去重（Array.from(new Set())）
+- [x] 測試空陣列處理

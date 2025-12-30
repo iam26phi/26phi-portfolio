@@ -59,6 +59,7 @@ type PhotoFormData = {
   category: string;
   collaboratorId?: number | null; // Kept for backward compatibility
   collaboratorIds?: number[]; // New: support multiple collaborators
+  packageIds?: number[]; // New: support multiple booking packages
   location: string;
   date: string;
   description: string;
@@ -104,12 +105,17 @@ export default function Admin() {
     updatedAt: Date;
   }>>([]);
   
+  const trpcUtils = trpc.useUtils();
+  
   const { data: photos, isLoading, refetch } = trpc.photos.listAll.useQuery(undefined, {
     enabled: isAuthenticated && user?.role === "admin",
   });
   
   const { data: categories } = trpc.photoCategories.list.useQuery();
   const { data: collaborators } = trpc.collaborators.listAll.useQuery(undefined, {
+    enabled: isAuthenticated && user?.role === "admin",
+  });
+  const { data: packages } = trpc.bookingPackages.listAll.useQuery(undefined, {
     enabled: isAuthenticated && user?.role === "admin",
   });
 
@@ -260,6 +266,16 @@ export default function Admin() {
       } else {
         toast.error(`加入輪播失敗: ${error.message}`);
       }
+    },
+  });
+
+  const updatePackagesMutation = trpc.photos.updatePackages.useMutation({
+    onSuccess: () => {
+      toast.success("方案標籤已更新！");
+      refetch();
+    },
+    onError: (error) => {
+      toast.error(error.message || "更新方案標籤失敗");
     },
   });
 
@@ -491,13 +507,19 @@ export default function Admin() {
     });
   };
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
     
     // Get multiple collaborator IDs
     const collaboratorIdsValues = formData.getAll("collaboratorIds") as string[];
     const collaboratorIds = collaboratorIdsValues
+      .filter(v => v && v !== "")
+      .map(v => Number(v));
+    
+    // Get multiple package IDs
+    const packageIdsValues = formData.getAll("packageIds") as string[];
+    const packageIds = packageIdsValues
       .filter(v => v && v !== "")
       .map(v => Number(v));
     
@@ -518,14 +540,27 @@ export default function Admin() {
     };
 
     if (editingPhoto?.id) {
-      updateMutation.mutate({ id: editingPhoto.id, ...data });
+      await updateMutation.mutateAsync({ id: editingPhoto.id, ...data });
+      // Update package associations
+      await updatePackagesMutation.mutateAsync({ photoId: editingPhoto.id, packageIds });
     } else {
-      createMutation.mutate(data);
+      const newPhoto = await createMutation.mutateAsync(data);
+      // Update package associations for new photo
+      if (newPhoto && packageIds.length > 0) {
+        await updatePackagesMutation.mutateAsync({ photoId: newPhoto.id, packageIds });
+      }
     }
   };
 
-  const handleEdit = (photo: any) => {
+  const handleEdit = async (photo: any) => {
     setEditingPhoto(photo);
+    // Load photo's package associations
+    try {
+      const packageIds = await trpcUtils.photos.getPackages.fetch({ photoId: photo.id });
+      setEditingPhoto({ ...photo, packageIds });
+    } catch (error) {
+      console.error('Failed to load package associations:', error);
+    }
     setIsDialogOpen(true);
   };
 
@@ -912,6 +947,22 @@ export default function Admin() {
                     ))}
                   </select>
                   <p className="text-xs text-muted-foreground mt-1">按住 Ctrl/Cmd 鍵可選擇多個合作對象</p>
+                </div>
+
+                <div>
+                  <Label htmlFor="packageIds">拍攝方案標籤（可選，可多選）</Label>
+                  <select
+                    id="packageIds"
+                    name="packageIds"
+                    multiple
+                    defaultValue={(editingPhoto?.packageIds || []).map((id: number) => String(id))}
+                    className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    {packages?.map((pkg) => (
+                      <option key={pkg.id} value={String(pkg.id)}>{pkg.name}</option>
+                    ))}
+                  </select>
+                  <p className="text-xs text-muted-foreground mt-1">按住 Ctrl/Cmd 鍵可選擇多個方案，選中的照片會顯示在對應方案頁面</p>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">

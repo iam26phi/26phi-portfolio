@@ -251,6 +251,29 @@ export const appRouter = router({
           key: result.key,
         };
       }),
+
+    // Photo-Package association endpoints
+    getPackages: protectedProcedure
+      .input(z.object({ photoId: z.number() }))
+      .query(async ({ input, ctx }) => {
+        if (ctx.user.role !== 'admin') {
+          throw new Error('Unauthorized');
+        }
+        return await db.getPhotoPackages(input.photoId);
+      }),
+
+    updatePackages: protectedProcedure
+      .input(z.object({
+        photoId: z.number(),
+        packageIds: z.array(z.number()),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        if (ctx.user.role !== 'admin') {
+          throw new Error('Unauthorized');
+        }
+        await db.updatePhotoPackages(input.photoId, input.packageIds);
+        return { success: true };
+      }),
   }),
 
   blog: router({
@@ -1298,6 +1321,13 @@ export const appRouter = router({
           throw new Error('Unauthorized');
         }
         return await db.updateBookingPackagesOrder(input);
+      }),
+
+    // Get photos associated with a package
+    getPhotos: publicProcedure
+      .input(z.object({ packageId: z.number() }))
+      .query(async ({ input }) => {
+        return await db.getPackagePhotos(input.packageId);
       }),
   }),
 });

@@ -251,3 +251,17 @@ export const bookingPackages = mysqlTable("booking_packages", {
 
 export type BookingPackage = typeof bookingPackages.$inferSelect;
 export type InsertBookingPackage = typeof bookingPackages.$inferInsert;
+
+/**
+ * Photo-Package Relations table (many-to-many)
+ * Links photos to booking packages for display on package pages
+ */
+export const photoPackageRelations = mysqlTable("photo_package_relations", {
+  id: int("id").autoincrement().primaryKey(),
+  photoId: int("photoId").notNull(),
+  packageId: int("packageId").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type PhotoPackageRelation = typeof photoPackageRelations.$inferSelect;
+export type InsertPhotoPackageRelation = typeof photoPackageRelations.$inferInsert;
