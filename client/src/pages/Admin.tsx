@@ -82,6 +82,7 @@ export default function Admin() {
   const [selectedPhotoIds, setSelectedPhotoIds] = useState<Set<number>>(new Set());
   const [batchCategory, setBatchCategory] = useState<string>("");
   const [isBatchCategoryDialogOpen, setIsBatchCategoryDialogOpen] = useState(false);
+  const [filterCollaboratorId, setFilterCollaboratorId] = useState<number | null>(null);
   const [sortedPhotos, setSortedPhotos] = useState<Array<{
     id: number;
     src: string;
@@ -123,12 +124,16 @@ export default function Admin() {
     },
   });
 
-  // Update sorted photos when data changes
+  // Update sorted photos when data changes or filter changes
   useEffect(() => {
     if (photos) {
-      setSortedPhotos([...photos].sort((a, b) => a.sortOrder - b.sortOrder));
+      let filtered = photos;
+      if (filterCollaboratorId !== null) {
+        filtered = photos.filter(photo => photo.collaboratorId === filterCollaboratorId);
+      }
+      setSortedPhotos([...filtered].sort((a, b) => a.sortOrder - b.sortOrder));
     }
-  }, [photos]);
+  }, [photos, filterCollaboratorId]);
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
@@ -238,10 +243,10 @@ export default function Admin() {
   };
 
   const selectAllPhotos = () => {
-    if (selectedPhotoIds.size === photos?.length) {
+    if (selectedPhotoIds.size === sortedPhotos?.length) {
       setSelectedPhotoIds(new Set());
     } else {
-      setSelectedPhotoIds(new Set(photos?.map(p => p.id) || []));
+      setSelectedPhotoIds(new Set(sortedPhotos?.map(p => p.id) || []));
     }
   };
 
@@ -659,8 +664,24 @@ export default function Admin() {
               
               {isBatchMode && (
                 <>
+                  <Select value={filterCollaboratorId?.toString() || "all"} onValueChange={(value) => {
+                    setFilterCollaboratorId(value === "all" ? null : parseInt(value));
+                    setSelectedPhotoIds(new Set());
+                  }}>
+                    <SelectTrigger className="w-[200px]">
+                      <SelectValue placeholder="篩選合作對象" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">所有合作對象</SelectItem>
+                      {collaborators?.map((collab) => (
+                        <SelectItem key={collab.id} value={collab.id.toString()}>
+                          {collab.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                   <Button variant="outline" size="sm" onClick={selectAllPhotos}>
-                    {selectedPhotoIds.size === photos?.length ? "取消全選" : "全選"}
+                    {selectedPhotoIds.size === sortedPhotos?.length ? "取消全選" : "全選"}
                   </Button>
                   <span className="text-sm text-muted-foreground">
                     已選擇 {selectedPhotoIds.size} 張
