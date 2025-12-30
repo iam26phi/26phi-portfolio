@@ -16,9 +16,20 @@ export default function Contact() {
     email: "",
     shootingType: "",
     budget: "",
+    packageId: "",
     message: "",
   });
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [selectedPackage, setSelectedPackage] = useState<{
+    id: number;
+    name: string;
+    price: number;
+    duration: number;
+    description: string | null;
+  } | null>(null);
+
+  // Fetch active booking packages
+  const { data: packages } = trpc.bookingPackages.list.useQuery();
 
   const submitMutation = trpc.contact.create.useMutation({
     onSuccess: () => {
@@ -31,8 +42,10 @@ export default function Contact() {
           email: "",
           shootingType: "",
           budget: "",
+          packageId: "",
           message: "",
         });
+        setSelectedPackage(null);
         setIsSubmitted(false);
       }, 3000);
     },
@@ -45,7 +58,7 @@ export default function Contact() {
     e.preventDefault();
     
     // Validation
-    if (!formData.name || !formData.email || !formData.shootingType || !formData.budget || !formData.message) {
+    if (!formData.name || !formData.email || !formData.shootingType || !formData.message) {
       toast.error("請填寫所有必填欄位");
       return;
     }
@@ -60,6 +73,30 @@ export default function Contact() {
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handlePackageChange = (packageId: string) => {
+    handleInputChange("packageId", packageId);
+    if (packageId && packages) {
+      const pkg = packages.find(p => p.id === parseInt(packageId));
+      setSelectedPackage(pkg || null);
+      // Auto-fill budget based on package price
+      if (pkg) {
+        if (pkg.price < 10000) {
+          handleInputChange("budget", "under-10k");
+        } else if (pkg.price <= 30000) {
+          handleInputChange("budget", "10k-30k");
+        } else if (pkg.price <= 50000) {
+          handleInputChange("budget", "30k-50k");
+        } else if (pkg.price <= 100000) {
+          handleInputChange("budget", "50k-100k");
+        } else {
+          handleInputChange("budget", "over-100k");
+        }
+      }
+    } else {
+      setSelectedPackage(null);
+    }
   };
 
   return (
@@ -206,8 +243,41 @@ export default function Contact() {
                     </Select>
                   </div>
 
+                  {packages && packages.length > 0 && (
+                    <div>
+                      <Label htmlFor="package" className="text-sm sm:text-base">拍攝方案（可選）</Label>
+                      <Select value={formData.packageId} onValueChange={handlePackageChange}>
+                        <SelectTrigger className="mt-2 bg-white/5 border-white/10 text-white text-sm sm:text-base h-10 sm:h-11">
+                          <SelectValue placeholder="選擇預設方案或自訂預算" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="custom">自訂預算</SelectItem>
+                          {packages.map((pkg) => (
+                            <SelectItem key={pkg.id} value={String(pkg.id)}>
+                              {pkg.name} - ${pkg.price.toLocaleString()} / {pkg.duration}分鐘
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      {selectedPackage && (
+                        <div className="mt-3 p-3 bg-white/5 border border-white/10 rounded-lg">
+                          <div className="flex justify-between items-start mb-2">
+                            <h4 className="font-semibold text-sm">{selectedPackage.name}</h4>
+                            <span className="font-mono font-bold text-sm">${selectedPackage.price.toLocaleString()} NTD</span>
+                          </div>
+                          <div className="flex items-center gap-2 text-xs text-neutral-400 mb-2">
+                            <span>時長：{selectedPackage.duration} 分鐘</span>
+                          </div>
+                          {selectedPackage.description && (
+                            <p className="text-xs text-neutral-400">{selectedPackage.description}</p>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  )}
+
                   <div>
-                    <Label htmlFor="budget" className="text-sm sm:text-base">預算範圍 *</Label>
+                    <Label htmlFor="budget" className="text-sm sm:text-base">預算範圍{selectedPackage ? '' : ' *'}</Label>
                     <Select value={formData.budget} onValueChange={(value) => handleInputChange("budget", value)}>
                       <SelectTrigger className="mt-2 bg-white/5 border-white/10 text-white text-sm sm:text-base h-10 sm:h-11">
                         <SelectValue placeholder="請選擇預算範圍" />

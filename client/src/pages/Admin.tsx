@@ -640,6 +640,10 @@ export default function Admin() {
                 <Mail className="w-4 h-4 mr-2" />
                 聯絡表單
               </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => window.location.href = "/admin/packages"}>
+                <Settings className="w-4 h-4 mr-2" />
+                拍攝方案
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
           

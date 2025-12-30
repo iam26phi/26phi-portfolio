@@ -18,6 +18,7 @@ import AdminProjectPhotos from "./pages/AdminProjectPhotos";
 import AdminChangelogs from "./pages/AdminChangelogs";
 import AdminContact from "./pages/AdminContact";
 import AdminCollaborators from "./pages/AdminCollaborators";
+import AdminPackages from "./pages/AdminPackages";
 import CollaboratorDetail from "./pages/CollaboratorDetail";
 import Projects from "./pages/Projects";
 import ProjectDetail from "./pages/ProjectDetail";
@@ -48,6 +49,7 @@ function Router() {
       <Route path={"/admin/projects/:id/photos"} component={AdminProjectPhotos} />
       <Route path={"/admin/changelogs"} component={AdminChangelogs} />
       <Route path={"/admin/contact"} component={AdminContact} />
+      <Route path={"/admin/packages"} component={AdminPackages} />
       <Route path={"/admin/collaborators"} component={AdminCollaborators} />
       <Route path={"/admin/blog"} component={AdminBlog} />
       <Route path={"/admin/blog/new"} component={AdminBlogEditor} />

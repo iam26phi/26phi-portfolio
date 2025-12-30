@@ -233,3 +233,21 @@ export const heroQuotes = mysqlTable("hero_quotes", {
 
 export type HeroQuote = typeof heroQuotes.$inferSelect;
 export type InsertHeroQuote = typeof heroQuotes.$inferInsert;
+
+/**
+ * Booking Packages table for photography session packages
+ */
+export const bookingPackages = mysqlTable("booking_packages", {
+  id: int("id").autoincrement().primaryKey(),
+  name: varchar("name", { length: 200 }).notNull(), // Package name (e.g., "每月第一組拍攝")
+  price: int("price").notNull(), // Price in NTD
+  duration: int("duration").notNull(), // Duration in minutes
+  description: text("description"), // Optional package description
+  isActive: int("isActive").default(1).notNull(), // 1 = active, 0 = inactive
+  sortOrder: int("sortOrder").default(0).notNull(), // For manual ordering
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type BookingPackage = typeof bookingPackages.$inferSelect;
+export type InsertBookingPackage = typeof bookingPackages.$inferInsert;

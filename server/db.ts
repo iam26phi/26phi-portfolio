@@ -1,6 +1,6 @@
 import { eq, and } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users, photos, InsertPhoto, blogPosts, InsertBlogPost, siteSettings, InsertSiteSetting, photoCategories, InsertPhotoCategory, projects, InsertProject, photoProjects, InsertPhotoProject, changelogs, InsertChangelog, contactSubmissions, InsertContactSubmission, collaborators, InsertCollaborator, Collaborator, photoCollaborators, InsertPhotoCollaborator, heroSlides, InsertHeroSlide, heroQuotes, InsertHeroQuote } from "../drizzle/schema";
+import { InsertUser, users, photos, InsertPhoto, blogPosts, InsertBlogPost, siteSettings, InsertSiteSetting, photoCategories, InsertPhotoCategory, projects, InsertProject, photoProjects, InsertPhotoProject, changelogs, InsertChangelog, contactSubmissions, InsertContactSubmission, collaborators, InsertCollaborator, Collaborator, photoCollaborators, InsertPhotoCollaborator, heroSlides, InsertHeroSlide, heroQuotes, InsertHeroQuote, bookingPackages, InsertBookingPackage } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -875,4 +875,77 @@ export async function deleteHeroQuote(id: number) {
   }
 
   await db.delete(heroQuotes).where(eq(heroQuotes.id, id));
+}
+
+// Booking Packages management functions
+export async function getAllBookingPackages() {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot get booking packages: database not available");
+    return [];
+  }
+
+  return await db.select().from(bookingPackages).orderBy(bookingPackages.sortOrder);
+}
+
+export async function getActiveBookingPackages() {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot get active booking packages: database not available");
+    return [];
+  }
+
+  return await db.select().from(bookingPackages).where(eq(bookingPackages.isActive, 1)).orderBy(bookingPackages.sortOrder);
+}
+
+export async function getBookingPackageById(id: number) {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot get booking package: database not available");
+    return undefined;
+  }
+
+  const result = await db.select().from(bookingPackages).where(eq(bookingPackages.id, id)).limit(1);
+  return result.length > 0 ? result[0] : undefined;
+}
+
+export async function createBookingPackage(pkg: InsertBookingPackage) {
+  const db = await getDb();
+  if (!db) {
+    throw new Error("Database not available");
+  }
+
+  const result = await db.insert(bookingPackages).values(pkg);
+  const insertId = Number(result[0].insertId);
+  return await getBookingPackageById(insertId);
+}
+
+export async function updateBookingPackage(id: number, updates: Partial<InsertBookingPackage>) {
+  const db = await getDb();
+  if (!db) {
+    throw new Error("Database not available");
+  }
+
+  await db.update(bookingPackages).set(updates).where(eq(bookingPackages.id, id));
+  return await getBookingPackageById(id);
+}
+
+export async function deleteBookingPackage(id: number) {
+  const db = await getDb();
+  if (!db) {
+    throw new Error("Database not available");
+  }
+
+  await db.delete(bookingPackages).where(eq(bookingPackages.id, id));
+}
+
+export async function updateBookingPackagesOrder(updates: Array<{ id: number; sortOrder: number }>) {
+  const db = await getDb();
+  if (!db) {
+    throw new Error("Database not available");
+  }
+
+  for (const update of updates) {
+    await db.update(bookingPackages).set({ sortOrder: update.sortOrder }).where(eq(bookingPackages.id, update.id));
+  }
 }

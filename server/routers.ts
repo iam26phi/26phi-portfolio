@@ -1221,6 +1221,85 @@ export const appRouter = router({
         return await db.deleteHeroQuote(id);
       }),
   }),
+
+  bookingPackages: router({
+    // Public endpoint: get active booking packages
+    list: publicProcedure.query(async () => {
+      return await db.getActiveBookingPackages();
+    }),
+
+    // Admin endpoints: manage booking packages
+    listAll: protectedProcedure.query(async ({ ctx }) => {
+      if (ctx.user.role !== 'admin') {
+        throw new Error('Unauthorized');
+      }
+      return await db.getAllBookingPackages();
+    }),
+
+    getById: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .query(async ({ input, ctx }) => {
+        if (ctx.user.role !== 'admin') {
+          throw new Error('Unauthorized');
+        }
+        return await db.getBookingPackageById(input.id);
+      }),
+
+    create: protectedProcedure
+      .input(z.object({
+        name: z.string(),
+        price: z.number(),
+        duration: z.number(),
+        description: z.string().optional(),
+        isActive: z.number().optional(),
+        sortOrder: z.number().optional(),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        if (ctx.user.role !== 'admin') {
+          throw new Error('Unauthorized');
+        }
+        return await db.createBookingPackage(input);
+      }),
+
+    update: protectedProcedure
+      .input(z.object({
+        id: z.number(),
+        name: z.string().optional(),
+        price: z.number().optional(),
+        duration: z.number().optional(),
+        description: z.string().optional(),
+        isActive: z.number().optional(),
+        sortOrder: z.number().optional(),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        if (ctx.user.role !== 'admin') {
+          throw new Error('Unauthorized');
+        }
+        const { id, ...updates } = input;
+        return await db.updateBookingPackage(id, updates);
+      }),
+
+    delete: protectedProcedure
+      .input(z.number())
+      .mutation(async ({ input: id, ctx }) => {
+        if (ctx.user.role !== 'admin') {
+          throw new Error('Unauthorized');
+        }
+        return await db.deleteBookingPackage(id);
+      }),
+
+    updateOrder: protectedProcedure
+      .input(z.array(z.object({
+        id: z.number(),
+        sortOrder: z.number(),
+      })))
+      .mutation(async ({ input, ctx }) => {
+        if (ctx.user.role !== 'admin') {
+          throw new Error('Unauthorized');
+        }
+        return await db.updateBookingPackagesOrder(input);
+      }),
+  }),
 });
 
 export type AppRouter = typeof appRouter;

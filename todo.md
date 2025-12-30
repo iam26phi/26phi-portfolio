@@ -474,3 +474,41 @@
 - [x] 測試 loading 狀態（狀態轉換測試）
 - [x] 測試多張照片狀態追蹤
 - [x] 測試 refetch 後狀態維持
+
+## 功能開發 - 預約表單拍攝方案管理
+
+### 資料庫設計
+- [x] 建立 booking_packages 資料表（名稱、價格、時長、描述、啟用狀態、排序）
+- [x] 新增預設方案：每月第一組拍攝 $2,000 / 一小時、人像拍攝 $4,000 / 一小時
+- [x] 執行資料庫遷移（drizzle-kit generate & migrate）
+
+### 後端 API
+- [x] bookingPackages.list（公開查詢啟用的方案）
+- [x] bookingPackages.listAll（管理員查詢所有方案）
+- [x] bookingPackages.create（管理員新增方案）
+- [x] bookingPackages.update（管理員更新方案）
+- [x] bookingPackages.delete（管理員刪除方案）
+- [x] bookingPackages.updateOrder（管理員排序方案）
+
+### 管理介面
+- [x] Admin 頁面新增「拍攝方案」選項（管理選單）
+- [x] 建立 AdminPackages 頁面（/admin/packages）
+- [x] 方案列表顯示（名稱、價格、時長、啟用狀態）
+- [x] 新增/編輯方案對話框
+- [x] 刪除方案確認
+- [x] 拖放排序功能（dnd-kit）
+- [x] 啟用/停用切換
+
+### 預約表單整合
+- [x] Contact 頁面預約表單新增方案選擇下拉選單
+- [x] 選擇方案後自動顯示價格、時長和描述資訊
+- [x] 自動根據方案價格填入預算範圍
+- [x] 表單提交包含選擇的方案 ID
+
+### 測試
+- [x] 測試方案 CRUD 操作（12 個單元測試全部通過）
+- [x] 測試方案排序功能（updateOrder + sortOrder 驗證）
+- [x] 測試公開 API 只返回啟用方案
+- [x] 測試啟用/停用狀態切換
+- [x] 測試權限控制（非管理員無法操作）
+- [x] 測試預設方案存在（每月第一組、人像拍攝）
