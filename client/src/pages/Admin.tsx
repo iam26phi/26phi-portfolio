@@ -54,11 +54,15 @@ type PhotoFormData = {
   id?: number;
   src: string;
   alt: string;
+  displayTitle?: string;
   category: string;
   collaboratorId?: number | null;
   location: string;
   date: string;
   description: string;
+  camera?: string;
+  lens?: string;
+  settings?: string;
   isVisible: number;
   sortOrder: number;
 };
@@ -451,11 +455,15 @@ export default function Admin() {
     const data = {
       src: formData.get("src") as string,
       alt: formData.get("alt") as string,
+      displayTitle: formData.get("displayTitle") as string || undefined,
       category: formData.get("category") as string,
       collaboratorId: collaboratorIdValue && collaboratorIdValue !== "" ? Number(collaboratorIdValue) : null,
       location: formData.get("location") as string,
       date: formData.get("date") as string,
       description: formData.get("description") as string,
+      camera: formData.get("camera") as string || undefined,
+      lens: formData.get("lens") as string || undefined,
+      settings: formData.get("settings") as string || undefined,
       isVisible: Number(formData.get("isVisible")),
       sortOrder: Number(formData.get("sortOrder")),
     };
@@ -789,13 +797,25 @@ export default function Admin() {
                 </div>
 
                 <div>
-                  <Label htmlFor="alt">標題</Label>
+                  <Label htmlFor="alt">檔案名稱（內部使用）</Label>
                   <Input
                     id="alt"
                     name="alt"
                     defaultValue={editingPhoto?.alt || ""}
                     required
+                    placeholder="例如：IMG_1234"
                   />
+                </div>
+
+                <div>
+                  <Label htmlFor="displayTitle">顯示標題（可選）</Label>
+                  <Input
+                    id="displayTitle"
+                    name="displayTitle"
+                    defaultValue={editingPhoto?.displayTitle || ""}
+                    placeholder="例如：台北街頭 / Taipei Street"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">留空則顯示檔案名稱</p>
                 </div>
 
                 <div>
@@ -857,6 +877,41 @@ export default function Admin() {
                     defaultValue={editingPhoto?.description || ""}
                     rows={3}
                   />
+                </div>
+
+                <div className="border-t pt-4">
+                  <h3 className="text-sm font-semibold mb-3">器材資訊（可選）</h3>
+                  <div className="space-y-3">
+                    <div>
+                      <Label htmlFor="camera">相機</Label>
+                      <Input
+                        id="camera"
+                        name="camera"
+                        defaultValue={editingPhoto?.camera || ""}
+                        placeholder="例如：Sony A1ii"
+                      />
+                    </div>
+
+                    <div>
+                      <Label htmlFor="lens">鏡頭</Label>
+                      <Input
+                        id="lens"
+                        name="lens"
+                        defaultValue={editingPhoto?.lens || ""}
+                        placeholder="例如：Sony 35mm f/1.4 GM"
+                      />
+                    </div>
+
+                    <div>
+                      <Label htmlFor="settings">拍攝參數</Label>
+                      <Input
+                        id="settings"
+                        name="settings"
+                        defaultValue={editingPhoto?.settings || ""}
+                        placeholder="例如：ISO 400, f/1.4, 1/200s"
+                      />
+                    </div>
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">

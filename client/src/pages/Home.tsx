@@ -261,7 +261,7 @@ export default function Home() {
                     </p>
                   )}
                   <h3 className="text-sm sm:text-base md:text-lg font-bold tracking-tight">
-                    {photo.alt}
+                    {photo.displayTitle || photo.alt}
                   </h3>
                 </div>
               </motion.div>

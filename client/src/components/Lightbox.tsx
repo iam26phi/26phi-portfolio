@@ -6,10 +6,16 @@ type Photo = {
   id: number;
   src: string;
   alt: string;
+  displayTitle?: string | null;
   category: string;
   location: string | null;
   date: string | null;
   description: string | null;
+  camera?: string | null;
+  lens?: string | null;
+  settings?: string | null;
+  collaboratorName?: string | null;
+  collaboratorInstagram?: string | null;
   isVisible: number;
   sortOrder: number;
   createdAt: Date;
@@ -292,21 +298,49 @@ export default function Lightbox({ photo, onClose, onNext, onPrev, hasNext, hasP
               {photo.category}
             </p>
             <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tighter leading-none text-white">
-              {photo.alt}
+              {photo.displayTitle || photo.alt}
             </h2>
           </div>
 
           <div className="h-px w-full bg-neutral-800" />
 
-          <div className="grid grid-cols-2 gap-4 sm:gap-6 text-xs sm:text-sm font-mono text-neutral-400">
-            <div>
-              <span className="block text-neutral-600 text-xs mb-1 uppercase">Date</span>
-              {photo.date || "Unknown"}
-            </div>
-            <div>
-              <span className="block text-neutral-600 text-xs mb-1 uppercase">Location</span>
-              {photo.location || "Unknown"}
-            </div>
+          <div className="space-y-3 sm:space-y-4 text-xs sm:text-sm font-mono text-neutral-400">
+            {photo.date && (
+              <div>
+                <span className="block text-neutral-600 text-xs mb-1 uppercase">Date</span>
+                {photo.date}
+              </div>
+            )}
+            {photo.location && (
+              <div>
+                <span className="block text-neutral-600 text-xs mb-1 uppercase">Location</span>
+                {photo.location}
+              </div>
+            )}
+            {photo.collaboratorName && (
+              <div>
+                <span className="block text-neutral-600 text-xs mb-1 uppercase">Collaborator</span>
+                <div>{photo.collaboratorName}</div>
+                {photo.collaboratorInstagram && (
+                  <a
+                    href={`https://instagram.com/${photo.collaboratorInstagram.replace('@', '')}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-400 hover:text-blue-300 transition-colors"
+                  >
+                    @{photo.collaboratorInstagram.replace('@', '')}
+                  </a>
+                )}
+              </div>
+            )}
+            {(photo.camera || photo.lens) && (
+              <div>
+                <span className="block text-neutral-600 text-xs mb-1 uppercase">Gear</span>
+                {photo.camera && <div>{photo.camera}</div>}
+                {photo.lens && <div className="text-neutral-500">{photo.lens}</div>}
+                {photo.settings && <div className="text-neutral-600 text-xs mt-1">{photo.settings}</div>}
+              </div>
+            )}
           </div>
           
           <div className="text-neutral-400 text-xs sm:text-sm leading-relaxed font-light">

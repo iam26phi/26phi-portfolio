@@ -65,12 +65,16 @@ export const photos = mysqlTable("photos", {
   id: int("id").autoincrement().primaryKey(),
   src: text("src").notNull(), // S3 URL or local path
   alt: text("alt").notNull(),
+  displayTitle: varchar("displayTitle", { length: 255 }), // User-friendly display title (overrides alt)
   category: varchar("category", { length: 100 }).notNull(), // Changed from enum to varchar for dynamic categories
   projectId: int("projectId"), // Optional reference to projects table
   collaboratorId: int("collaboratorId"), // Optional reference to collaborators table
   location: varchar("location", { length: 255 }),
   date: varchar("date", { length: 50 }),
   description: text("description"),
+  camera: varchar("camera", { length: 100 }), // Camera model (e.g., "Sony A1ii")
+  lens: varchar("lens", { length: 100 }), // Lens model (e.g., "Sony 35mm f/1.4 GM")
+  settings: varchar("settings", { length: 255 }), // Shooting settings (e.g., "ISO 400, f/1.4, 1/200s")
   isVisible: int("isVisible").default(1).notNull(), // 1 = visible, 0 = hidden
   sortOrder: int("sortOrder").default(0).notNull(), // For manual ordering
   createdAt: timestamp("createdAt").defaultNow().notNull(),

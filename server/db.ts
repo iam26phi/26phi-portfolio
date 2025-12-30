@@ -107,7 +107,34 @@ export async function getVisiblePhotos() {
     return [];
   }
 
-  return await db.select().from(photos).where(eq(photos.isVisible, 1)).orderBy(photos.sortOrder);
+  const result = await db
+    .select({
+      id: photos.id,
+      src: photos.src,
+      alt: photos.alt,
+      displayTitle: photos.displayTitle,
+      category: photos.category,
+      projectId: photos.projectId,
+      collaboratorId: photos.collaboratorId,
+      location: photos.location,
+      date: photos.date,
+      description: photos.description,
+      camera: photos.camera,
+      lens: photos.lens,
+      settings: photos.settings,
+      isVisible: photos.isVisible,
+      sortOrder: photos.sortOrder,
+      createdAt: photos.createdAt,
+      updatedAt: photos.updatedAt,
+      collaboratorName: collaborators.name,
+      collaboratorInstagram: collaborators.instagram,
+    })
+    .from(photos)
+    .leftJoin(collaborators, eq(photos.collaboratorId, collaborators.id))
+    .where(eq(photos.isVisible, 1))
+    .orderBy(photos.sortOrder);
+
+  return result;
 }
 
 export async function getPhotoById(id: number) {
