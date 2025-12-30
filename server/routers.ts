@@ -50,7 +50,8 @@ export const appRouter = router({
         alt: z.string(),
         displayTitle: z.string().optional(),
         category: z.string(),
-        collaboratorId: z.number().nullable().optional(),
+        collaboratorId: z.number().nullable().optional(), // Kept for backward compatibility
+        collaboratorIds: z.array(z.number()).optional(), // New: support multiple collaborators
         location: z.string().optional(),
         date: z.string().optional(),
         description: z.string().optional(),
@@ -64,7 +65,15 @@ export const appRouter = router({
         if (ctx.user.role !== 'admin') {
           throw new Error('Unauthorized');
         }
-        return await db.createPhoto(input);
+        const { collaboratorIds, ...photoData } = input;
+        const photo = await db.createPhoto(photoData);
+        
+        // Add collaborators if provided
+        if (collaboratorIds && collaboratorIds.length > 0 && photo) {
+          await db.setPhotoCollaborators(photo.id, collaboratorIds);
+        }
+        
+        return photo;
       }),
 
     update: protectedProcedure
@@ -74,7 +83,8 @@ export const appRouter = router({
         alt: z.string().optional(),
         displayTitle: z.string().optional(),
         category: z.string().optional(),
-        collaboratorId: z.number().nullable().optional(),
+        collaboratorId: z.number().nullable().optional(), // Kept for backward compatibility
+        collaboratorIds: z.array(z.number()).optional(), // New: support multiple collaborators
         location: z.string().optional(),
         date: z.string().optional(),
         description: z.string().optional(),
@@ -88,8 +98,17 @@ export const appRouter = router({
         if (ctx.user.role !== 'admin') {
           throw new Error('Unauthorized');
         }
-        const { id, ...updates } = input;
-        return await db.updatePhoto(id, updates);
+        const { id, collaboratorIds, ...updates } = input;
+        
+        // Update photo data
+        await db.updatePhoto(id, updates);
+        
+        // Update collaborators if provided
+        if (collaboratorIds !== undefined) {
+          await db.setPhotoCollaborators(id, collaboratorIds);
+        }
+        
+        return await db.getPhotoById(id);
       }),
 
     delete: protectedProcedure

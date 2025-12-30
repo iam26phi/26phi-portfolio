@@ -353,3 +353,13 @@
 - [x] 更新照片上傳流程以自動提取 EXIF
 - [x] 在上傳表單中顯示提取的 EXIF 資訊（自動填入欄位）
 - [x] 測試 EXIF 提取功能（建立測試文檔）
+
+## 功能開發 - 照片支援複數合作對象
+- [x] 建立 photo_collaborators 關聯表（多對多關係）
+- [x] 遷移現有的 collaboratorId 資料到新表
+- [x] 更新 photos.list API 以包含所有合作對象
+- [x] 更新 photos.create API 支援複數合作對象
+- [x] 更新 photos.update API 支援複數合作對象
+- [x] 更新後台管理介面改為多選下拉選單
+- [x] 更新前台 Lightbox 顯示所有合作對象
+- [x] 測試複數合作對象功能（7 個單元測試全部通過）

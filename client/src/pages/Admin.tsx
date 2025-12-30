@@ -57,7 +57,8 @@ type PhotoFormData = {
   alt: string;
   displayTitle?: string;
   category: string;
-  collaboratorId?: number | null;
+  collaboratorId?: number | null; // Kept for backward compatibility
+  collaboratorIds?: number[]; // New: support multiple collaborators
   location: string;
   date: string;
   description: string;
@@ -466,13 +467,18 @@ export default function Admin() {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
     
-    const collaboratorIdValue = formData.get("collaboratorId") as string;
+    // Get multiple collaborator IDs
+    const collaboratorIdsValues = formData.getAll("collaboratorIds") as string[];
+    const collaboratorIds = collaboratorIdsValues
+      .filter(v => v && v !== "")
+      .map(v => Number(v));
+    
     const data = {
       src: formData.get("src") as string,
       alt: formData.get("alt") as string,
       displayTitle: formData.get("displayTitle") as string || undefined,
       category: formData.get("category") as string,
-      collaboratorId: collaboratorIdValue && collaboratorIdValue !== "" ? Number(collaboratorIdValue) : null,
+      collaboratorIds: collaboratorIds.length > 0 ? collaboratorIds : undefined,
       location: formData.get("location") as string,
       date: formData.get("date") as string,
       description: formData.get("description") as string,
@@ -850,18 +856,19 @@ export default function Admin() {
                 </div>
 
                 <div>
-                  <Label htmlFor="collaboratorId">合作對象（可選）</Label>
+                  <Label htmlFor="collaboratorIds">合作對象（可選，可多選）</Label>
                   <select
-                    id="collaboratorId"
-                    name="collaboratorId"
-                    defaultValue={String(editingPhoto?.collaboratorId || "")}
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                    id="collaboratorIds"
+                    name="collaboratorIds"
+                    multiple
+                    defaultValue={editingPhoto?.collaboratorId ? [String(editingPhoto.collaboratorId)] : []}
+                    className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                   >
-                    <option value="">無</option>
                     {collaborators?.map((collab) => (
                       <option key={collab.id} value={String(collab.id)}>{collab.name}</option>
                     ))}
                   </select>
+                  <p className="text-xs text-muted-foreground mt-1">按住 Ctrl/Cmd 鍵可選擇多個合作對象</p>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">

@@ -26,12 +26,13 @@ type Photo = {
   camera: string | null;
   lens: string | null;
   settings: string | null;
-  collaboratorId: number | null;
-  collaborator?: {
-    id: number;
-    name: string;
-    avatarUrl: string | null;
-  } | null;
+  collaboratorId: number | null; // Kept for backward compatibility
+  collaborators?: Array<{
+    id: number | null;
+    name: string | null;
+    slug: string | null;
+    instagram: string | null;
+  }>;
   isVisible: number;
   sortOrder: number;
   createdAt: Date;

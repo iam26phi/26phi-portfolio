@@ -14,8 +14,14 @@ type Photo = {
   camera?: string | null;
   lens?: string | null;
   settings?: string | null;
-  collaboratorName?: string | null;
-  collaboratorInstagram?: string | null;
+  collaboratorName?: string | null; // Kept for backward compatibility
+  collaboratorInstagram?: string | null; // Kept for backward compatibility
+  collaborators?: Array<{
+    id: number | null;
+    name: string | null;
+    slug: string | null;
+    instagram: string | null;
+  }>;
   isVisible: number;
   sortOrder: number;
   createdAt: Date;
@@ -317,20 +323,28 @@ export default function Lightbox({ photo, onClose, onNext, onPrev, hasNext, hasP
                 {photo.location}
               </div>
             )}
-            {photo.collaboratorName && (
+            {photo.collaborators && photo.collaborators.length > 0 && (
               <div>
-                <span className="block text-neutral-600 text-xs mb-1 uppercase">Collaborator</span>
-                <div>{photo.collaboratorName}</div>
-                {photo.collaboratorInstagram && (
-                  <a
-                    href={`https://instagram.com/${photo.collaboratorInstagram.replace('@', '')}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-blue-400 hover:text-blue-300 transition-colors"
-                  >
-                    @{photo.collaboratorInstagram.replace('@', '')}
-                  </a>
-                )}
+                <span className="block text-neutral-600 text-xs mb-1 uppercase">
+                  {photo.collaborators.length > 1 ? 'Collaborators' : 'Collaborator'}
+                </span>
+                {photo.collaborators.map((collab, index) => (
+                  collab.name && (
+                    <div key={index} className="mb-1">
+                      <div>{collab.name}</div>
+                      {collab.instagram && (
+                        <a
+                          href={`https://instagram.com/${collab.instagram.replace('@', '')}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-400 hover:text-blue-300 transition-colors text-sm"
+                        >
+                          @{collab.instagram.replace('@', '')}
+                        </a>
+                      )}
+                    </div>
+                  )
+                ))}
               </div>
             )}
             {(photo.camera || photo.lens) && (

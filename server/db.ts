@@ -1,6 +1,6 @@
 import { eq, and } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users, photos, InsertPhoto, blogPosts, InsertBlogPost, siteSettings, InsertSiteSetting, photoCategories, InsertPhotoCategory, projects, InsertProject, photoProjects, InsertPhotoProject, changelogs, InsertChangelog, contactSubmissions, InsertContactSubmission, collaborators, InsertCollaborator, Collaborator } from "../drizzle/schema";
+import { InsertUser, users, photos, InsertPhoto, blogPosts, InsertBlogPost, siteSettings, InsertSiteSetting, photoCategories, InsertPhotoCategory, projects, InsertProject, photoProjects, InsertPhotoProject, changelogs, InsertChangelog, contactSubmissions, InsertContactSubmission, collaborators, InsertCollaborator, Collaborator, photoCollaborators, InsertPhotoCollaborator } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -107,32 +107,33 @@ export async function getVisiblePhotos() {
     return [];
   }
 
-  const result = await db
-    .select({
-      id: photos.id,
-      src: photos.src,
-      alt: photos.alt,
-      displayTitle: photos.displayTitle,
-      category: photos.category,
-      projectId: photos.projectId,
-      collaboratorId: photos.collaboratorId,
-      location: photos.location,
-      date: photos.date,
-      description: photos.description,
-      camera: photos.camera,
-      lens: photos.lens,
-      settings: photos.settings,
-      isVisible: photos.isVisible,
-      sortOrder: photos.sortOrder,
-      createdAt: photos.createdAt,
-      updatedAt: photos.updatedAt,
-      collaboratorName: collaborators.name,
-      collaboratorInstagram: collaborators.instagram,
-    })
+  // Get all visible photos
+  const allPhotos = await db
+    .select()
     .from(photos)
-    .leftJoin(collaborators, eq(photos.collaboratorId, collaborators.id))
     .where(eq(photos.isVisible, 1))
     .orderBy(photos.sortOrder);
+
+  // For each photo, get all collaborators
+  const result = await Promise.all(
+    allPhotos.map(async (photo) => {
+      const photoCollabs = await db
+        .select({
+          id: collaborators.id,
+          name: collaborators.name,
+          slug: collaborators.slug,
+          instagram: collaborators.instagram,
+        })
+        .from(photoCollaborators)
+        .leftJoin(collaborators, eq(photoCollaborators.collaboratorId, collaborators.id))
+        .where(eq(photoCollaborators.photoId, photo.id));
+
+      return {
+        ...photo,
+        collaborators: photoCollabs.filter((c) => c.id !== null),
+      };
+    })
+  );
 
   return result;
 }
@@ -155,7 +156,8 @@ export async function createPhoto(photo: InsertPhoto) {
   }
 
   const result = await db.insert(photos).values(photo);
-  return result;
+  const insertId = Number(result[0].insertId);
+  return await getPhotoById(insertId);
 }
 
 export async function updatePhoto(id: number, updates: Partial<InsertPhoto>) {
@@ -684,4 +686,69 @@ export async function getVisiblePhotosByCollaboratorId(collaboratorId: number) {
   }
 
   return await db.select().from(photos).where(and(eq(photos.collaboratorId, collaboratorId), eq(photos.isVisible, 1))).orderBy(photos.sortOrder);
+}
+
+// Photo-Collaborator relationship management functions
+export async function addPhotoCollaborator(photoId: number, collaboratorId: number) {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot add photo collaborator: database not available");
+    return;
+  }
+
+  await db.insert(photoCollaborators).values({ photoId, collaboratorId });
+}
+
+export async function removePhotoCollaborator(photoId: number, collaboratorId: number) {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot remove photo collaborator: database not available");
+    return;
+  }
+
+  await db.delete(photoCollaborators).where(
+    and(
+      eq(photoCollaborators.photoId, photoId),
+      eq(photoCollaborators.collaboratorId, collaboratorId)
+    )
+  );
+}
+
+export async function setPhotoCollaborators(photoId: number, collaboratorIds: number[]) {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot set photo collaborators: database not available");
+    return;
+  }
+
+  // Remove all existing collaborators for this photo
+  await db.delete(photoCollaborators).where(eq(photoCollaborators.photoId, photoId));
+
+  // Add new collaborators
+  if (collaboratorIds.length > 0) {
+    await db.insert(photoCollaborators).values(
+      collaboratorIds.map((collaboratorId) => ({ photoId, collaboratorId }))
+    );
+  }
+}
+
+export async function getPhotoCollaborators(photoId: number) {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot get photo collaborators: database not available");
+    return [];
+  }
+
+  const result = await db
+    .select({
+      id: collaborators.id,
+      name: collaborators.name,
+      slug: collaborators.slug,
+      instagram: collaborators.instagram,
+    })
+    .from(photoCollaborators)
+    .leftJoin(collaborators, eq(photoCollaborators.collaboratorId, collaborators.id))
+    .where(eq(photoCollaborators.photoId, photoId));
+
+  return result.filter((c) => c.id !== null);
 }

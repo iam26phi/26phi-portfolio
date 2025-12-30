@@ -188,3 +188,16 @@ export const collaborators = mysqlTable("collaborators", {
 
 export type Collaborator = typeof collaborators.$inferSelect;
 export type InsertCollaborator = typeof collaborators.$inferInsert;
+
+/**
+ * Photo-Collaborator junction table for many-to-many relationship
+ */
+export const photoCollaborators = mysqlTable("photo_collaborators", {
+  id: int("id").autoincrement().primaryKey(),
+  photoId: int("photoId").notNull(),
+  collaboratorId: int("collaboratorId").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type PhotoCollaborator = typeof photoCollaborators.$inferSelect;
+export type InsertPhotoCollaborator = typeof photoCollaborators.$inferInsert;
