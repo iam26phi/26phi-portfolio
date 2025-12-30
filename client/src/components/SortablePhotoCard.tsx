@@ -1,7 +1,7 @@
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { Button } from "@/components/ui/button";
-import { Edit, Trash2, Eye, EyeOff, GripVertical, Star, PlayCircle } from "lucide-react";
+import { Edit, Trash2, Eye, EyeOff, GripVertical, Star, PlayCircle, Loader2, CheckCircle } from "lucide-react";
 
 type Photo = {
   id: number;
@@ -25,6 +25,8 @@ type SortablePhotoCardProps = {
   onToggleVisibility: (photo: Photo) => void;
   onToggleFeatured: (photo: Photo) => void;
   onAddToCarousel?: (photoId: number) => void;
+  isInCarousel?: boolean;
+  isAddingToCarousel?: boolean;
   isSorting: boolean;
 };
 
@@ -35,6 +37,8 @@ export function SortablePhotoCard({
   onToggleVisibility,
   onToggleFeatured,
   onAddToCarousel,
+  isInCarousel = false,
+  isAddingToCarousel = false,
   isSorting,
 }: SortablePhotoCardProps) {
   const {
@@ -131,13 +135,28 @@ export function SortablePhotoCard({
             {onAddToCarousel && (
               <Button
                 size="sm"
-                variant="secondary"
+                variant={isInCarousel ? "outline" : "secondary"}
                 className="w-full"
-                onClick={() => onAddToCarousel(photo.id)}
-                title="加入首頁輪播"
+                onClick={() => !isInCarousel && onAddToCarousel(photo.id)}
+                disabled={isInCarousel || isAddingToCarousel}
+                title={isInCarousel ? "已在首頁輪播中" : "加入首頁輪播"}
               >
-                <PlayCircle className="h-4 w-4 mr-2" />
-                加入輪播
+                {isAddingToCarousel ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    加入中...
+                  </>
+                ) : isInCarousel ? (
+                  <>
+                    <CheckCircle className="h-4 w-4 mr-2" />
+                    已在輪播
+                  </>
+                ) : (
+                  <>
+                    <PlayCircle className="h-4 w-4 mr-2" />
+                    加入輪播
+                  </>
+                )}
               </Button>
             )}
           </div>

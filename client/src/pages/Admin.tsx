@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
@@ -112,6 +112,17 @@ export default function Admin() {
   const { data: collaborators } = trpc.collaborators.listAll.useQuery(undefined, {
     enabled: isAuthenticated && user?.role === "admin",
   });
+
+  // Load hero slides to track which photos are already in carousel
+  const { data: heroSlides, refetch: refetchHeroSlides } = trpc.hero.listAllSlides.useQuery(undefined, {
+    enabled: isAuthenticated && user?.role === "admin",
+  });
+
+  // Create a set of photo URLs that are already in carousel
+  const carouselPhotoUrls = useMemo(() => {
+    if (!heroSlides) return new Set<string>();
+    return new Set(heroSlides.map(slide => slide.imageUrl));
+  }, [heroSlides]);
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -239,7 +250,9 @@ export default function Admin() {
 
   const addToCarouselMutation = trpc.hero.addSlideFromPhoto.useMutation({
     onSuccess: () => {
-      toast.success("照片已成功加入首頁輪播");
+      toast.success("照片已成功加入首頁輪播！");
+      // Refetch hero slides to update button states
+      refetchHeroSlides();
     },
     onError: (error) => {
       if (error.message.includes("already in carousel")) {
@@ -1042,6 +1055,8 @@ export default function Admin() {
                       onToggleVisibility={toggleVisibility}
                       onToggleFeatured={toggleFeatured}
                       onAddToCarousel={handleAddToCarousel}
+                      isInCarousel={carouselPhotoUrls.has(photo.src)}
+                      isAddingToCarousel={addToCarouselMutation.isPending}
                       isSorting={isSorting}
                     />
                   </div>

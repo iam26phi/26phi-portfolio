@@ -449,3 +449,28 @@
 - [x] 測試 sortOrder 自動計算（驗證遞增邏輯）
 - [x] 測試 displayTitle fallback 到 alt 文字
 - [x] 測試不存在的照片 ID 處理
+
+## UX 改善 - 加入輪播按鈕優化
+
+### 狀態追蹤
+- [x] 在 Admin.tsx 載入所有輪播照片列表
+- [x] 建立照片 URL 到輪播狀態的映射（useMemo + Set）
+- [x] 在照片列表更新時同步輪播狀態（refetchHeroSlides）
+
+### 按鈕狀態
+- [x] 已在輪播中的照片按鈕顯示為禁用狀態
+- [x] 按鈕文字改為「已在輪播」（CheckCircle 圖示）
+- [x] 按鈕樣式使用 disabled 狀態（outline variant）
+- [x] 加入 loading 狀態防止重複點擊（Loader2 動畫）
+
+### 提示訊息
+- [x] 成功加入輪播後顯示 toast 提示（「照片已成功加入首頁輪播！」）
+- [x] 點擊已在輪播的按鈕顯示提示訊息（disabled + title）
+- [x] 加入後自動更新按鈕狀態（refetch heroSlides）
+
+### 測試
+- [x] 測試按鈕狀態更新（5 個單元測試全部通過）
+- [x] 測試禁用狀態顯示（追蹤輪播狀態）
+- [x] 測試 loading 狀態（狀態轉換測試）
+- [x] 測試多張照片狀態追蹤
+- [x] 測試 refetch 後狀態維持
