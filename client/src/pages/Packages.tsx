@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { Clock, DollarSign, ArrowRight, Loader2, CheckCircle2 } from "lucide-react";
 import { Link } from "wouter";
+import { useState, useEffect } from "react";
 
 export default function Packages() {
   const { data: packages, isLoading } = trpc.bookingPackages.list.useQuery();
@@ -100,7 +101,22 @@ function PackageCard({ package: pkg }: PackageCardProps) {
   const isSpecialOffer = pkg.name.includes("第一組") || pkg.price < 3000;
   
   // Load photos associated with this package
-  const { data: photos } = trpc.bookingPackages.getPhotos.useQuery({ packageId: pkg.id });
+  const { data: photosRaw } = trpc.bookingPackages.getPhotos.useQuery({ packageId: pkg.id });
+  
+  // Randomize and select 3 photos on mount
+  const [photos, setPhotos] = useState<typeof photosRaw>([]);
+  
+  useEffect(() => {
+    if (photosRaw && photosRaw.length > 0 && (!photos || photos.length === 0)) {
+      // Shuffle photos using Fisher-Yates algorithm
+      const shuffled = [...photosRaw];
+      for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+      }
+      setPhotos(shuffled);
+    }
+  }, [photosRaw, photos]);
 
   return (
     <div className="group relative bg-white/5 border border-white/10 rounded-2xl p-6 sm:p-8 hover:bg-white/10 hover:border-white/20 transition-all duration-300 h-full flex flex-col">

@@ -61,7 +61,22 @@ export default function Home() {
   });
 
   // Fetch photos from backend API
-  const { data: photos = [], isLoading } = trpc.photos.list.useQuery();
+  const { data: photosRaw = [], isLoading } = trpc.photos.list.useQuery();
+  
+  // Randomize photos on mount
+  const [photos, setPhotos] = useState<typeof photosRaw>([]);
+  
+  useEffect(() => {
+    if (photosRaw.length > 0 && photos.length === 0) {
+      // Shuffle photos using Fisher-Yates algorithm
+      const shuffled = [...photosRaw];
+      for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+      }
+      setPhotos(shuffled);
+    }
+  }, [photosRaw, photos.length]);
   
   // Fetch categories from backend API
   const { data: categories = [] } = trpc.photoCategories.list.useQuery();
@@ -70,8 +85,23 @@ export default function Home() {
   const { data: projects = [] } = trpc.projects.list.useQuery();
   
   // Fetch hero slides and quotes
-  const { data: heroSlides = [] } = trpc.hero.getActiveSlides.useQuery();
+  const { data: heroSlidesRaw = [] } = trpc.hero.getActiveSlides.useQuery();
   const { data: heroQuotes = [] } = trpc.hero.getActiveQuotes.useQuery();
+  
+  // Randomize hero slides on mount
+  const [heroSlides, setHeroSlides] = useState<typeof heroSlidesRaw>([]);
+  
+  useEffect(() => {
+    if (heroSlidesRaw.length > 0 && heroSlides.length === 0) {
+      // Shuffle slides using Fisher-Yates algorithm
+      const shuffled = [...heroSlidesRaw];
+      for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+      }
+      setHeroSlides(shuffled);
+    }
+  }, [heroSlidesRaw, heroSlides.length]);
   
   // Select a random quote on mount
   const [currentQuote, setCurrentQuote] = useState<{ textZh: string; textEn: string } | null>(null);
