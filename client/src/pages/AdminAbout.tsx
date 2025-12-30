@@ -78,29 +78,26 @@ export default function AdminAbout() {
     }
   };
 
+  const uploadMutation = trpc.photos.upload.useMutation();
+
   const uploadProfileImage = async (file: File): Promise<string> => {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
-      reader.onloadend = async () => {
+      reader.onload = async (event) => {
         try {
-          const base64 = reader.result as string;
-          const response = await fetch('/api/upload', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              file: base64,
-              filename: file.name,
-              folder: 'about',
-            }),
+          const base64 = event.target?.result as string;
+          const result = await uploadMutation.mutateAsync({
+            file: base64,
+            filename: file.name,
+            category: 'about',
           });
-          
-          if (!response.ok) throw new Error('Upload failed');
-          
-          const data = await response.json();
-          resolve(data.url);
+          resolve(result.url);
         } catch (error) {
           reject(error);
         }
+      };
+      reader.onerror = () => {
+        reject(new Error('讀取檔案失敗'));
       };
       reader.readAsDataURL(file);
     });
