@@ -30,6 +30,7 @@ import {
 import { toast } from "sonner";
 import { Loader2, Plus, Edit, Trash2, Eye, EyeOff, Upload, GripVertical, Save, X, Menu, Settings, FileText, Image, Palette, FolderOpen, History, Mail, Users } from "lucide-react";
 import imageCompression from "browser-image-compression";
+import { extractExifData } from "@/lib/exif";
 import { SortablePhotoCard } from "@/components/SortablePhotoCard";
 import { useRef } from "react";
 import { getLoginUrl } from "@/const";
@@ -390,6 +391,17 @@ export default function Admin() {
         const base64 = event.target?.result as string;
         const uploadStartTime = Date.now();
 
+        // Extract EXIF data from the original file
+        let exifData = {};
+        try {
+          exifData = await extractExifData(file);
+          if (Object.keys(exifData).length > 0) {
+            toast.success(`${file.name} EXIF 資訊提取成功`);
+          }
+        } catch (error) {
+          console.error('EXIF extraction error:', error);
+        }
+
         const progressInterval = setInterval(() => {
           const elapsed = (Date.now() - uploadStartTime) / 1000;
           const calculatedProgress = 30 + Math.min(50, (elapsed / estimatedSeconds) * 50);
@@ -415,9 +427,12 @@ export default function Admin() {
             src: result.url,
             alt: file.name.replace(/\.[^/.]+$/, ""),
             category: uploadCategory,
-            location: "",
-            date: new Date().toISOString().split('T')[0],
+            location: (exifData as any).location || "",
+            date: (exifData as any).date || new Date().toISOString().split('T')[0],
             description: "",
+            camera: (exifData as any).camera,
+            lens: (exifData as any).lens,
+            settings: (exifData as any).settings,
             isVisible: 1,
             sortOrder: 0,
           });

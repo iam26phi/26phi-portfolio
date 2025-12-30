@@ -346,3 +346,10 @@
 - [x] 識別第二個問題（handleCategoryClick 使用 advancedFilters 導致無限循環）
 - [x] 修復第二個問題（使用 useCallback 和 setState 的函數式更新）
 - [x] 測試修復後的功能（網站正常運行，無錯誤）
+
+## 功能開發 - 照片 EXIF 資訊自動提取
+- [x] 安裝 exifr 套件（前端 EXIF 讀取）
+- [x] 建立前端 EXIF 提取工具函數
+- [x] 更新照片上傳流程以自動提取 EXIF
+- [x] 在上傳表單中顯示提取的 EXIF 資訊（自動填入欄位）
+- [x] 測試 EXIF 提取功能（建立測試文檔）
