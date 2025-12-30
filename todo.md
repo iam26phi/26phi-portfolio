@@ -343,4 +343,6 @@
 ## Bug 修復 - Home.tsx 無限循環錯誤
 - [x] 識別 Home.tsx 的問題（availableLocations 和 availableYears 每次 render 都創建新陣列參考）
 - [x] 修復無限循環（使用 useMemo 穩定陣列參考）
+- [x] 識別第二個問題（handleCategoryClick 使用 advancedFilters 導致無限循環）
+- [x] 修復第二個問題（使用 useCallback 和 setState 的函數式更新）
 - [x] 測試修復後的功能（網站正常運行，無錯誤）

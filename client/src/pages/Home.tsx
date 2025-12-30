@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { trpc } from "@/lib/trpc";
@@ -130,10 +130,10 @@ export default function Home() {
   });
 
   // Sync activeCategory with advancedFilters
-  const handleCategoryClick = (cat: Category) => {
+  const handleCategoryClick = useCallback((cat: Category) => {
     setActiveCategory(cat);
-    setAdvancedFilters({ ...advancedFilters, category: cat });
-  };
+    setAdvancedFilters(prev => ({ ...prev, category: cat }));
+  }, []);
 
   return (
     <div className="min-h-screen bg-background text-foreground selection:bg-white selection:text-black">
