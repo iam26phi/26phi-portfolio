@@ -78,6 +78,10 @@ export default function Admin() {
   }>>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isSorting, setIsSorting] = useState(false);
+  const [isBatchMode, setIsBatchMode] = useState(false);
+  const [selectedPhotoIds, setSelectedPhotoIds] = useState<Set<number>>(new Set());
+  const [batchCategory, setBatchCategory] = useState<string>("");
+  const [isBatchCategoryDialogOpen, setIsBatchCategoryDialogOpen] = useState(false);
   const [sortedPhotos, setSortedPhotos] = useState<Array<{
     id: number;
     src: string;
@@ -183,6 +187,99 @@ export default function Admin() {
   });
 
   const uploadMutation = trpc.photos.upload.useMutation();
+
+  const batchDeleteMutation = trpc.photos.batchDelete.useMutation({
+    onSuccess: (result) => {
+      toast.success(`批次刪除完成：成功 ${result.succeeded} 張，失敗 ${result.failed} 張`);
+      refetch();
+      setSelectedPhotoIds(new Set());
+      setIsBatchMode(false);
+    },
+    onError: (error) => {
+      toast.error(`批次刪除失敗: ${error.message}`);
+    },
+  });
+
+  const batchUpdateCategoryMutation = trpc.photos.batchUpdateCategory.useMutation({
+    onSuccess: (result) => {
+      toast.success(`批次修改分類完成：成功 ${result.succeeded} 張，失敗 ${result.failed} 張`);
+      refetch();
+      setSelectedPhotoIds(new Set());
+      setIsBatchMode(false);
+      setIsBatchCategoryDialogOpen(false);
+    },
+    onError: (error) => {
+      toast.error(`批次修改分類失敗: ${error.message}`);
+    },
+  });
+
+  const batchUpdateVisibilityMutation = trpc.photos.batchUpdateVisibility.useMutation({
+    onSuccess: (result) => {
+      toast.success(`批次修改可見性完成：成功 ${result.succeeded} 張，失敗 ${result.failed} 張`);
+      refetch();
+      setSelectedPhotoIds(new Set());
+    },
+    onError: (error) => {
+      toast.error(`批次修改可見性失敗: ${error.message}`);
+    },
+  });
+
+  // Batch operation handlers
+  const togglePhotoSelection = (photoId: number) => {
+    setSelectedPhotoIds(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(photoId)) {
+        newSet.delete(photoId);
+      } else {
+        newSet.add(photoId);
+      }
+      return newSet;
+    });
+  };
+
+  const selectAllPhotos = () => {
+    if (selectedPhotoIds.size === photos?.length) {
+      setSelectedPhotoIds(new Set());
+    } else {
+      setSelectedPhotoIds(new Set(photos?.map(p => p.id) || []));
+    }
+  };
+
+  const handleBatchDelete = () => {
+    if (selectedPhotoIds.size === 0) {
+      toast.error("請選擇至少一張照片");
+      return;
+    }
+    if (confirm(`確定要刪除選中的 ${selectedPhotoIds.size} 張照片嗎？`)) {
+      batchDeleteMutation.mutate({ ids: Array.from(selectedPhotoIds) });
+    }
+  };
+
+  const handleBatchUpdateCategory = () => {
+    if (selectedPhotoIds.size === 0) {
+      toast.error("請選擇至少一張照片");
+      return;
+    }
+    if (!batchCategory) {
+      toast.error("請選擇分類");
+      return;
+    }
+    batchUpdateCategoryMutation.mutate({ 
+      ids: Array.from(selectedPhotoIds),
+      category: batchCategory
+    });
+  };
+
+  const handleBatchUpdateVisibility = (isVisible: number) => {
+    if (selectedPhotoIds.size === 0) {
+      toast.error("請選擇至少一張照片");
+      return;
+    }
+    batchUpdateVisibilityMutation.mutate({ 
+      ids: Array.from(selectedPhotoIds),
+      isVisible
+    });
+  };
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
@@ -520,10 +617,11 @@ export default function Admin() {
               </div>
             )}
             
-            <div className="flex gap-2 items-center">
+            <div className="flex gap-2 items-center flex-wrap">
               <Button
                 variant={isSorting ? "default" : "outline"}
                 onClick={() => setIsSorting(!isSorting)}
+                disabled={isBatchMode}
               >
                 {isSorting ? (
                   <><X className="mr-2 h-4 w-4" /> 取消排序</>
@@ -542,6 +640,68 @@ export default function Admin() {
                     <><Save className="mr-2 h-4 w-4" /> 儲存順序</>
                   )}
                 </Button>
+              )}
+              
+              <Button
+                variant={isBatchMode ? "default" : "outline"}
+                onClick={() => {
+                  setIsBatchMode(!isBatchMode);
+                  setSelectedPhotoIds(new Set());
+                }}
+                disabled={isSorting}
+              >
+                {isBatchMode ? (
+                  <><X className="mr-2 h-4 w-4" /> 取消批次</>
+                ) : (
+                  <>批次操作</>
+                )}
+              </Button>
+              
+              {isBatchMode && (
+                <>
+                  <Button variant="outline" size="sm" onClick={selectAllPhotos}>
+                    {selectedPhotoIds.size === photos?.length ? "取消全選" : "全選"}
+                  </Button>
+                  <span className="text-sm text-muted-foreground">
+                    已選擇 {selectedPhotoIds.size} 張
+                  </span>
+                  <Button 
+                    variant="destructive" 
+                    size="sm" 
+                    onClick={handleBatchDelete}
+                    disabled={selectedPhotoIds.size === 0 || batchDeleteMutation.isPending}
+                  >
+                    {batchDeleteMutation.isPending ? (
+                      <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> 刪除中...</>
+                    ) : (
+                      <><Trash2 className="mr-2 h-4 w-4" /> 刪除</>
+                    )}
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => setIsBatchCategoryDialogOpen(true)}
+                    disabled={selectedPhotoIds.size === 0}
+                  >
+                    修改分類
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => handleBatchUpdateVisibility(1)}
+                    disabled={selectedPhotoIds.size === 0 || batchUpdateVisibilityMutation.isPending}
+                  >
+                    <Eye className="mr-2 h-4 w-4" /> 顯示
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => handleBatchUpdateVisibility(0)}
+                    disabled={selectedPhotoIds.size === 0 || batchUpdateVisibilityMutation.isPending}
+                  >
+                    <EyeOff className="mr-2 h-4 w-4" /> 隱藏
+                  </Button>
+                </>
               )}
               <div className="flex items-center gap-2">
               <Select value={uploadCategory} onValueChange={setUploadCategory}>
@@ -740,20 +900,70 @@ export default function Admin() {
             >
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {sortedPhotos.map((photo) => (
-                  <SortablePhotoCard
-                    key={photo.id}
-                    photo={photo}
-                    onEdit={handleEdit}
-                    onDelete={handleDelete}
-                    onToggleVisibility={toggleVisibility}
-                    isSorting={isSorting}
-                  />
+                  <div key={photo.id} className="relative">
+                    {isBatchMode && (
+                      <div className="absolute top-2 left-2 z-10">
+                        <input
+                          type="checkbox"
+                          checked={selectedPhotoIds.has(photo.id)}
+                          onChange={() => togglePhotoSelection(photo.id)}
+                          className="w-5 h-5 cursor-pointer"
+                        />
+                      </div>
+                    )}
+                    <SortablePhotoCard
+                      photo={photo}
+                      onEdit={handleEdit}
+                      onDelete={handleDelete}
+                      onToggleVisibility={toggleVisibility}
+                      isSorting={isSorting}
+                    />
+                  </div>
                 ))}
               </div>
             </SortableContext>
           </DndContext>
         )}
       </div>
+
+      {/* Batch Category Dialog */}
+      <Dialog open={isBatchCategoryDialogOpen} onOpenChange={setIsBatchCategoryDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>批次修改分類</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="batchCategory">選擇新分類</Label>
+              <Select value={batchCategory} onValueChange={setBatchCategory}>
+                <SelectTrigger>
+                  <SelectValue placeholder="選擇分類" />
+                </SelectTrigger>
+                <SelectContent>
+                  {categories?.map((cat) => (
+                    <SelectItem key={cat.id} value={cat.slug}>{cat.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setIsBatchCategoryDialogOpen(false)}>
+                取消
+              </Button>
+              <Button 
+                onClick={handleBatchUpdateCategory}
+                disabled={!batchCategory || batchUpdateCategoryMutation.isPending}
+              >
+                {batchUpdateCategoryMutation.isPending ? (
+                  <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> 處理中...</>
+                ) : (
+                  "確定"
+                )}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -93,6 +93,55 @@ export const appRouter = router({
         return await db.deletePhoto(input.id);
       }),
 
+    // Batch operations
+    batchDelete: protectedProcedure
+      .input(z.object({ ids: z.array(z.number()) }))
+      .mutation(async ({ input, ctx }) => {
+        if (ctx.user.role !== 'admin') {
+          throw new Error('Unauthorized');
+        }
+        const results = await Promise.allSettled(
+          input.ids.map(id => db.deletePhoto(id))
+        );
+        const succeeded = results.filter(r => r.status === 'fulfilled').length;
+        const failed = results.filter(r => r.status === 'rejected').length;
+        return { succeeded, failed, total: input.ids.length };
+      }),
+
+    batchUpdateCategory: protectedProcedure
+      .input(z.object({ 
+        ids: z.array(z.number()),
+        category: z.string()
+      }))
+      .mutation(async ({ input, ctx }) => {
+        if (ctx.user.role !== 'admin') {
+          throw new Error('Unauthorized');
+        }
+        const results = await Promise.allSettled(
+          input.ids.map(id => db.updatePhoto(id, { category: input.category }))
+        );
+        const succeeded = results.filter(r => r.status === 'fulfilled').length;
+        const failed = results.filter(r => r.status === 'rejected').length;
+        return { succeeded, failed, total: input.ids.length };
+      }),
+
+    batchUpdateVisibility: protectedProcedure
+      .input(z.object({ 
+        ids: z.array(z.number()),
+        isVisible: z.number().min(0).max(1)
+      }))
+      .mutation(async ({ input, ctx }) => {
+        if (ctx.user.role !== 'admin') {
+          throw new Error('Unauthorized');
+        }
+        const results = await Promise.allSettled(
+          input.ids.map(id => db.updatePhoto(id, { isVisible: input.isVisible }))
+        );
+        const succeeded = results.filter(r => r.status === 'fulfilled').length;
+        const failed = results.filter(r => r.status === 'rejected').length;
+        return { succeeded, failed, total: input.ids.length };
+      }),
+
     updateOrder: protectedProcedure
       .input(z.array(z.object({ id: z.number(), sortOrder: z.number() })))
       .mutation(async ({ input, ctx }) => {
