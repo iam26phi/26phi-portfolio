@@ -1,0 +1,1 @@
+ALTER TABLE `photos` ADD `featured` int DEFAULT 0 NOT NULL;

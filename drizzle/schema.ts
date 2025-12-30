@@ -75,6 +75,7 @@ export const photos = mysqlTable("photos", {
   camera: varchar("camera", { length: 100 }), // Camera model (e.g., "Sony A1ii")
   lens: varchar("lens", { length: 100 }), // Lens model (e.g., "Sony 35mm f/1.4 GM")
   settings: varchar("settings", { length: 255 }), // Shooting settings (e.g., "ISO 400, f/1.4, 1/200s")
+  featured: int("featured").default(0).notNull(), // 1 = featured (display 2x size), 0 = normal
   isVisible: int("isVisible").default(1).notNull(), // 1 = visible, 0 = hidden
   sortOrder: int("sortOrder").default(0).notNull(), // For manual ordering
   createdAt: timestamp("createdAt").defaultNow().notNull(),

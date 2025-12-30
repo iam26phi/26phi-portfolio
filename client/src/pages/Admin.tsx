@@ -97,6 +97,7 @@ export default function Admin() {
     location: string | null;
     date: string | null;
     description: string | null;
+    featured: number;
     isVisible: number;
     sortOrder: number;
     createdAt: Date;
@@ -511,6 +512,13 @@ export default function Admin() {
     updateMutation.mutate({
       id: photo.id,
       isVisible: photo.isVisible === 1 ? 0 : 1,
+    });
+  };
+
+  const toggleFeatured = (photo: any) => {
+    updateMutation.mutate({
+      id: photo.id,
+      featured: photo.featured === 1 ? 0 : 1,
     });
   };
 
@@ -1014,6 +1022,7 @@ export default function Admin() {
                       onEdit={handleEdit}
                       onDelete={handleDelete}
                       onToggleVisibility={toggleVisibility}
+                      onToggleFeatured={toggleFeatured}
                       isSorting={isSorting}
                     />
                   </div>

@@ -26,6 +26,7 @@ type Photo = {
   camera: string | null;
   lens: string | null;
   settings: string | null;
+  featured: number;
   collaboratorId: number | null; // Kept for backward compatibility
   collaborators?: Array<{
     id: number | null;
@@ -317,7 +318,10 @@ export default function Home() {
                 animate="visible"
                 exit="exit"
                 key={photo.id}
-                className="relative group break-inside-avoid cursor-pointer overflow-hidden mb-4 sm:mb-6 md:mb-8"
+                className={cn(
+                  "relative group break-inside-avoid cursor-pointer overflow-hidden mb-4 sm:mb-6 md:mb-8",
+                  photo.featured === 1 && "col-span-1 sm:col-span-2 lg:col-span-1"
+                )}
                 onMouseEnter={() => setHoveredPhoto(photo.id)}
                 onMouseLeave={() => setHoveredPhoto(null)}
                 onClick={() => setSelectedPhoto(photo)}

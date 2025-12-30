@@ -91,6 +91,7 @@ export const appRouter = router({
         camera: z.string().optional(),
         lens: z.string().optional(),
         settings: z.string().optional(),
+        featured: z.number().optional(), // 1 = featured (2x size), 0 = normal
         isVisible: z.number().optional(),
         sortOrder: z.number().optional(),
       }))

@@ -1,7 +1,7 @@
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { Button } from "@/components/ui/button";
-import { Edit, Trash2, Eye, EyeOff, GripVertical } from "lucide-react";
+import { Edit, Trash2, Eye, EyeOff, GripVertical, Star } from "lucide-react";
 
 type Photo = {
   id: number;
@@ -11,6 +11,7 @@ type Photo = {
   location: string | null;
   date: string | null;
   description: string | null;
+  featured: number;
   isVisible: number;
   sortOrder: number;
   createdAt: Date;
@@ -22,6 +23,7 @@ type SortablePhotoCardProps = {
   onEdit: (photo: Photo) => void;
   onDelete: (id: number) => void;
   onToggleVisibility: (photo: Photo) => void;
+  onToggleFeatured: (photo: Photo) => void;
   isSorting: boolean;
 };
 
@@ -30,6 +32,7 @@ export function SortablePhotoCard({
   onEdit,
   onDelete,
   onToggleVisibility,
+  onToggleFeatured,
   isSorting,
 }: SortablePhotoCardProps) {
   const {
@@ -61,6 +64,11 @@ export function SortablePhotoCard({
           alt={photo.alt}
           className="w-full h-48 object-cover"
         />
+        {photo.featured === 1 && (
+          <div className="absolute top-2 right-2 bg-yellow-500 text-white p-1.5 rounded-full">
+            <Star className="h-4 w-4 fill-current" />
+          </div>
+        )}
         {!photo.isVisible && (
           <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
             <EyeOff className="h-8 w-8 text-white" />
@@ -89,6 +97,14 @@ export function SortablePhotoCard({
               onClick={() => onEdit(photo)}
             >
               <Edit className="h-4 w-4" />
+            </Button>
+            <Button
+              size="sm"
+              variant={photo.featured === 1 ? "default" : "outline"}
+              onClick={() => onToggleFeatured(photo)}
+              title={photo.featured === 1 ? "取消精選" : "設為精選"}
+            >
+              <Star className={`h-4 w-4 ${photo.featured === 1 ? "fill-current" : ""}`} />
             </Button>
             <Button
               size="sm"
