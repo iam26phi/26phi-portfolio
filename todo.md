@@ -339,3 +339,8 @@
 - [x] 更新後台照片管理表單，加入標題編輯
 - [ ] 實作批次修改標題功能
 - [x] 前台顯示照片標題（取代檔名）
+
+## Bug 修復 - Home.tsx 無限循環錯誤
+- [x] 識別 Home.tsx 第 51 行的 setState 調用問題（Photo 類型定義缺少新欄位）
+- [x] 修復無限循環（更新 Photo 類型定義加入 displayTitle、camera、lens、settings、collaborator 欄位）
+- [x] 測試修復後的功能（網站正常運行，無錯誤）

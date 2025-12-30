@@ -22,6 +22,16 @@ type Photo = {
   location: string | null;
   date: string | null;
   description: string | null;
+  displayTitle: string | null;
+  camera: string | null;
+  lens: string | null;
+  settings: string | null;
+  collaboratorId: number | null;
+  collaborator?: {
+    id: number;
+    name: string;
+    avatarUrl: string | null;
+  } | null;
   isVisible: number;
   sortOrder: number;
   createdAt: Date;
