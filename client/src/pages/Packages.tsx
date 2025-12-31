@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { Clock, DollarSign, ArrowRight, Loader2, CheckCircle2 } from "lucide-react";
 import { Link } from "wouter";
 import { useState, useEffect } from "react";
+import { photoGridContainerVariants, photoGridItemVariants } from "@/lib/animations";
 
 export default function Packages() {
   const { data: packages, isLoading } = trpc.bookingPackages.list.useQuery();
@@ -168,17 +169,26 @@ function PackageCard({ package: pkg }: PackageCardProps) {
       {photos && photos.length > 0 && (
         <div className="mb-6">
           <h4 className="text-sm font-semibold text-neutral-400 mb-3">作品範例</h4>
-          <div className="grid grid-cols-3 gap-2">
+          <motion.div 
+            variants={photoGridContainerVariants}
+            initial="hidden"
+            animate="visible"
+            className="grid grid-cols-3 gap-2"
+          >
             {photos.slice(0, 3).map((photo) => (
-              <div key={photo.id} className="aspect-square overflow-hidden rounded-lg bg-neutral-900">
+              <motion.div 
+                key={photo.id} 
+                variants={photoGridItemVariants}
+                className="aspect-square overflow-hidden rounded-lg bg-neutral-900"
+              >
                 <img
                   src={photo.src}
                   alt={photo.displayTitle || photo.alt}
                   className="w-full h-full object-cover hover:scale-110 transition-transform duration-300"
                 />
-              </div>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
           {photos.length > 3 && (
             <p className="text-xs text-neutral-500 mt-2 text-center">及其他 {photos.length - 3} 張作品</p>
           )}

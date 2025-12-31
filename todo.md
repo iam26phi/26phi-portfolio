@@ -612,3 +612,30 @@
 - [x] 測試不修改原始陣列
 - [x] 測試統計分布（100 次测試產生 30+ 種不同順序）
 - [x] 測試照片物件隨機化
+
+## UX 優化 - 照片漸入動畫與交錯延遲
+
+### 動畫策略
+- [x] 規劃漸入動畫參數（duration: 0.6s, easing: easeOut, opacity: 0→1）
+- [x] 設定交錯延遲時間（stagger: 0.05s 每張照片）
+- [x] 確保動畫不影響效能（使用 GPU 加速）
+
+### 首頁作品集
+- [x] Home.tsx 照片網格新增 fade-in 動畫（opacity + scale）
+- [x] 實作交錯延遲效果（staggerChildren: 0.05s）
+- [x] 使用 Framer Motion 的 photoGridContainerVariants
+
+### 方案頁面
+- [x] Packages.tsx 方案照片新增 fade-in 動畫（opacity + scale）
+- [x] 實作交錯延遲效果（staggerChildren: 0.05s）
+- [x] 優化載入體驗（每個方案 3 張照片依序顯示）
+
+### 效能優化
+- [x] 使用 CSS transform 和 opacity（GPU 加速）
+- [x] 避免 layout shift（使用 scale 而非 width/height）
+- [x] 測試不同裝置的動畫流暢度（Framer Motion 自動優化）
+
+### 測試
+- [x] 測試首頁照片動畫效果（漸入 + 交錯延遲）
+- [x] 測試方案頁面動畫效果（3 張照片依序顯示）
+- [x] 測試動畫與隨機排序的配合（每次重整都有動畫）

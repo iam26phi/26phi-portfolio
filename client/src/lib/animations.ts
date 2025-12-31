@@ -32,6 +32,49 @@ export const photoItemVariants: Variants = {
 };
 
 /**
+ * Photo grid container with stagger animation
+ * Used for animating photo grids with sequential fade-in effect
+ */
+export const photoGridContainerVariants: Variants = {
+  hidden: {
+    opacity: 0,
+  },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.05,
+      delayChildren: 0.1,
+    },
+  },
+};
+
+/**
+ * Photo grid item with optimized fade-in animation
+ * Uses GPU-accelerated properties (opacity, transform) for smooth performance
+ */
+export const photoGridItemVariants: Variants = {
+  hidden: {
+    opacity: 0,
+    scale: 0.95,
+  },
+  visible: {
+    opacity: 1,
+    scale: 1,
+    transition: {
+      duration: 0.6,
+      ease: "easeOut",
+    },
+  },
+  exit: {
+    opacity: 0,
+    scale: 0.9,
+    transition: {
+      duration: 0.3,
+    },
+  },
+};
+
+/**
  * Container animation variants
  * Used for parent containers that animate their children
  */

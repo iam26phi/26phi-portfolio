@@ -10,7 +10,7 @@ import { ArrowRight, Star, Loader2, Palette } from "lucide-react";
 import { AdvancedFilter, FilterOptions } from "@/components/AdvancedFilter";
 import { cn } from "@/lib/utils";
 import { AnimatedPhotoGrid } from "@/components/AnimatedPhotoGrid";
-import { photoItemVariants } from "@/lib/animations";
+import { photoGridContainerVariants, photoGridItemVariants } from "@/lib/animations";
 import { ProgressiveImage } from "@/components/ProgressiveImage";
 
 type Category = "All" | string;
@@ -336,6 +336,9 @@ export default function Home() {
         </div>
 
         <motion.div 
+          variants={photoGridContainerVariants}
+          initial="hidden"
+          animate="visible"
           layout
           className="columns-1 sm:columns-2 lg:columns-3 gap-4 sm:gap-6 md:gap-8"
         >
@@ -343,7 +346,7 @@ export default function Home() {
             {filteredPhotos.map((photo) => (
               <motion.div
                 layout
-                variants={photoItemVariants}
+                variants={photoGridItemVariants}
                 initial="hidden"
                 animate="visible"
                 exit="exit"
