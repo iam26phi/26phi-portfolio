@@ -18,11 +18,19 @@
   font-display: swap;
 }
 
+@font-face {
+  font-family: 'Lithue';
+  src: url('/fonts/lithue-1.1.otf') format('opentype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-  --font-sans: "KuMincho", serif;
-  --font-mono: "Burnfont", sans-serif;
+  --font-sans: "Lithue", sans-serif;
+  --font-mono: "Lithue", sans-serif;
 
   --radius-sm: 0px;
   --radius-md: 0px;

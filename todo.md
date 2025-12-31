@@ -639,3 +639,25 @@
 - [x] 測試首頁照片動畫效果（漸入 + 交錯延遲）
 - [x] 測試方案頁面動畫效果（3 張照片依序顯示）
 - [x] 測試動畫與隨機排序的配合（每次重整都有動畫）
+
+## 設計優化 - 更換網站字體為 Lithue
+
+### 字體檔案處理
+- [x] 將 lithue-1.1.otf 複製到 client/public/fonts/ 目錄
+- [x] 確認字體檔案路徑正確（2.6M）
+
+### CSS 字體定義
+- [x] 在 index.css 中定義 @font-face
+- [x] 設定 font-family 為 'Lithue'
+- [x] 更新全站字體為 Lithue（--font-sans 和 --font-mono）
+
+### 字體應用
+- [x] 更新 Tailwind 配置使用新字體（透過 @theme inline）
+- [x] 確保所有文字元素使用新字體（font-sans 和 font-mono）
+- [x] 檢查中文和英文顯示效果（正常顯示）
+
+### 測試
+- [x] 測試首頁字體顯示（Lithue 字體成功應用）
+- [x] 測試導航選單字體（PORTFOLIO, ABOUT, BLOG 等）
+- [x] 測試照片標題和描述字體（中英文正常）
+- [x] 測試方案頁面字體（全站統一）
