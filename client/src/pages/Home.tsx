@@ -118,9 +118,12 @@ export default function Home() {
         }
       }
       
-      // Category filter
-      if (advancedFilters.category !== "All" && photo.category !== advancedFilters.category) {
-        return false;
+      // Category filter - match by slug
+      if (advancedFilters.category !== "All") {
+        const photoCategory = categories.find(cat => cat.name === photo.category);
+        if (!photoCategory || photoCategory.slug !== advancedFilters.category) {
+          return false;
+        }
       }
       
       // Location filter
@@ -138,7 +141,7 @@ export default function Home() {
       
       return true;
     });
-  }, [photos, advancedFilters, projectPhotos]);
+  }, [photos, advancedFilters, projectPhotos, categories]);
 
   return (
     <div className="min-h-screen bg-background text-foreground selection:bg-white selection:text-black">

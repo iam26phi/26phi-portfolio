@@ -1,0 +1,30 @@
+{
+  "query": "SELECT id, name, slug FROM photo_categories ORDER BY sortOrder;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3KMh2yGgHww6rVT.root --database 3s8FCUF9BWUfzRwVV77JBG --execute SELECT id, name, slug FROM photo_categories ORDER BY sortOrder;",
+  "rows": [
+    {
+      "id": "1",
+      "name": "人像攝影",
+      "slug": "porrant"
+    },
+    {
+      "id": "90001",
+      "name": "劇照攝影",
+      "slug": "film_stills"
+    },
+    {
+      "id": "60001",
+      "name": "時尚攝影",
+      "slug": "fashion"
+    },
+    {
+      "id": "60002",
+      "name": "樂團攝影",
+      "slug": "Liveband"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\tslug\n1\t人像攝影\tporrant\n90001\t劇照攝影\tfilm_stills\n60001\t時尚攝影\tfashion\n60002\t樂團攝影\tLiveband\n",
+  "stderr": "",
+  "execution_time_ms": 1554
+}

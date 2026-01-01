@@ -1,0 +1,60 @@
+{
+  "query": "SELECT id, alt, category FROM photos WHERE isVisible = 1 LIMIT 10;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3KMh2yGgHww6rVT.root --database 3s8FCUF9BWUfzRwVV77JBG --execute SELECT id, alt, category FROM photos WHERE isVisible = 1 LIMIT 10;",
+  "rows": [
+    {
+      "id": "1",
+      "alt": "Portrait Photo 1",
+      "category": "Portrait"
+    },
+    {
+      "id": "8",
+      "alt": "Editorial Photo 8",
+      "category": "Editorial"
+    },
+    {
+      "id": "9",
+      "alt": "Editorial Photo 9",
+      "category": "Editorial"
+    },
+    {
+      "id": "10",
+      "alt": "Editorial Photo 10",
+      "category": "Editorial"
+    },
+    {
+      "id": "30001",
+      "alt": "IPA_test_1",
+      "category": "人像攝影"
+    },
+    {
+      "id": "30002",
+      "alt": "IPA_test_2",
+      "category": "人像攝影"
+    },
+    {
+      "id": "30003",
+      "alt": "畢業照",
+      "category": "人像攝影"
+    },
+    {
+      "id": "30004",
+      "alt": "畢業照",
+      "category": "人像攝影"
+    },
+    {
+      "id": "30005",
+      "alt": "IPA_test_5",
+      "category": "人像攝影"
+    },
+    {
+      "id": "30006",
+      "alt": "IPA_test_6",
+      "category": "人像攝影"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\talt\tcategory\n1\tPortrait Photo 1\tPortrait\n8\tEditorial Photo 8\tEditorial\n9\tEditorial Photo 9\tEditorial\n10\tEditorial Photo 10\tEditorial\n30001\tIPA_test_1\t人像攝影\n30002\tIPA_test_2\t人像攝影\n30003\t畢業照\t人像攝影\n30004\t畢業照\t人像攝影\n30005\tIPA_test_5\t人像攝影\n30006\tIPA_test_6\t人像攝影\n",
+  "stderr": "",
+  "execution_time_ms": 1492
+}

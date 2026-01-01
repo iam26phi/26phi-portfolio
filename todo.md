@@ -168,3 +168,42 @@
 - ✅ 每次 commit 後會顯示同步狀態
 - ✅ GitHub 儲存庫與本地保持同步
 
+
+
+## Bug 修復 - 首頁照片分類篩選功能
+
+### 問題描述
+首頁搜尋特定分類的照片無法正常顯示，只有「人像攝影」分類可以正常顯示照片，其他分類點擊後沒有照片顯示。
+
+### 根本原因
+- 照片表的 `category` 欄位儲存的是分類**名稱**（例：「人像攝影」）
+- 篩選按鈕傳遞的是分類 **slug**（例：portrait）
+- Home.tsx 的篩選邏輯直接比對 `photo.category !== advancedFilters.category`，導致永遠不匹配
+
+### 實施步驟
+- [x] 檢查首頁 PortfolioGrid 組件的篩選邏輯
+- [x] 檢查資料庫中的照片和分類資料
+- [x] 診斷問題根源（分類名稱 vs slug 不匹配）
+- [x] 修復篩選功能（使用 categories.find 將 name 轉換為 slug）
+- [x] 測試所有分類篩選功能（劇照攝影測試成功）
+
+### 修復細節
+修改 `client/src/pages/Home.tsx` 第 122-127 行：
+```typescript
+// 修復前：
+if (advancedFilters.category !== "All" && photo.category !== advancedFilters.category) {
+  return false;
+}
+
+// 修復後：
+if (advancedFilters.category !== "All") {
+  const photoCategory = categories.find(cat => cat.name === photo.category);
+  if (!photoCategory || photoCategory.slug !== advancedFilters.category) {
+    return false;
+  }
+}
+```
+
+### 測試結果
+- ✅ 劇照攝影：3 張照片正常顯示
+- ✅ 篩選邏輯正確使用 slug 進行比對
