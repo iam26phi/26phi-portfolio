@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { AdminLayout } from "@/components/AdminLayout";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
@@ -214,6 +215,7 @@ export default function AdminPackages() {
   }
 
   return (
+    <AdminLayout>
     <div className="min-h-screen bg-background">
       <div className="container py-12">
         <div className="flex justify-between items-center mb-8">
@@ -369,7 +371,7 @@ export default function AdminPackages() {
                 {sortedPackages.map((pkg) => (
                   <PackageCard
                     key={pkg.id}
-                    package={pkg}
+                    pkg={pkg}
                     onEdit={handleEdit}
                     onDelete={handleDelete}
                     onToggleActive={toggleActive}
@@ -382,6 +384,7 @@ export default function AdminPackages() {
         )}
       </div>
     </div>
+    </AdminLayout>
   );
 }
 
@@ -391,7 +394,7 @@ import { CSS } from "@dnd-kit/utilities";
 import { Save, X } from "lucide-react";
 
 type PackageCardProps = {
-  package: {
+  pkg: {
     id: number;
     name: string;
     price: number;
@@ -407,7 +410,7 @@ type PackageCardProps = {
 };
 
 function PackageCard({
-  package: pkg,
+  pkg,
   onEdit,
   onDelete,
   onToggleActive,

@@ -912,18 +912,37 @@
 - [x] 更新 AdminProjects.tsx（專案管理）
 - [x] 更新 AdminProjectPhotos.tsx（專案照片）
 - [x] 更新 AdminCollaborators.tsx（合作對象）
-- [ ] 更新 AdminPackages.tsx（拍攝方案）- 保留原有下拉選單（程式碼使用保留字 package）
+- [x] 更新 AdminPackages.tsx（拍攝方案）
 - [x] 更新 AdminWatermark.tsx（浮水印設定）
 - [x] 更新 AdminContact.tsx（聯絡表單）
 - [x] 更新 AdminChangelogs.tsx（更新日誌）
 
 ### 成果統計
-- 已完成：12/13 個後台頁面（92%）
+- 已完成：13/13 個後台頁面（100%）
 - 側邊欄導航功能：11 個快速連結
 - 當前頁面高亮：琥珀色背景
 - 預估減少導航點擊：66%
 
 ### 注意事項
-- AdminPackages.tsx 保留下拉選單（程式碼使用保留字 package）
+- AdminPackages.tsx 保留字問題已修復（package → pkg）
 - Python 腳本成功更新 12 個頁面
+- AdminPackages.tsx 手動修復完成
 - TypeScript 編譯無錯誤
+
+## AdminPackages.tsx 修復與整合（已完成）
+
+### 任務
+- [x] 將程式碼中的保留字 `package` 改為 `pkg`
+  - PackageCardProps 類型定義
+  - PackageCard 組件參數
+  - PackageCard 調用位置
+- [x] 整合 AdminLayout 側邊欄導航
+  - 修正插入位置（主組件結尾）
+  - 移除 PackageCard 組件的錯誤標籤
+- [x] 測試拍攝方案管理功能
+- [x] 完成 100% 後台頁面側邊欄覆蓋率
+
+### 成果
+- TypeScript 編譯無錯誤
+- 所有 13 個後台頁面均已整合側邊欄導航
+- 後台管理系統優化 100% 完成
