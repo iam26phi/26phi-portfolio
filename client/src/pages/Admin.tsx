@@ -837,7 +837,7 @@ export default function Admin() {
         </div>
       )}
       <div className="container py-12">
-        <div className="flex justify-between items-center mb-8">
+        <div className="sticky top-0 z-10 bg-black pb-6 mb-2 border-b border-border flex justify-between items-center">
           <div>
             <h1 className="text-4xl font-bold tracking-tight mb-2">照片管理</h1>
             <p className="text-muted-foreground">管理您的作品集照片</p>
