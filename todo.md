@@ -48,7 +48,7 @@
 - [x] 加上最小 CSRF guard middleware
 - **效益：** 提升安全性，避免跨站攻擊
 
-## Bug 修復 - Admin.tsx 標題固定功能（待解決）
+## Bug 修復 - Admin.tsx 標題固定功能（進行中）
 
 ### 問題描述
 - 照片管理頁面的「照片管理」標題應該在滾動時固定在頂部
@@ -88,5 +88,36 @@
 - 需要仔細處理 JSX 標籤配對，避免語法錯誤
 - 建議：使用 IDE 或編輯器的 JSX 格式化工具輔助
 
+### 實施步驟
+- [x] 分析 Admin.tsx 的完整結構
+- [x] 嘗試使用 fixed 定位修復
+- [ ] 將 sticky header 移到 container 外層（JSX 結構太複雜，多次嘗試失敗）
+- [ ] 測試滾動行為確認修復
+
 ### 狀態
-- [ ] 待實施（需要重構 JSX 結構）
+- [ ] 部分完成，但效果不理想，需要進一步調試
+
+### 詳細報告
+請查看 `/home/ubuntu/admin_sticky_header_issue.md` 了解完整的問題分析和建議解決方案。
+
+
+## 新功能 - 部落格和 About 頁面文字特效
+
+### 需求描述
+在部落格和 About 頁面的內文中加入 anime.js 文字特效：
+- 文字行上下浮動動畫
+- 滑鼠懸停時文字顏色變化
+- 使用 animejs 的 splitText 功能
+
+### 實施步驟
+- [x] 創建 useTextAnimation custom hook
+- [x] 在 About 頁面整合文字特效
+- [x] 在 Blog 頁面整合文字特效
+- [x] 測試動畫效果和效能
+- [x] 確保動畫不影響可讀性
+
+### 技術細節
+- 使用 anime.js v4 (esm.sh CDN)
+- splitText API 分割文字
+- stagger 延遲效果
+- 顏色隨機變化效果

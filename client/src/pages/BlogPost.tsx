@@ -5,6 +5,7 @@ import { useParams, useLocation } from "wouter";
 import { Loader2, Calendar, Eye, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import ReactMarkdown from "react-markdown";
+import { useTextAnimation } from "@/hooks/useTextAnimation";
 import remarkGfm from "remark-gfm";
 import rehypeRaw from "rehype-raw";
 
@@ -12,6 +13,9 @@ export default function BlogPost() {
   const params = useParams();
   const [, setLocation] = useLocation();
   const slug = params.slug as string;
+  
+  // Apply text animation to blog content paragraphs
+  useTextAnimation('.blog-content-text');
 
   const { data: post, isLoading, error } = trpc.blog.getBySlug.useQuery({ slug });
 
@@ -124,7 +128,7 @@ export default function BlogPost() {
                 <h3 className="text-2xl font-bold tracking-tight mt-8 mb-3" {...props} />
               ),
               p: ({ node, ...props }) => (
-                <p className="text-neutral-300 leading-relaxed mb-6" {...props} />
+                <p className="blog-content-text text-neutral-300 leading-relaxed mb-6" {...props} />
               ),
               a: ({ node, ...props }) => (
                 <a

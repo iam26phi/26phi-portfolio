@@ -3,6 +3,7 @@ import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import { Camera, Award, Users, MapPin, Calendar, Mail, Star, Quote } from "lucide-react";
 import { trpc } from "@/lib/trpc";
+import { useTextAnimation } from "@/hooks/useTextAnimation";
 
 // Default fallback data
 const defaultTimeline = [
@@ -135,6 +136,9 @@ function TestimonialsSection() {
 export default function About() {
   const { data: aboutData } = trpc.about.get.useQuery();
   const { data: collaborators } = trpc.collaborators.list.useQuery();
+  
+  // Apply text animation to paragraphs
+  useTextAnimation('.about-intro-text');
 
   const timeline = aboutData?.timeline || defaultTimeline;
   const stats = (aboutData?.stats || defaultStats).map((s: any) => ({ ...s, icon: iconMap[s.icon] || Camera }));
@@ -179,7 +183,7 @@ export default function About() {
               </h1>
 
               <div className="space-y-6 sm:space-y-8 text-base sm:text-lg md:text-xl font-light text-neutral-300 leading-relaxed">
-                <p>{intro}</p>
+                <p className="about-intro-text">{intro}</p>
               </div>
 
               <div className="mt-10 sm:mt-12 md:mt-16 grid grid-cols-2 gap-6 sm:gap-8 font-mono text-xs sm:text-sm tracking-widest text-neutral-500">
