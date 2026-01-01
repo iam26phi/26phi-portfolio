@@ -7,7 +7,6 @@ import { HeroSection } from "@/components/HeroSection";
 import { PortfolioGrid } from "@/components/PortfolioGrid";
 import { ReviewsSection } from "@/components/ReviewsSection";
 import { BookingSection } from "@/components/BookingSection";
-import { reviews } from "@/lib/data";
 import { FilterOptions } from "@/components/AdvancedFilter";
 import { shuffleArray } from "@/lib/utils";
 
@@ -156,7 +155,7 @@ export default function Home() {
         availableYears={availableYears}
       />
 
-      <ReviewsSection reviews={reviews} />
+      <ReviewsSection />
 
       <BookingSection />
 
