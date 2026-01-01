@@ -713,3 +713,40 @@
 - [x] 新增 12 個索引（photos, photo_collaborators, photo_package_relations, booking_packages, hero_slides, hero_quotes）
 - [x] 執行 migration（drizzle-kit migrate）
 - [x] 測試查詢效能（索引已建立，查詢效能提升）
+
+## 階段二優化：組件拆分（進行中）
+
+### 目標
+將 Home.tsx（452 行）拆分為獨立組件，提升程式碼可維護性和團隊協作效率
+
+### 任務清單
+- [x] 建立 HeroSection 組件（139 行）
+  - 英雄區域輪播背景
+  - 動態標語顯示
+  - Ken Burns 縮放效果
+  - 向下滾動提示動畫
+- [x] 建立 PortfolioGrid 組件（234 行）
+  - 照片網格展示
+  - 分類篩選器
+  - 進階篩選面板
+  - 彩色/黑白切換
+  - Lightbox 整合
+- [x] 建立 ReviewsSection 組件（41 行）
+  - 客戶評價展示
+  - 星級評分
+- [x] 建立 BookingSection 組件（18 行）
+  - 預約 CTA 區塊
+- [x] 重構 Home.tsx 整合所有組件（452 行 → 158 行，減少 65%）
+  - 保持所有 state 和邏輯正常運作
+  - 確保 props 傳遞正確
+- [x] 測試功能完整性
+  - 照片篩選功能
+  - Lightbox 開啟/關閉
+  - 輪播自動切換
+  - 響應式設計
+
+### 成果統計
+- Home.tsx：452 行 → 158 行（減少 294 行，-65%）
+- 新增 4 個獨立組件：HeroSection (139行), PortfolioGrid (234行), ReviewsSection (41行), BookingSection (18行)
+- 總行數：452 行 → 590 行（+138 行，但可維護性大幅提升）
+- 每個組件職責單一，易於獨立測試和重用
