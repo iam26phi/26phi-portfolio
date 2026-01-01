@@ -89,11 +89,14 @@ export default function Admin() {
   const [uploadQueue, setUploadQueue] = useState<Array<{
     id: string;
     filename: string;
+    file: File;
+    preview: string;
     progress: number;
     stage: "compressing" | "reading" | "uploading" | "creating" | "done" | "error";
     estimatedTime: number | null;
     error?: string;
   }>>([]);
+  const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isSorting, setIsSorting] = useState(false);
   const [isBatchMode, setIsBatchMode] = useState(false);
@@ -431,6 +434,79 @@ export default function Admin() {
     });
   };
 
+  // Helper function to create image preview
+  const createImagePreview = (file: File): Promise<string> => {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = (e) => resolve(e.target?.result as string);
+      reader.readAsDataURL(file);
+    });
+  };
+
+  // Handle drag and drop
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  };
+
+  const handleDrop = async (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+
+    const files = Array.from(e.dataTransfer.files);
+    if (files.length === 0) return;
+
+    // Validate all files
+    const invalidFiles = files.filter(f => !f.type.startsWith('image/'));
+    if (invalidFiles.length > 0) {
+      toast.error(`${invalidFiles.length} 個檔案不是圖片格式，已跳過`);
+    }
+
+    const validFiles = files.filter(f => f.type.startsWith('image/'));
+    if (validFiles.length === 0) return;
+
+    // Initialize upload queue with previews
+    const newQueue = await Promise.all(validFiles.map(async (file) => {
+      const preview = await createImagePreview(file);
+      return {
+        id: `${Date.now()}-${Math.random()}`,
+        filename: file.name,
+        file,
+        preview,
+        progress: 0,
+        stage: "reading" as const,
+        estimatedTime: Math.ceil(file.size / (1024 * 1024)),
+      };
+    }));
+
+    setUploadQueue(newQueue);
+
+    // Upload files sequentially
+    for (let i = 0; i < validFiles.length; i++) {
+      const file = validFiles[i];
+      const queueItem = newQueue[i];
+
+      try {
+        await uploadSingleFile(file, queueItem.id);
+      } catch (error) {
+        console.error(`Failed to upload ${file.name}:`, error);
+      }
+    }
+
+    // Clear queue after a delay
+    setTimeout(() => {
+      setUploadQueue([]);
+    }, 2000);
+  };
+
   const handleBatchUpdateFeatured = (featured: number) => {
     if (selectedPhotoIds.size === 0) {
       toast.error("請選擇至少一張照片");
@@ -456,13 +532,18 @@ export default function Admin() {
     const validFiles = files.filter(f => f.type.startsWith('image/'));
     if (validFiles.length === 0) return;
 
-    // Initialize upload queue
-    const newQueue = validFiles.map(file => ({
-      id: `${Date.now()}-${Math.random()}`,
-      filename: file.name,
-      progress: 0,
-      stage: "reading" as const,
-      estimatedTime: Math.ceil(file.size / (1024 * 1024)),
+    // Initialize upload queue with previews
+    const newQueue = await Promise.all(validFiles.map(async (file) => {
+      const preview = await createImagePreview(file);
+      return {
+        id: `${Date.now()}-${Math.random()}`,
+        filename: file.name,
+        file,
+        preview,
+        progress: 0,
+        stage: "reading" as const,
+        estimatedTime: Math.ceil(file.size / (1024 * 1024)),
+      };
     }));
 
     setUploadQueue(newQueue);
@@ -733,7 +814,28 @@ export default function Admin() {
 
   return (
     <AdminLayout>
-    <div className="min-h-screen bg-black">
+    <div 
+      className="min-h-screen bg-black relative"
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
+    >
+      {/* Drag & Drop Overlay */}
+      {isDragging && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center">
+          <div className="bg-gradient-to-br from-blue-500/20 to-purple-500/20 border-2 border-dashed border-blue-500 rounded-2xl p-12 max-w-md mx-4">
+            <div className="text-center space-y-4">
+              <div className="w-20 h-20 mx-auto bg-blue-500/20 rounded-full flex items-center justify-center">
+                <Upload className="w-10 h-10 text-blue-500" />
+              </div>
+              <div>
+                <h3 className="text-2xl font-bold text-white mb-2">釋放以上傳</h3>
+                <p className="text-gray-400">支援多個圖片檔案</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
       <div className="container py-12">
         <div className="flex justify-between items-center mb-8">
           <div>
@@ -805,41 +907,78 @@ export default function Admin() {
                 <div className="flex justify-between items-center">
                   <h3 className="font-medium text-sm">上傳中 ({uploadQueue.filter(q => q.stage === "done").length}/{uploadQueue.length})</h3>
                 </div>
-                <div className="space-y-2 max-h-60 overflow-y-auto">
+                <div className="space-y-3 max-h-96 overflow-y-auto">
                   {uploadQueue.map((item) => (
-                    <div key={item.id} className="space-y-1">
-                      <div className="flex justify-between items-center text-xs">
-                        <span className="font-medium truncate max-w-[200px]" title={item.filename}>
-                          {item.filename}
-                        </span>
-                        <span className="text-muted-foreground flex items-center gap-1">
-                          {item.stage === "done" && <span className="text-green-600">✓ 完成</span>}
-                          {item.stage === "error" && <span className="text-red-600">✗ 失敗</span>}
+                    <div key={item.id} className="flex gap-3 p-2 bg-black/20 rounded-lg">
+                      {/* Thumbnail Preview */}
+                      <div className="relative flex-shrink-0">
+                        <img 
+                          src={item.preview} 
+                          alt={item.filename}
+                          className="w-16 h-16 object-cover rounded border border-border"
+                        />
+                        {item.stage === "done" && (
+                          <div className="absolute inset-0 bg-green-500/20 rounded flex items-center justify-center">
+                            <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
+                              <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                              </svg>
+                            </div>
+                          </div>
+                        )}
+                        {item.stage === "error" && (
+                          <div className="absolute inset-0 bg-red-500/20 rounded flex items-center justify-center">
+                            <div className="w-6 h-6 bg-red-500 rounded-full flex items-center justify-center">
+                              <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                              </svg>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                      
+                      {/* File Info */}
+                      <div className="flex-1 min-w-0 space-y-1">
+                        <div className="flex justify-between items-start gap-2">
+                          <span className="font-medium text-sm truncate" title={item.filename}>
+                            {item.filename}
+                          </span>
+                          <span className="text-xs text-muted-foreground whitespace-nowrap">
+                            {(item.file.size / 1024 / 1024).toFixed(2)} MB
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2 text-xs">
+                          {item.stage === "done" && <span className="text-green-600 font-medium">✓ 完成</span>}
+                          {item.stage === "error" && <span className="text-red-600 font-medium">✗ 失敗</span>}
                           {item.stage === "compressing" && <span className="text-blue-600">壓縮中...</span>}
-                          {item.stage === "reading" && <span>讀取中...</span>}
-                          {item.stage === "uploading" && <span>上傳中...</span>}
-                          {item.stage === "creating" && <span>建立中...</span>}
+                          {item.stage === "reading" && <span className="text-muted-foreground">讀取中...</span>}
+                          {item.stage === "uploading" && <span className="text-muted-foreground">上傳中...</span>}
+                          {item.stage === "creating" && <span className="text-muted-foreground">建立中...</span>}
                           {item.stage !== "done" && item.stage !== "error" && (
-                            <>
+                            <span className="text-muted-foreground">
                               {item.progress}%
                               {item.estimatedTime !== null && item.estimatedTime > 0 && (
-                                <> · {item.estimatedTime}s</>
+                                <> · 預計 {item.estimatedTime}s</>
                               )}
-                            </>
+                            </span>
                           )}
-                        </span>
-                      </div>
-                      {item.stage !== "done" && item.stage !== "error" && (
-                        <div className="w-full bg-secondary rounded-full h-1.5 overflow-hidden">
-                          <div
-                            className="bg-primary h-full transition-all duration-300 ease-out"
-                            style={{ width: `${item.progress}%` }}
-                          />
                         </div>
-                      )}
-                      {item.error && (
-                        <p className="text-xs text-red-600">{item.error}</p>
-                      )}
+                        
+                        {/* Progress Bar */}
+                        {item.stage !== "done" && item.stage !== "error" && (
+                          <div className="w-full bg-secondary rounded-full h-2 overflow-hidden">
+                            <div
+                              className="bg-gradient-to-r from-blue-500 to-purple-500 h-full transition-all duration-300 ease-out"
+                              style={{ width: `${item.progress}%` }}
+                            />
+                          </div>
+                        )}
+                        
+                        {/* Error Message */}
+                        {item.error && (
+                          <p className="text-xs text-red-600 mt-1">{item.error}</p>
+                        )}
+                      </div>
                     </div>
                   ))}
                 </div>
