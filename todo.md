@@ -887,3 +887,37 @@
 - 照片上傳時間減少 60%
 - 照片編輯時間減少 71%
 - 誤操作率降低 75%
+
+## 持久性側邊欄導航實施（階段一完成）
+
+### 目標
+取代下拉選單，實施固定側邊欄導航，減少 66% 導航點擊次數
+
+### 階段一：核心頁面（已完成）
+- [x] 優化 AdminLayout 組件
+  - 移除巢狀選單結構
+  - 使用扁平化導航列表
+  - 加入琥珀色高亮
+- [x] 更新 Admin.tsx（照片管理）
+  - 整合 AdminLayout
+  - 隱藏下拉選單
+  - 測試成功
+
+### 階段二：其他頁面（待實施）
+- [ ] 更新 AdminHero.tsx（英雄區域）
+- [ ] 更新 AdminAbout.tsx（關於我）
+- [ ] 更新 AdminBlog.tsx（部落格列表）
+- [ ] 更新 AdminBlogEditor.tsx（部落格編輯器）
+- [ ] 更新 AdminCategories.tsx（分類管理）
+- [ ] 更新 AdminProjects.tsx（專案管理）
+- [ ] 更新 AdminProjectPhotos.tsx（專案照片）
+- [ ] 更新 AdminCollaborators.tsx（合作對象）
+- [ ] 更新 AdminPackages.tsx（拍攝方案）
+- [ ] 更新 AdminWatermark.tsx（浮水印設定）
+- [ ] 更新 AdminContact.tsx（聯絡表單）
+- [ ] 更新 AdminChangelogs.tsx（更新日誌）
+
+### 注意事項
+- 批量更新腳本產生語法錯誤，已恢復
+- 其他頁面需要逐個手動更新
+- Admin.tsx 已成功整合側邊欄，可供測試

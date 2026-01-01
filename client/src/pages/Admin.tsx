@@ -1,4 +1,5 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useRef, useMemo, useEffect } from "react";
+import { AdminLayout } from "@/components/AdminLayout";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
@@ -32,7 +33,6 @@ import { Loader2, Plus, Edit, Trash2, Eye, EyeOff, Upload, GripVertical, Save, X
 import imageCompression from "browser-image-compression";
 import { extractExifData } from "@/lib/exif";
 import { SortablePhotoCard } from "@/components/SortablePhotoCard";
-import { useRef } from "react";
 import { getLoginUrl } from "@/const";
 import {
   DndContext,
@@ -636,6 +636,7 @@ export default function Admin() {
   }
 
   return (
+    <AdminLayout>
     <div className="min-h-screen bg-background">
       <div className="container py-12">
         <div className="flex justify-between items-center mb-8">
@@ -643,7 +644,7 @@ export default function Admin() {
             <h1 className="text-4xl font-bold tracking-tight mb-2">照片管理</h1>
             <p className="text-muted-foreground">管理您的作品集照片</p>
           </div>
-          <DropdownMenu>
+          <div className="hidden"><DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" className="font-mono">
                 <Menu className="w-4 h-4 mr-2" />
@@ -1180,6 +1181,8 @@ export default function Admin() {
           </div>
         </DialogContent>
       </Dialog>
+      </div>
     </div>
+    </AdminLayout>
   );
 }

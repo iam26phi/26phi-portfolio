@@ -28,53 +28,59 @@ interface NavItem {
 
 const navigation: NavItem[] = [
   {
-    title: "儀表板",
-    href: "/admin/dashboard",
-    icon: LayoutDashboard,
-  },
-  {
-    title: "照片管理",
+    title: "作品集照片",
     href: "/admin",
     icon: Image,
-    children: [
-      { title: "作品集照片", href: "/admin", icon: Image },
-      { title: "分類管理", href: "/admin/categories", icon: FolderOpen },
-      { title: "專案照片", href: "/admin/project-photos", icon: FolderOpen },
-    ],
   },
   {
-    title: "首頁設定",
+    title: "分類管理",
+    href: "/admin/categories",
+    icon: FolderOpen,
+  },
+  {
+    title: "英雄區域",
     href: "/admin/hero",
     icon: Sparkles,
-    children: [
-      { title: "英雄區域", href: "/admin/hero", icon: Image },
-      { title: "關於我", href: "/admin/about", icon: FileText },
-    ],
   },
   {
-    title: "內容管理",
+    title: "關於我",
+    href: "/admin/about",
+    icon: FileText,
+  },
+  {
+    title: "部落格",
     href: "/admin/blog",
     icon: FileText,
-    children: [
-      { title: "部落格文章", href: "/admin/blog", icon: FileText },
-      { title: "專案管理", href: "/admin/projects", icon: FolderOpen },
-      { title: "拍攝方案", href: "/admin/packages", icon: Package },
-    ],
   },
   {
-    title: "協作管理",
+    title: "專案管理",
+    href: "/admin/projects",
+    icon: FolderOpen,
+  },
+  {
+    title: "合作對象",
     href: "/admin/collaborators",
     icon: Users,
   },
   {
-    title: "系統設定",
+    title: "拍攝方案",
+    href: "/admin/packages",
+    icon: Package,
+  },
+  {
+    title: "浮水印",
     href: "/admin/watermark",
-    icon: Settings,
-    children: [
-      { title: "浮水印設定", href: "/admin/watermark", icon: Palette },
-      { title: "聯絡表單", href: "/admin/contact", icon: Mail },
-      { title: "更新日誌", href: "/admin/changelogs", icon: History },
-    ],
+    icon: Palette,
+  },
+  {
+    title: "聯絡表單",
+    href: "/admin/contact",
+    icon: Mail,
+  },
+  {
+    title: "更新日誌",
+    href: "/admin/changelogs",
+    icon: History,
   },
 ];
 
@@ -129,48 +135,25 @@ export function AdminLayout({ children }: AdminLayoutProps) {
         {/* Navigation */}
         <nav className="flex-1 overflow-y-auto py-4">
           {navigation.map((item) => (
-            <div key={item.href}>
-              <Link href={item.href}>
-                <a
-                  className={cn(
-                    "flex items-center gap-3 px-4 py-3 transition-colors relative",
-                    isActive(item.href)
-                      ? "bg-gray-800 text-[#f59e0b]"
-                      : "text-gray-300 hover:bg-gray-800 hover:text-white"
-                  )}
-                  title={collapsed ? item.title : undefined}
-                >
-                  {isActive(item.href) && (
-                    <div className="absolute left-0 top-0 bottom-0 w-1 bg-[#f59e0b]" />
-                  )}
-                  <item.icon className="w-5 h-5 flex-shrink-0" />
-                  {!collapsed && (
-                    <span className="text-sm font-medium">{item.title}</span>
-                  )}
-                </a>
-              </Link>
-
-              {/* Children */}
-              {!collapsed && item.children && isActive(item.href) && (
-                <div className="ml-4 border-l border-gray-800">
-                  {item.children.map((child) => (
-                    <Link key={child.href} href={child.href}>
-                      <a
-                        className={cn(
-                          "flex items-center gap-3 px-4 py-2 text-sm transition-colors",
-                          location === child.href
-                            ? "text-[#f59e0b]"
-                            : "text-gray-400 hover:text-white"
-                        )}
-                      >
-                        <child.icon className="w-4 h-4 flex-shrink-0" />
-                        <span>{child.title}</span>
-                      </a>
-                    </Link>
-                  ))}
-                </div>
-              )}
-            </div>
+            <Link key={item.href} href={item.href}>
+              <a
+                className={cn(
+                  "flex items-center gap-3 px-4 py-3 transition-colors relative",
+                  isActive(item.href)
+                    ? "bg-gray-800 text-[#f59e0b]"
+                    : "text-gray-300 hover:bg-gray-800 hover:text-white"
+                )}
+                title={collapsed ? item.title : undefined}
+              >
+                {isActive(item.href) && (
+                  <div className="absolute left-0 top-0 bottom-0 w-1 bg-[#f59e0b]" />
+                )}
+                <item.icon className="w-5 h-5 flex-shrink-0" />
+                {!collapsed && (
+                  <span className="text-sm font-medium">{item.title}</span>
+                )}
+              </a>
+            </Link>
           ))}
         </nav>
 
