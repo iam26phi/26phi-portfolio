@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { AdminLayout } from "@/components/AdminLayout";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -236,6 +237,7 @@ export default function AdminCollaborators() {
   }
 
   return (
+    <AdminLayout>
     <div className="min-h-screen bg-background">
       <div className="container py-8">
         <div className="flex justify-between items-center mb-8">
@@ -533,5 +535,6 @@ export default function AdminCollaborators() {
         </DialogContent>
       </Dialog>
     </div>
+    </AdminLayout>
   );
 }

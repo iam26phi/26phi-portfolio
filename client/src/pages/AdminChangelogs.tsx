@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { AdminLayout } from "@/components/AdminLayout";
 import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
@@ -134,6 +135,7 @@ export default function AdminChangelogs() {
   };
 
   return (
+    <AdminLayout>
     <div className="min-h-screen bg-black text-white p-8">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
@@ -329,5 +331,6 @@ export default function AdminChangelogs() {
         </div>
       </div>
     </div>
+    </AdminLayout>
   );
 }

@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { AdminLayout } from "@/components/AdminLayout";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -143,6 +144,7 @@ export default function AdminWatermark() {
   }
 
   return (
+    <AdminLayout>
     <div className="container mx-auto py-8 max-w-4xl">
       <div className="mb-8">
         <h1 className="text-4xl font-bold mb-2">浮水印設定</h1>
@@ -317,5 +319,6 @@ export default function AdminWatermark() {
         )}
       </div>
     </div>
+    </AdminLayout>
   );
 }

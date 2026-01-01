@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { AdminLayout } from "@/components/AdminLayout";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -72,6 +73,7 @@ export default function AdminContact() {
   const selectedSubmissionData = submissions.find(s => s.id === selectedSubmission);
 
   return (
+    <AdminLayout>
     <div className="min-h-screen bg-neutral-950 text-white p-8">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
@@ -269,5 +271,6 @@ export default function AdminContact() {
         </div>
       </div>
     </div>
+    </AdminLayout>
   );
 }

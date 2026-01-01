@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { AdminLayout } from "@/components/AdminLayout";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -235,6 +236,7 @@ export default function AdminHero() {
   };
 
   return (
+    <AdminLayout>
     <div className="min-h-screen bg-background">
       <div className="container py-12 max-w-6xl">
         {/* Header */}
@@ -547,5 +549,6 @@ export default function AdminHero() {
         </Card>
       </div>
     </div>
+    </AdminLayout>
   );
 }

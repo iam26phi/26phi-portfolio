@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
+import { AdminLayout } from "@/components/AdminLayout";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -208,6 +209,7 @@ export default function AdminBlogEditor() {
   }
 
   return (
+    <AdminLayout>
     <div className="min-h-screen bg-black text-white p-8">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
@@ -376,5 +378,6 @@ export default function AdminBlogEditor() {
         </form>
       </div>
     </div>
+    </AdminLayout>
   );
 }

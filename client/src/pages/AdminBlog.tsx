@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { AdminLayout } from "@/components/AdminLayout";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import { Plus, Pencil, Trash2, Eye, EyeOff } from "lucide-react";
@@ -70,6 +71,7 @@ export default function AdminBlog() {
   }
 
   return (
+    <AdminLayout>
     <div className="min-h-screen bg-black text-white p-8">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
@@ -177,5 +179,6 @@ export default function AdminBlog() {
         )}
       </div>
     </div>
+    </AdminLayout>
   );
 }

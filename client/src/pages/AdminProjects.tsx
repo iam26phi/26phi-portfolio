@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { AdminLayout } from "@/components/AdminLayout";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
@@ -233,6 +234,7 @@ export default function AdminProjects() {
   }
 
   return (
+    <AdminLayout>
     <div className="min-h-screen bg-background">
       <div className="container py-12">
         <div className="flex justify-between items-center mb-8">
@@ -465,5 +467,6 @@ export default function AdminProjects() {
         )}
       </div>
     </div>
+    </AdminLayout>
   );
 }

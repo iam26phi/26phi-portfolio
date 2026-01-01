@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { AdminLayout } from "@/components/AdminLayout";
 import { useParams } from "wouter";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { trpc } from "@/lib/trpc";
@@ -86,6 +87,7 @@ export default function AdminProjectPhotos() {
   }
 
   return (
+    <AdminLayout>
     <div className="min-h-screen bg-background">
       <div className="container py-12">
         <div className="flex justify-between items-center mb-8">
@@ -172,5 +174,6 @@ export default function AdminProjectPhotos() {
         )}
       </div>
     </div>
+    </AdminLayout>
   );
 }
