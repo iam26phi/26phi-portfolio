@@ -209,6 +209,72 @@ export const appRouter = router({
         return { succeeded, failed, total: input.ids.length };
       }),
 
+    // Batch quick update: for inline editing multiple photos at once
+    batchQuickUpdate: protectedProcedure
+      .input(z.object({
+        ids: z.array(z.number()),
+        field: z.enum(['displayTitle', 'isVisible', 'featured']),
+        value: z.union([
+          z.string(),
+          z.number().min(0).max(1),
+        ]),
+        mode: z.enum(['replace', 'prefix', 'suffix']).optional(), // Only for displayTitle
+      }))
+      .mutation(async ({ input, ctx }) => {
+        if (ctx.user.role !== 'admin') {
+          throw new Error('Unauthorized');
+        }
+        
+        const { ids, field, value, mode = 'replace' } = input;
+        
+        // Validate field-specific values
+        if (field === 'isVisible' || field === 'featured') {
+          if (typeof value !== 'number' || (value !== 0 && value !== 1)) {
+            throw new Error(`${field} must be 0 or 1`);
+          }
+        }
+        
+        if (field === 'displayTitle') {
+          if (typeof value !== 'string') {
+            throw new Error('displayTitle must be a string');
+          }
+        }
+        
+        // Process updates based on field and mode
+        const results = await Promise.allSettled(
+          ids.map(async (id) => {
+            if (field === 'displayTitle' && mode !== 'replace') {
+              // For prefix/suffix mode, get current photo data
+              const photo = await db.getPhotoById(id);
+              if (!photo) {
+                throw new Error(`Photo ${id} not found`);
+              }
+              
+              const currentTitle = photo.displayTitle || photo.alt;
+              let newTitle: string;
+              
+              if (mode === 'prefix') {
+                newTitle = `${value}${currentTitle}`;
+              } else { // suffix
+                newTitle = `${currentTitle}${value}`;
+              }
+              
+              return db.updatePhoto(id, { displayTitle: newTitle });
+            } else {
+              // Direct update for replace mode or non-title fields
+              const updates: any = {};
+              updates[field] = value;
+              return db.updatePhoto(id, updates);
+            }
+          })
+        );
+        
+        const succeeded = results.filter(r => r.status === 'fulfilled').length;
+        const failed = results.filter(r => r.status === 'rejected').length;
+        
+        return { succeeded, failed, total: ids.length };
+      }),
+
     updateOrder: protectedProcedure
       .input(z.array(z.object({ id: z.number(), sortOrder: z.number() })))
       .mutation(async ({ input, ctx }) => {

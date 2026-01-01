@@ -29,7 +29,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
-import { Loader2, Plus, Edit, Trash2, Eye, EyeOff, Upload, GripVertical, Save, X, Menu, Settings, FileText, Image, Palette, FolderOpen, History, Mail, Users } from "lucide-react";
+import { Loader2, Plus, Edit, Trash2, Eye, EyeOff, Upload, GripVertical, Save, X, Menu, Settings, FileText, Image, Palette, FolderOpen, History, Mail, Users, Star } from "lucide-react";
 import imageCompression from "browser-image-compression";
 import { extractExifData } from "@/lib/exif";
 import { SortablePhotoCard } from "@/components/SortablePhotoCard";
@@ -100,6 +100,9 @@ export default function Admin() {
   const [selectedPhotoIds, setSelectedPhotoIds] = useState<Set<number>>(new Set());
   const [batchCategory, setBatchCategory] = useState<string>("");
   const [isBatchCategoryDialogOpen, setIsBatchCategoryDialogOpen] = useState(false);
+  const [isBatchTitleDialogOpen, setIsBatchTitleDialogOpen] = useState(false);
+  const [batchTitleValue, setBatchTitleValue] = useState<string>("");
+  const [batchTitleMode, setBatchTitleMode] = useState<'replace' | 'prefix' | 'suffix'>('replace');
   const [filterCollaboratorId, setFilterCollaboratorId] = useState<number | null>(null);
   const [sortedPhotos, setSortedPhotos] = useState<Array<{
     id: number;
@@ -265,6 +268,19 @@ export default function Admin() {
     },
   });
 
+  const batchQuickUpdateMutation = trpc.photos.batchQuickUpdate.useMutation({
+    onSuccess: (result) => {
+      toast.success(`批次更新完成：成功 ${result.succeeded} 張，失敗 ${result.failed} 張`);
+      refetch();
+      setSelectedPhotoIds(new Set());
+      setIsBatchMode(false);
+      setIsBatchTitleDialogOpen(false);
+    },
+    onError: (error) => {
+      toast.error(`批次更新失敗: ${error.message}`);
+    },
+  });
+
   const addToCarouselMutation = trpc.hero.addSlideFromPhoto.useMutation({
     onSuccess: () => {
       toast.success("照片已成功加入首頁輪播！");
@@ -358,6 +374,35 @@ export default function Admin() {
     batchUpdateVisibilityMutation.mutate({ 
       ids: Array.from(selectedPhotoIds),
       isVisible
+    });
+  };
+
+  const handleBatchUpdateTitle = () => {
+    if (selectedPhotoIds.size === 0) {
+      toast.error("請選擇至少一張照片");
+      return;
+    }
+    if (!batchTitleValue.trim()) {
+      toast.error("請輸入標題內容");
+      return;
+    }
+    batchQuickUpdateMutation.mutate({
+      ids: Array.from(selectedPhotoIds),
+      field: 'displayTitle',
+      value: batchTitleValue,
+      mode: batchTitleMode,
+    });
+  };
+
+  const handleBatchUpdateFeatured = (featured: number) => {
+    if (selectedPhotoIds.size === 0) {
+      toast.error("請選擇至少一張照片");
+      return;
+    }
+    batchQuickUpdateMutation.mutate({
+      ids: Array.from(selectedPhotoIds),
+      field: 'featured',
+      value: featured,
     });
   };
 
@@ -864,6 +909,30 @@ export default function Admin() {
                   >
                     <EyeOff className="mr-2 h-4 w-4" /> 隱藏
                   </Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => setIsBatchTitleDialogOpen(true)}
+                    disabled={selectedPhotoIds.size === 0}
+                  >
+                    <Edit className="mr-2 h-4 w-4" /> 修改標題
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => handleBatchUpdateFeatured(1)}
+                    disabled={selectedPhotoIds.size === 0 || batchQuickUpdateMutation.isPending}
+                  >
+                    <Star className="mr-2 h-4 w-4" /> 設為精選
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => handleBatchUpdateFeatured(0)}
+                    disabled={selectedPhotoIds.size === 0 || batchQuickUpdateMutation.isPending}
+                  >
+                    <Star className="mr-2 h-4 w-4" /> 取消精選
+                  </Button>
                 </>
               )}
               <div className="flex items-center gap-2">
@@ -1188,6 +1257,85 @@ export default function Admin() {
                 disabled={!batchCategory || batchUpdateCategoryMutation.isPending}
               >
                 {batchUpdateCategoryMutation.isPending ? (
+                  <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> 處理中...</>
+                ) : (
+                  "確定"
+                )}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Batch Title Dialog */}
+      <Dialog open={isBatchTitleDialogOpen} onOpenChange={setIsBatchTitleDialogOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>批次修改標題</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="batchTitleMode">修改模式</Label>
+              <Select value={batchTitleMode} onValueChange={(value: any) => setBatchTitleMode(value)}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="replace">替換模式：完全替換為新標題</SelectItem>
+                  <SelectItem value="prefix">前綴模式：在現有標題前加入文字</SelectItem>
+                  <SelectItem value="suffix">後綴模式：在現有標題後加入文字</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label htmlFor="batchTitleValue">
+                {batchTitleMode === 'replace' ? '新標題' : batchTitleMode === 'prefix' ? '前綴文字' : '後綴文字'}
+              </Label>
+              <Input
+                id="batchTitleValue"
+                value={batchTitleValue}
+                onChange={(e) => setBatchTitleValue(e.target.value)}
+                placeholder={
+                  batchTitleMode === 'replace' 
+                    ? '輸入新標題' 
+                    : batchTitleMode === 'prefix' 
+                    ? '輸入要加在前面的文字' 
+                    : '輸入要加在後面的文字'
+                }
+              />
+            </div>
+            <div className="bg-neutral-900 p-4 rounded-lg">
+              <p className="text-sm text-muted-foreground mb-2">預覽效果：</p>
+              <div className="space-y-1">
+                {batchTitleMode === 'replace' && batchTitleValue && (
+                  <p className="text-sm">所有選中照片的標題將變為：<span className="text-amber-500 font-medium">{batchTitleValue}</span></p>
+                )}
+                {batchTitleMode === 'prefix' && batchTitleValue && (
+                  <p className="text-sm">原標題：「照片標題」 → 新標題：「<span className="text-amber-500 font-medium">{batchTitleValue}</span>照片標題」</p>
+                )}
+                {batchTitleMode === 'suffix' && batchTitleValue && (
+                  <p className="text-sm">原標題：「照片標題」 → 新標題：「照片標題<span className="text-amber-500 font-medium">{batchTitleValue}</span>」</p>
+                )}
+                {!batchTitleValue && (
+                  <p className="text-sm text-muted-foreground">請輸入內容以查看預覽</p>
+                )}
+              </div>
+              <p className="text-xs text-muted-foreground mt-3">
+                將影響 <span className="text-amber-500 font-medium">{selectedPhotoIds.size}</span> 張照片
+              </p>
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => {
+                setIsBatchTitleDialogOpen(false);
+                setBatchTitleValue('');
+              }}>
+                取消
+              </Button>
+              <Button 
+                onClick={handleBatchUpdateTitle}
+                disabled={!batchTitleValue.trim() || batchQuickUpdateMutation.isPending}
+              >
+                {batchQuickUpdateMutation.isPending ? (
                   <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> 處理中...</>
                 ) : (
                   "確定"
