@@ -644,6 +644,7 @@ export const appRouter = router({
     update: protectedProcedure
       .input(z.object({
         intro: z.string(),
+        profileImage: z.string().optional(),
         timeline: z.array(z.object({
           year: z.string(),
           title: z.string(),

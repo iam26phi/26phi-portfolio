@@ -121,3 +121,22 @@
 - splitText API 分割文字
 - stagger 延遲效果
 - 顏色隨機變化效果
+
+
+## Bug 修復 - About 頁面照片上傳功能
+
+### 問題描述
+用戶無法正常上傳 About 頁面的個人照片
+- 點擊儲存變更後顯示上傳完成
+- 但開啟前台網頁時照片還是空白
+- 重新整理 Admin 頁面後原先上傳的照片也消失了
+- **根本原因：照片上傳成功但沒有正確保存到資料庫**
+
+### 實施步驟
+- [x] 檢查 AdminAbout 頁面的上傳實作
+- [x] 檢查後端 API 路由和處理邏輯
+- [x] 診斷上傳失敗的原因
+- [x] 檢查 about.update API 是否正確處理 profileImage
+- [x] 檢查資料庫 schema 是否有 profileImage 欄位
+- [x] 修復上傳功能（在 about.update input schema 加入 profileImage 欄位）
+- [x] 測試上傳流程
