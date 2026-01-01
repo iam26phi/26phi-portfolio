@@ -14,7 +14,8 @@ import {
   ChevronLeft,
   ChevronRight,
   Home,
-  Sparkles
+  Sparkles,
+  Star
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -71,6 +72,11 @@ const navigation: NavItem[] = [
     title: "拍攝方案",
     href: "/admin/packages",
     icon: Package,
+  },
+  {
+    title: "客戶評價",
+    href: "/admin/testimonials",
+    icon: Star,
   },
   {
     title: "浮水印",

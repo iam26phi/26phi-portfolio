@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
-import { Camera, Award, Users, MapPin, Calendar, Mail } from "lucide-react";
+import { Camera, Award, Users, MapPin, Calendar, Mail, Star, Quote } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 
 // Default fallback data
@@ -46,6 +46,91 @@ const iconMap: Record<string, any> = {
   Calendar,
   Mail,
 };
+
+function TestimonialsSection() {
+  const { data: testimonials, isLoading } = trpc.testimonials.list.useQuery();
+
+  if (isLoading || !testimonials || testimonials.length === 0) {
+    return null;
+  }
+
+  return (
+    <section className="py-16 sm:py-24 md:py-32 bg-neutral-950 text-white">
+      <div className="container mx-auto px-6">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          viewport={{ once: true }}
+          className="text-center mb-16"
+        >
+          <h2 className="text-4xl md:text-6xl font-bold tracking-tighter mb-6">
+            CLIENT TESTIMONIALS
+          </h2>
+          <p className="text-xl text-neutral-400 max-w-2xl mx-auto">
+            聽聽客戶們怎麼說
+          </p>
+        </motion.div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {testimonials.map((testimonial, index) => (
+            <motion.div
+              key={testimonial.id}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: index * 0.1 }}
+              viewport={{ once: true }}
+              className="relative bg-neutral-900 p-8 rounded-lg border border-neutral-800 hover:border-neutral-700 transition-colors"
+            >
+              {/* 引號裝飾 */}
+              <Quote className="absolute top-6 right-6 h-8 w-8 text-neutral-800" />
+              
+              {/* 評分 */}
+              <div className="flex items-center gap-1 mb-4">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <Star
+                    key={i}
+                    className={`h-4 w-4 ${
+                      i < testimonial.rating
+                        ? "fill-amber-400 text-amber-400"
+                        : "fill-neutral-700 text-neutral-700"
+                    }`}
+                  />
+                ))}
+              </div>
+
+              {/* 評價內容 */}
+              <p className="text-neutral-300 leading-relaxed mb-6 relative z-10">
+                {testimonial.content}
+              </p>
+
+              {/* 客戶資訊 */}
+              <div className="flex items-center gap-4 pt-4 border-t border-neutral-800">
+                {testimonial.clientAvatar ? (
+                  <img
+                    src={testimonial.clientAvatar}
+                    alt={testimonial.clientName}
+                    className="h-12 w-12 rounded-full object-cover"
+                  />
+                ) : (
+                  <div className="h-12 w-12 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center text-white font-semibold text-lg">
+                    {testimonial.clientName.charAt(0)}
+                  </div>
+                )}
+                <div>
+                  <p className="font-semibold text-white">{testimonial.clientName}</p>
+                  {testimonial.clientTitle && (
+                    <p className="text-sm text-neutral-400">{testimonial.clientTitle}</p>
+                  )}
+                </div>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
 
 export default function About() {
   const { data: aboutData } = trpc.about.get.useQuery();
@@ -299,6 +384,9 @@ export default function About() {
             ))}
           </div>
         </section>
+
+        {/* Testimonials Section */}
+        <TestimonialsSection />
 
         {/* CTA Section */}
         <section className="py-16 sm:py-24 md:py-32 bg-white text-black">

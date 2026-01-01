@@ -1477,6 +1477,106 @@ export const appRouter = router({
       };
     }),
   }),
+
+  // ============================================
+  // Testimonials Management
+  // ============================================
+  testimonials: router({
+    // Public endpoint: get visible testimonials for display
+    list: publicProcedure.query(async () => {
+      return await db.getVisibleTestimonials();
+    }),
+
+    // Admin endpoints: manage all testimonials
+    listAll: protectedProcedure.query(async ({ ctx }) => {
+      if (ctx.user.role !== 'admin') {
+        throw new Error('Unauthorized');
+      }
+      return await db.getAllTestimonials();
+    }),
+
+    getById: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .query(async ({ input, ctx }) => {
+        if (ctx.user.role !== 'admin') {
+          throw new Error('Unauthorized');
+        }
+        return await db.getTestimonialById(input.id);
+      }),
+
+    create: protectedProcedure
+      .input(z.object({
+        clientName: z.string().min(1, "客戶姓名不能為空"),
+        clientTitle: z.string().optional(),
+        clientAvatar: z.string().optional(),
+        content: z.string().min(1, "評價內容不能為空"),
+        rating: z.number().min(1).max(5).default(5),
+        isVisible: z.number().min(0).max(1).default(1),
+        sortOrder: z.number().default(0),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        if (ctx.user.role !== 'admin') {
+          throw new Error('Unauthorized');
+        }
+        return await db.createTestimonial(input);
+      }),
+
+    update: protectedProcedure
+      .input(z.object({
+        id: z.number(),
+        clientName: z.string().min(1, "客戶姓名不能為空").optional(),
+        clientTitle: z.string().optional(),
+        clientAvatar: z.string().optional(),
+        content: z.string().min(1, "評價內容不能為空").optional(),
+        rating: z.number().min(1).max(5).optional(),
+        isVisible: z.number().min(0).max(1).optional(),
+        sortOrder: z.number().optional(),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        if (ctx.user.role !== 'admin') {
+          throw new Error('Unauthorized');
+        }
+        const { id, ...updates } = input;
+        return await db.updateTestimonial(id, updates);
+      }),
+
+    delete: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ input, ctx }) => {
+        if (ctx.user.role !== 'admin') {
+          throw new Error('Unauthorized');
+        }
+        await db.deleteTestimonial(input.id);
+        return { success: true };
+      }),
+
+    updateVisibility: protectedProcedure
+      .input(z.object({
+        id: z.number(),
+        isVisible: z.number().min(0).max(1),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        if (ctx.user.role !== 'admin') {
+          throw new Error('Unauthorized');
+        }
+        return await db.updateTestimonial(input.id, { isVisible: input.isVisible });
+      }),
+
+    reorder: protectedProcedure
+      .input(z.object({
+        updates: z.array(z.object({
+          id: z.number(),
+          sortOrder: z.number(),
+        })),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        if (ctx.user.role !== 'admin') {
+          throw new Error('Unauthorized');
+        }
+        await db.updateTestimonialsOrder(input.updates);
+        return { success: true };
+      }),
+  })
 });
 
 export type AppRouter = typeof appRouter;

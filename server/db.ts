@@ -1,6 +1,6 @@
 import { eq, and, inArray } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users, photos, InsertPhoto, blogPosts, InsertBlogPost, siteSettings, InsertSiteSetting, photoCategories, InsertPhotoCategory, projects, InsertProject, photoProjects, InsertPhotoProject, changelogs, InsertChangelog, contactSubmissions, InsertContactSubmission, collaborators, InsertCollaborator, Collaborator, photoCollaborators, InsertPhotoCollaborator, heroSlides, InsertHeroSlide, heroQuotes, InsertHeroQuote, bookingPackages, InsertBookingPackage, photoPackageRelations, InsertPhotoPackageRelation } from "../drizzle/schema";
+import { InsertUser, users, photos, InsertPhoto, blogPosts, InsertBlogPost, siteSettings, InsertSiteSetting, photoCategories, InsertPhotoCategory, projects, InsertProject, photoProjects, InsertPhotoProject, changelogs, InsertChangelog, contactSubmissions, InsertContactSubmission, collaborators, InsertCollaborator, Collaborator, photoCollaborators, InsertPhotoCollaborator, heroSlides, InsertHeroSlide, heroQuotes, InsertHeroQuote, bookingPackages, InsertBookingPackage, photoPackageRelations, InsertPhotoPackageRelation, testimonials, InsertTestimonial, Testimonial } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -1043,4 +1043,81 @@ export async function getPackagePhotos(packageId: number) {
   }
 
   return allPhotos;
+}
+
+
+// ============================================
+// Testimonials Management
+// ============================================
+
+export async function getAllTestimonials() {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot get testimonials: database not available");
+    return [];
+  }
+
+  return await db.select().from(testimonials).orderBy(testimonials.sortOrder);
+}
+
+export async function getVisibleTestimonials() {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot get visible testimonials: database not available");
+    return [];
+  }
+
+  return await db.select().from(testimonials).where(eq(testimonials.isVisible, 1)).orderBy(testimonials.sortOrder);
+}
+
+export async function getTestimonialById(id: number) {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot get testimonial: database not available");
+    return undefined;
+  }
+
+  const result = await db.select().from(testimonials).where(eq(testimonials.id, id)).limit(1);
+  return result.length > 0 ? result[0] : undefined;
+}
+
+export async function createTestimonial(testimonial: InsertTestimonial) {
+  const db = await getDb();
+  if (!db) {
+    throw new Error("Database not available");
+  }
+
+  const result = await db.insert(testimonials).values(testimonial);
+  const insertId = Number(result[0].insertId);
+  return await getTestimonialById(insertId);
+}
+
+export async function updateTestimonial(id: number, updates: Partial<InsertTestimonial>) {
+  const db = await getDb();
+  if (!db) {
+    throw new Error("Database not available");
+  }
+
+  await db.update(testimonials).set(updates).where(eq(testimonials.id, id));
+  return await getTestimonialById(id);
+}
+
+export async function deleteTestimonial(id: number) {
+  const db = await getDb();
+  if (!db) {
+    throw new Error("Database not available");
+  }
+
+  await db.delete(testimonials).where(eq(testimonials.id, id));
+}
+
+export async function updateTestimonialsOrder(updates: Array<{ id: number; sortOrder: number }>) {
+  const db = await getDb();
+  if (!db) {
+    throw new Error("Database not available");
+  }
+
+  for (const update of updates) {
+    await db.update(testimonials).set({ sortOrder: update.sortOrder }).where(eq(testimonials.id, update.id));
+  }
 }

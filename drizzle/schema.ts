@@ -265,3 +265,22 @@ export const photoPackageRelations = mysqlTable("photo_package_relations", {
 
 export type PhotoPackageRelation = typeof photoPackageRelations.$inferSelect;
 export type InsertPhotoPackageRelation = typeof photoPackageRelations.$inferInsert;
+
+/**
+ * Testimonials table for client reviews and feedback
+ */
+export const testimonials = mysqlTable("testimonials", {
+  id: int("id").autoincrement().primaryKey(),
+  clientName: varchar("clientName", { length: 100 }).notNull(), // Client's name
+  clientTitle: varchar("clientTitle", { length: 200 }), // Client's title/position (e.g., "新娘", "企業主管")
+  clientAvatar: text("clientAvatar"), // S3 URL for client avatar (optional)
+  content: text("content").notNull(), // Review content
+  rating: int("rating").default(5).notNull(), // 1-5 stars
+  isVisible: int("isVisible").default(1).notNull(), // 1 = visible, 0 = hidden
+  sortOrder: int("sortOrder").default(0).notNull(), // For manual ordering
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Testimonial = typeof testimonials.$inferSelect;
+export type InsertTestimonial = typeof testimonials.$inferInsert;

@@ -499,6 +499,45 @@
 - [x] 拖放排序功能（dnd-kit）
 - [x] 啟用/停用切換
 
+## 功能開發 - 客戶評價管理系統（已完成）
+
+### 資料庫設計
+- [x] 建立 testimonials 資料表（客戶姓名、職稱、頭像、評價內容、評分、可見性、排序）
+- [x] 執行資料庫遷移（drizzle-kit generate & migrate）
+
+### 後端 API
+- [x] testimonials.list（公開查詢可見評價）
+- [x] testimonials.listAll（管理員查詢所有評價）
+- [x] testimonials.getById（根據 ID 獲取評價）
+- [x] testimonials.create（管理員新增評價）
+- [x] testimonials.update（管理員更新評價）
+- [x] testimonials.delete（管理員刪除評價）
+- [x] testimonials.updateVisibility（管理員切換顯示/隱藏）
+- [x] testimonials.reorder（管理員調整排序）
+
+### 管理介面
+- [x] Admin 頁面新增「客戶評價」選項（管理選單）
+- [x] 建立 AdminTestimonials 頁面（/admin/testimonials）
+- [x] 評價列表顯示（卡片式網格佈局）
+- [x] 新增/編輯評價對話框（姓名、職稱、頭像、內容、評分、可見性）
+- [x] 刪除評價確認對話框
+- [x] 顯示/隱藏快速切換按鈕
+- [x] 評分選擇（1-5 星下拉選單）
+- [x] 空狀態設計
+
+### 前台展示
+- [x] 在 About 頁面新增客戶評價區塊
+- [x] 評價卡片設計（深色主題、星級、頭像、引號裝飾）
+- [x] 響應式網格佈局（1/2/3 列）
+- [x] 動畫效果（Framer Motion）
+- [x] 只顯示可見評價（isVisible = 1）
+
+### 單元測試
+- [x] testimonials API 測試（18 個測試全部通過）
+- [x] CRUD 操作測試
+- [x] 權限驗證測試
+- [x] 輸入驗證測試
+
 ### 預約表單整合
 - [x] Contact 頁面預約表單新增方案選擇下拉選單
 - [x] 選擇方案後自動顯示價格、時長和描述資訊
@@ -1166,3 +1205,65 @@
 - 改善資訊可讀性（超大數字、進度條）
 - 增強專業感（精緻陰影、平滑動畫）
 - 提升使用者體驗（豐富的互動效果）
+
+
+## 客戶評價管理系統（進行中）
+
+### 目標
+建立完整的客戶評價管理系統，讓管理員可以新增、編輯、刪除和控制顯示哪些客戶評價
+
+### 資料庫設計
+- [ ] 建立 testimonials 資料表
+  - id（主鍵）
+  - clientName（客戶姓名）
+  - clientTitle（客戶職稱/身份）
+  - clientAvatar（客戶頭像 URL，可選）
+  - content（評價內容）
+  - rating（評分，1-5 星）
+  - isVisible（是否顯示）
+  - sortOrder（排序順序）
+  - createdAt（建立時間）
+  - updatedAt（更新時間）
+
+### 後端 API
+- [ ] testimonials.list（公開端點：獲取可見評價）
+- [ ] testimonials.adminList（管理端點：獲取所有評價）
+- [ ] testimonials.create（新增評價）
+- [ ] testimonials.update（更新評價）
+- [ ] testimonials.delete（刪除評價）
+- [ ] testimonials.updateVisibility（切換顯示狀態）
+- [ ] testimonials.reorder（調整排序）
+
+### 管理員後台頁面
+- [ ] 建立 AdminTestimonials.tsx 頁面
+- [ ] 評價列表顯示（卡片式佈局）
+- [ ] 新增評價對話框
+- [ ] 編輯評價對話框
+- [ ] 刪除確認對話框
+- [ ] 顯示/隱藏切換
+- [ ] 拖放排序功能
+- [ ] 評分星級顯示
+
+### 前台整合
+- [ ] 在 About 或 Home 頁面顯示客戶評價
+- [ ] 評價卡片設計（頭像、姓名、職稱、內容、星級）
+- [ ] 輪播或網格佈局
+- [ ] 響應式設計
+
+### 功能特性
+- [ ] 支援 1-5 星評分
+- [ ] 支援客戶頭像上傳
+- [ ] 支援顯示/隱藏控制
+- [ ] 支援拖放排序
+- [ ] 支援搜尋和篩選
+
+### 測試
+- [ ] 單元測試：testimonials API
+- [ ] 單元測試：權限控制
+- [ ] 前端測試：評價管理頁面
+
+### 預期效果
+- 完整的評價管理系統
+- 提升網站可信度
+- 展示客戶滿意度
+- 靈活的內容控制
