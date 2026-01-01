@@ -98,6 +98,18 @@ export default function Admin() {
   const [isSorting, setIsSorting] = useState(false);
   const [isBatchMode, setIsBatchMode] = useState(false);
   const [selectedPhotoIds, setSelectedPhotoIds] = useState<Set<number>>(new Set());
+  
+  // Photo sorting state
+  const [sortBy, setSortBy] = useState<string>(() => {
+    const saved = localStorage.getItem('26phi_photo_sort');
+    return saved || 'uploadTime-desc';
+  });
+  
+  // Update localStorage when sort changes
+  const handleSortChange = (value: string) => {
+    setSortBy(value);
+    localStorage.setItem('26phi_photo_sort', value);
+  };
   const [batchCategory, setBatchCategory] = useState<string>("");
   const [isBatchCategoryDialogOpen, setIsBatchCategoryDialogOpen] = useState(false);
   const [isBatchTitleDialogOpen, setIsBatchTitleDialogOpen] = useState(false);
@@ -162,16 +174,41 @@ export default function Admin() {
     },
   });
 
-  // Update sorted photos when data changes or filter changes
+  // Update sorted photos when data changes, filter changes, or sort option changes
   useEffect(() => {
     if (photos) {
       let filtered = photos;
       if (filterCollaboratorId !== null) {
         filtered = photos.filter(photo => photo.collaboratorId === filterCollaboratorId);
       }
-      setSortedPhotos([...filtered].sort((a, b) => a.sortOrder - b.sortOrder));
+      
+      // Apply sorting
+      const sorted = [...filtered];
+      switch (sortBy) {
+        case 'uploadTime-desc':
+          sorted.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+          break;
+        case 'uploadTime-asc':
+          sorted.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+          break;
+        case 'title-asc':
+          sorted.sort((a, b) => (a.alt || '').localeCompare(b.alt || ''));
+          break;
+        case 'title-desc':
+          sorted.sort((a, b) => (b.alt || '').localeCompare(a.alt || ''));
+          break;
+        case 'category-asc':
+          sorted.sort((a, b) => (a.category || '').localeCompare(b.category || ''));
+          break;
+        case 'sortOrder':
+        default:
+          sorted.sort((a, b) => a.sortOrder - b.sortOrder);
+          break;
+      }
+      
+      setSortedPhotos(sorted);
     }
-  }, [photos, filterCollaboratorId]);
+  }, [photos, filterCollaboratorId, sortBy]);
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
@@ -810,6 +847,20 @@ export default function Admin() {
             )}
             
             <div className="flex gap-2 items-center flex-wrap">
+              <Select value={sortBy} onValueChange={handleSortChange}>
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue placeholder="選擇排序方式" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="uploadTime-desc">上傳時間（最新）</SelectItem>
+                  <SelectItem value="uploadTime-asc">上傳時間（最舊）</SelectItem>
+                  <SelectItem value="title-asc">標題（A-Z）</SelectItem>
+                  <SelectItem value="title-desc">標題（Z-A）</SelectItem>
+                  <SelectItem value="category-asc">分類（A-Z）</SelectItem>
+                  <SelectItem value="sortOrder">自訂排序</SelectItem>
+                </SelectContent>
+              </Select>
+              
               <Button
                 variant={isSorting ? "default" : "outline"}
                 onClick={() => setIsSorting(!isSorting)}
