@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { Loader2, Plus, Trash2, Eye, EyeOff, Upload, ArrowLeft } from "lucide-react";
+import { Slider } from "@/components/ui/slider";
 
 export default function AdminHero() {
   const utils = trpc.useUtils();
@@ -15,6 +16,10 @@ export default function AdminHero() {
   // Fetch hero slides and quotes
   const { data: slides = [], isLoading: slidesLoading } = trpc.hero.listAllSlides.useQuery();
   const { data: quotes = [], isLoading: quotesLoading } = trpc.hero.listAllQuotes.useQuery();
+  
+  // Fetch hero opacity setting
+  const { data: opacitySetting } = trpc.settings.get.useQuery({ key: "hero_opacity" });
+  const heroOpacity = opacitySetting?.settingValue ? parseFloat(opacitySetting.settingValue) : 0.7;
 
   // Mutations for slides
   const createSlideMutation = trpc.hero.createSlide.useMutation({
@@ -86,6 +91,17 @@ export default function AdminHero() {
       toast.error(`刪除失敗：${error.message}`);
     },
   });
+  
+  // Mutation for updating hero opacity
+  const updateOpacityMutation = trpc.settings.update.useMutation({
+    onSuccess: () => {
+      utils.settings.get.invalidate({ key: "hero_opacity" });
+      toast.success("透明度已更新");
+    },
+    onError: (error) => {
+      toast.error(`更新失敗：${error.message}`);
+    },
+  });
 
   // Photo upload mutation
   const uploadMutation = trpc.photos.uploadAvatar.useMutation({
@@ -109,6 +125,14 @@ export default function AdminHero() {
   const [isQuoteDialogOpen, setIsQuoteDialogOpen] = useState(false);
   const [newQuote, setNewQuote] = useState({ textZh: "", textEn: "" });
   const [editingQuote, setEditingQuote] = useState<{ id: number; textZh: string; textEn: string } | null>(null);
+  const [localOpacity, setLocalOpacity] = useState(heroOpacity);
+  
+  // Update local opacity when fetched value changes
+  useEffect(() => {
+    if (opacitySetting?.settingValue) {
+      setLocalOpacity(parseFloat(opacitySetting.settingValue));
+    }
+  }, [opacitySetting]);
 
   // Handle photo upload
   const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -317,6 +341,44 @@ export default function AdminHero() {
                 ))}
               </div>
             )}
+          </CardContent>
+        </Card>
+
+        {/* Hero Opacity Section */}
+        <Card className="mb-8">
+          <CardHeader>
+            <CardTitle>輪播照片透明度</CardTitle>
+            <CardDescription>調整首頁輪播照片的透明度（0% = 完全透明，100% = 完全不透明）</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="flex items-center gap-4">
+                <Label className="min-w-[80px]">透明度：</Label>
+                <Slider
+                  value={[localOpacity * 100]}
+                  onValueChange={(value) => setLocalOpacity(value[0] / 100)}
+                  onValueCommit={(value) => {
+                    const newOpacity = value[0] / 100;
+                    updateOpacityMutation.mutate({
+                      key: "hero_opacity",
+                      value: newOpacity.toString(),
+                    });
+                  }}
+                  max={100}
+                  min={0}
+                  step={1}
+                  className="flex-1"
+                />
+                <span className="min-w-[60px] text-sm font-mono text-muted-foreground">
+                  {Math.round(localOpacity * 100)}%
+                </span>
+              </div>
+              <div className="text-sm text-muted-foreground">
+                <p>• 較低的透明度可以讓標語文字更清晰易讀</p>
+                <p>• 較高的透明度可以更完整地展示照片細節</p>
+                <p>• 建議值：60-80%</p>
+              </div>
+            </div>
           </CardContent>
         </Card>
 

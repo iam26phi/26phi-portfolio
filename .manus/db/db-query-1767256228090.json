@@ -1,0 +1,9 @@
+{
+  "query": "INSERT INTO site_settings (settingKey, settingValue) \nVALUES ('hero_opacity', '0.7')\nON DUPLICATE KEY UPDATE settingValue = '0.7';",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3KMh2yGgHww6rVT.root --database 3s8FCUF9BWUfzRwVV77JBG --execute INSERT INTO site_settings (settingKey, settingValue) \nVALUES ('hero_opacity', '0.7')\nON DUPLICATE KEY UPDATE settingValue = '0.7';",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 1559
+}

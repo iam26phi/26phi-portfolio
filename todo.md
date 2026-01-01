@@ -794,3 +794,35 @@
   - 解決：改用 useState + useEffect，確保隨機化只執行一次
   - 影響範圍：photos 和 heroSlides 陣列
   - 修復位置：Home.tsx 第 52-62 行和第 74-81 行
+
+## 功能開發 - 英雄區域透明度調整（已完成）
+
+### 資料庫層
+- [x] 在 site_settings 表新增 hero_opacity 設定項（預設 0.7）
+- [x] 使用現有 key-value 結構，無需修改 schema
+
+### 後端 API
+- [x] 使用現有 settings.get API 讀取 hero_opacity
+- [x] 使用現有 settings.update API 更新 hero_opacity
+
+### 後台管理
+- [x] 在 AdminHero 頁面新增透明度滑桿（0-100%）
+- [x] 顯示當前透明度數值（即時更新）
+- [x] 實施 useEffect 同步資料庫與本地狀態
+- [x] 加入使用建議和說明文字
+
+### 前台展示
+- [x] 修改 HeroSection 組件讀取 hero_opacity 設定
+- [x] 套用透明度到輪播照片背景（style={{ opacity: heroOpacity }}）
+- [x] 移除原本的固定 opacity-40 類別
+
+### 測試
+- [x] 測試滑桿調整功能（後台滑桿正常運作）
+- [x] 測試透明度套用效果（前台即時顯示變化）
+- [x] 確認 TypeScript 編譯無錯誤
+
+### 成果
+- 後台新增「輪播照片透明度」區塊，位於輪播照片管理和標語管理之間
+- 滑桿範圍 0-100%，預設 70%
+- 即時顯示當前數值，拖動完成後自動儲存
+- 前台輪播照片自動套用設定的透明度

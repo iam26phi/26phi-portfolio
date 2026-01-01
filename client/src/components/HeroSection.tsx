@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowRight } from "lucide-react";
+import { trpc } from "@/lib/trpc";
 
 interface HeroSlide {
   id: number;
@@ -27,6 +28,10 @@ interface HeroSectionProps {
 }
 
 export function HeroSection({ heroSlides, heroQuotes }: HeroSectionProps) {
+  // Fetch hero opacity setting
+  const { data: opacitySetting } = trpc.settings.get.useQuery({ key: "hero_opacity" });
+  const heroOpacity = opacitySetting?.settingValue ? parseFloat(opacitySetting.settingValue) : 0.7;
+  
   // Select a random quote on mount
   const [currentQuote, setCurrentQuote] = useState<{ textZh: string; textEn: string } | null>(null);
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
@@ -69,7 +74,8 @@ export function HeroSection({ heroSlides, heroQuotes }: HeroSectionProps) {
             <motion.img 
               src={heroBackgroundUrl}
               alt="Hero Background" 
-              className="w-full h-full object-cover opacity-40"
+              className="w-full h-full object-cover"
+              style={{ opacity: heroOpacity }}
               initial={{ scale: 1 }}
               animate={{ scale: 1.1 }}
               transition={{ duration: 10, ease: "linear" }}
