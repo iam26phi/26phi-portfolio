@@ -94,6 +94,17 @@
   --ring: #FAFAFA;
   --radius: 0px;
   
+  /* Admin Panel Photography Theme Colors */
+  --admin-bg: #f9fafb;
+  --admin-card-bg: #ffffff;
+  --admin-text-primary: #1a1a1a;
+  --admin-text-secondary: #4a4a4a;
+  --admin-accent: #f59e0b;
+  --admin-accent-hover: #d97706;
+  --admin-success: #10b981;
+  --admin-error: #ef4444;
+  --admin-border: #e5e7eb;
+  
   --chart-1: #FAFAFA;
   --chart-2: #A0A0A0;
   --chart-3: #737373;
@@ -199,3 +210,68 @@
     background: #555;
   }
 }
+
+  /* Admin Panel Visual Hierarchy */
+  .admin-container {
+    background-color: var(--admin-bg);
+    min-height: 100vh;
+  }
+  
+  .admin-card {
+    background-color: var(--admin-card-bg);
+    border: 1px solid var(--admin-border);
+    border-radius: 8px;
+    padding: 1.5rem;
+  }
+  
+  .admin-btn-primary {
+    background-color: #2563eb;
+    color: white;
+    font-weight: 500;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    transition: all 0.2s;
+  }
+  
+  .admin-btn-primary:hover {
+    background-color: #1d4ed8;
+  }
+  
+  .admin-btn-secondary {
+    background-color: transparent;
+    color: var(--admin-text-primary);
+    font-weight: 500;
+    padding: 0.5rem 1rem;
+    border: 1px solid var(--admin-border);
+    border-radius: 6px;
+    transition: all 0.2s;
+  }
+  
+  .admin-btn-secondary:hover {
+    background-color: #f3f4f6;
+  }
+  
+  .admin-btn-danger {
+    background-color: var(--admin-error);
+    color: white;
+    font-weight: 500;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    transition: all 0.2s;
+  }
+  
+  .admin-btn-danger:hover {
+    background-color: #dc2626;
+  }
+  
+  .admin-accent-text {
+    color: var(--admin-accent);
+  }
+  
+  .admin-success-text {
+    color: var(--admin-success);
+  }
+  
+  .admin-error-text {
+    color: var(--admin-error);
+  }

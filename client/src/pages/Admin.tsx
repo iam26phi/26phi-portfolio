@@ -74,7 +74,18 @@ export default function Admin() {
   const { user, loading: authLoading, isAuthenticated } = useAuth();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingPhoto, setEditingPhoto] = useState<PhotoFormData | null>(null);
-  const [uploadCategory, setUploadCategory] = useState<string>("Portrait");
+  
+  // Smart form prefill: Remember last selected category
+  const [uploadCategory, setUploadCategory] = useState<string>(() => {
+    const saved = localStorage.getItem('26phi_last_upload_category');
+    return saved || "Portrait";
+  });
+  
+  // Update localStorage when category changes
+  const handleCategoryChange = (value: string) => {
+    setUploadCategory(value);
+    localStorage.setItem('26phi_last_upload_category', value);
+  };
   const [uploadQueue, setUploadQueue] = useState<Array<{
     id: string;
     filename: string;
@@ -468,11 +479,20 @@ export default function Admin() {
           clearInterval(progressInterval);
           updateQueueItem({ progress: 90, stage: "creating" });
 
+          const location = (exifData as any).location || "";
+          
+          // Smart form prefill: Save recent locations
+          if (location) {
+            const recentLocations = JSON.parse(localStorage.getItem('26phi_recent_locations') || '[]');
+            const updated = [location, ...recentLocations.filter((l: string) => l !== location)].slice(0, 5);
+            localStorage.setItem('26phi_recent_locations', JSON.stringify(updated));
+          }
+          
           await createMutation.mutateAsync({
             src: result.url,
             alt: file.name.replace(/\.[^/.]+$/, ""),
             category: uploadCategory,
-            location: (exifData as any).location || "",
+            location,
             date: (exifData as any).date || new Date().toISOString().split('T')[0],
             description: "",
             camera: (exifData as any).camera,
@@ -832,7 +852,7 @@ export default function Admin() {
                 </>
               )}
               <div className="flex items-center gap-2">
-              <Select value={uploadCategory} onValueChange={setUploadCategory}>
+              <Select value={uploadCategory} onValueChange={handleCategoryChange}>
                 <SelectTrigger className="w-40">
                   <SelectValue placeholder="選擇分類" />
                 </SelectTrigger>
