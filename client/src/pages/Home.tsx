@@ -8,7 +8,7 @@ import Lightbox from "@/components/Lightbox";
 import { reviews } from "@/lib/data";
 import { ArrowRight, Star, Loader2, Palette } from "lucide-react";
 import { AdvancedFilter, FilterOptions } from "@/components/AdvancedFilter";
-import { cn } from "@/lib/utils";
+import { cn, shuffleArray } from "@/lib/utils";
 import { AnimatedPhotoGrid } from "@/components/AnimatedPhotoGrid";
 import { photoGridContainerVariants, photoGridItemVariants } from "@/lib/animations";
 import { ProgressiveImage } from "@/components/ProgressiveImage";
@@ -63,20 +63,10 @@ export default function Home() {
   // Fetch photos from backend API
   const { data: photosRaw = [], isLoading } = trpc.photos.list.useQuery();
   
-  // Randomize photos on mount
-  const [photos, setPhotos] = useState<typeof photosRaw>([]);
-  
-  useEffect(() => {
-    if (photosRaw.length > 0 && photos.length === 0) {
-      // Shuffle photos using Fisher-Yates algorithm
-      const shuffled = [...photosRaw];
-      for (let i = shuffled.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-      }
-      setPhotos(shuffled);
-    }
-  }, [photosRaw, photos.length]);
+  // Randomize photos on mount using shared utility
+  const photos = useMemo(() => {
+    return photosRaw.length > 0 ? shuffleArray(photosRaw) : [];
+  }, [photosRaw]);
   
   // Fetch categories from backend API
   const { data: categories = [] } = trpc.photoCategories.list.useQuery();
@@ -88,20 +78,10 @@ export default function Home() {
   const { data: heroSlidesRaw = [] } = trpc.hero.getActiveSlides.useQuery();
   const { data: heroQuotes = [] } = trpc.hero.getActiveQuotes.useQuery();
   
-  // Randomize hero slides on mount
-  const [heroSlides, setHeroSlides] = useState<typeof heroSlidesRaw>([]);
-  
-  useEffect(() => {
-    if (heroSlidesRaw.length > 0 && heroSlides.length === 0) {
-      // Shuffle slides using Fisher-Yates algorithm
-      const shuffled = [...heroSlidesRaw];
-      for (let i = shuffled.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-      }
-      setHeroSlides(shuffled);
-    }
-  }, [heroSlidesRaw, heroSlides.length]);
+  // Randomize hero slides on mount using shared utility
+  const heroSlides = useMemo(() => {
+    return heroSlidesRaw.length > 0 ? shuffleArray(heroSlidesRaw) : [];
+  }, [heroSlidesRaw]);
   
   // Select a random quote on mount
   const [currentQuote, setCurrentQuote] = useState<{ textZh: string; textEn: string } | null>(null);
@@ -343,7 +323,7 @@ export default function Home() {
           className="columns-1 sm:columns-2 lg:columns-3 gap-4 sm:gap-6 md:gap-8"
         >
           <AnimatePresence>
-            {filteredPhotos.map((photo) => (
+            {filteredPhotos.map((photo, index) => (
               <motion.div
                 layout
                 variants={photoGridItemVariants}
@@ -363,6 +343,7 @@ export default function Home() {
                   src={photo.src}
                   alt={photo.alt}
                   rootMargin="200px"
+                  loading={index < 9 ? "eager" : "lazy"}
                   className={cn(
                     "w-full h-auto transition-all duration-700 ease-out scale-100 group-hover:scale-105",
                     isGrayscale ? "grayscale group-hover:grayscale-0" : ""

@@ -1,4 +1,4 @@
-import { eq, and } from "drizzle-orm";
+import { eq, and, inArray } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import { InsertUser, users, photos, InsertPhoto, blogPosts, InsertBlogPost, siteSettings, InsertSiteSetting, photoCategories, InsertPhotoCategory, projects, InsertProject, photoProjects, InsertPhotoProject, changelogs, InsertChangelog, contactSubmissions, InsertContactSubmission, collaborators, InsertCollaborator, Collaborator, photoCollaborators, InsertPhotoCollaborator, heroSlides, InsertHeroSlide, heroQuotes, InsertHeroQuote, bookingPackages, InsertBookingPackage, photoPackageRelations, InsertPhotoPackageRelation } from "../drizzle/schema";
 import { ENV } from './_core/env';
@@ -107,35 +107,58 @@ export async function getVisiblePhotos() {
     return [];
   }
 
-  // Get all visible photos
-  const allPhotos = await db
+  // 1. Get all visible photos
+  const photosList = await db
     .select()
     .from(photos)
     .where(eq(photos.isVisible, 1))
     .orderBy(photos.sortOrder);
 
-  // For each photo, get all collaborators
-  const result = await Promise.all(
-    allPhotos.map(async (photo) => {
-      const photoCollabs = await db
-        .select({
-          id: collaborators.id,
-          name: collaborators.name,
-          slug: collaborators.slug,
-          instagram: collaborators.instagram,
-        })
-        .from(photoCollaborators)
-        .leftJoin(collaborators, eq(photoCollaborators.collaboratorId, collaborators.id))
-        .where(eq(photoCollaborators.photoId, photo.id));
+  if (photosList.length === 0) {
+    return [];
+  }
 
-      return {
-        ...photo,
-        collaborators: photoCollabs.filter((c) => c.id !== null),
-      };
+  // 2. Batch query all collaborators for these photos
+  const photoIds = photosList.map((p) => p.id);
+  const allCollaborators = await db
+    .select({
+      photoId: photoCollaborators.photoId,
+      id: collaborators.id,
+      name: collaborators.name,
+      slug: collaborators.slug,
+      instagram: collaborators.instagram,
     })
-  );
+    .from(photoCollaborators)
+    .leftJoin(collaborators, eq(photoCollaborators.collaboratorId, collaborators.id))
+    .where(inArray(photoCollaborators.photoId, photoIds));
 
-  return result;
+  // 3. Build a Map for fast lookup
+  const collaboratorsByPhoto = new Map<number, Array<{
+    id: number | null;
+    name: string | null;
+    slug: string | null;
+    instagram: string | null;
+  }>>();
+
+  for (const collab of allCollaborators) {
+    if (!collaboratorsByPhoto.has(collab.photoId)) {
+      collaboratorsByPhoto.set(collab.photoId, []);
+    }
+    if (collab.id !== null) {
+      collaboratorsByPhoto.get(collab.photoId)!.push({
+        id: collab.id,
+        name: collab.name,
+        slug: collab.slug,
+        instagram: collab.instagram,
+      });
+    }
+  }
+
+  // 4. Combine results
+  return photosList.map((photo) => ({
+    ...photo,
+    collaborators: collaboratorsByPhoto.get(photo.id) || [],
+  }));
 }
 
 export async function getPhotoById(id: number) {

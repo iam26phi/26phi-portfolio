@@ -17,6 +17,11 @@ type ProgressiveImageProps = {
    */
   rootMargin?: string;
   /**
+   * Loading strategy
+   * @default "lazy"
+   */
+  loading?: "lazy" | "eager";
+  /**
    * Callback when high-res image is loaded
    */
   onLoad?: () => void;
@@ -45,6 +50,7 @@ export function ProgressiveImage({
   className,
   lowResSrc,
   rootMargin = "200px",
+  loading = "lazy",
   onLoad,
 }: ProgressiveImageProps) {
   const { ref, isIntersecting } = useLazyLoad({ rootMargin });
@@ -82,7 +88,7 @@ export function ProgressiveImage({
             "w-full h-auto transition-opacity duration-300",
             lowResSrc ? "blur-sm scale-105" : "blur-md scale-110"
           )}
-          loading="lazy"
+          loading={loading}
         />
       )}
       

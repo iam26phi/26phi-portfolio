@@ -4,8 +4,9 @@ import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { Clock, DollarSign, ArrowRight, Loader2, CheckCircle2 } from "lucide-react";
 import { Link } from "wouter";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { photoGridContainerVariants, photoGridItemVariants } from "@/lib/animations";
+import { shuffleArray } from "@/lib/utils";
 
 export default function Packages() {
   const { data: packages, isLoading } = trpc.bookingPackages.list.useQuery();
@@ -104,20 +105,12 @@ function PackageCard({ package: pkg }: PackageCardProps) {
   // Load photos associated with this package
   const { data: photosRaw } = trpc.bookingPackages.getPhotos.useQuery({ packageId: pkg.id });
   
-  // Randomize and select 3 photos on mount
-  const [photos, setPhotos] = useState<typeof photosRaw>([]);
-  
-  useEffect(() => {
-    if (photosRaw && photosRaw.length > 0 && (!photos || photos.length === 0)) {
-      // Shuffle photos using Fisher-Yates algorithm
-      const shuffled = [...photosRaw];
-      for (let i = shuffled.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-      }
-      setPhotos(shuffled);
-    }
-  }, [photosRaw, photos]);
+  // Randomize and select 3 photos using shared utility
+  const displayPhotos = useMemo(() => {
+    return photosRaw && photosRaw.length > 0 
+      ? shuffleArray(photosRaw).slice(0, 3) 
+      : [];
+  }, [photosRaw]);
 
   return (
     <div className="group relative bg-white/5 border border-white/10 rounded-2xl p-6 sm:p-8 hover:bg-white/10 hover:border-white/20 transition-all duration-300 h-full flex flex-col">
@@ -166,7 +159,7 @@ function PackageCard({ package: pkg }: PackageCardProps) {
       )}
       
       {/* Sample Photos */}
-      {photos && photos.length > 0 && (
+      {displayPhotos && displayPhotos.length > 0 && (
         <div className="mb-6">
           <h4 className="text-sm font-semibold text-neutral-400 mb-3">作品範例</h4>
           <motion.div 
@@ -175,7 +168,7 @@ function PackageCard({ package: pkg }: PackageCardProps) {
             animate="visible"
             className="grid grid-cols-3 gap-2"
           >
-            {photos.slice(0, 3).map((photo) => (
+            {displayPhotos.map((photo) => (
               <motion.div 
                 key={photo.id} 
                 variants={photoGridItemVariants}
@@ -189,8 +182,8 @@ function PackageCard({ package: pkg }: PackageCardProps) {
               </motion.div>
             ))}
           </motion.div>
-          {photos.length > 3 && (
-            <p className="text-xs text-neutral-500 mt-2 text-center">及其他 {photos.length - 3} 張作品</p>
+          {photosRaw && photosRaw.length > 3 && (
+            <p className="text-xs text-neutral-500 mt-2 text-center">及其他 {photosRaw.length - 3} 張作品</p>
           )}
         </div>
       )}
