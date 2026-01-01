@@ -140,3 +140,31 @@
 - [x] 檢查資料庫 schema 是否有 profileImage 欄位
 - [x] 修復上傳功能（在 about.update input schema 加入 profileImage 欄位）
 - [x] 測試上傳流程
+
+
+## GitHub 整合 (2026-01-02)
+
+### 需求描述
+將網站程式碼推送到 GitHub 並設定自動同步機制，確保每次更新都會自動推送到 GitHub
+
+### 實施步驟
+- [x] 檢查 GitHub 帳號登入狀態 (iam26phi)
+- [x] 建立 GitHub 儲存庫 (26phi-portfolio)
+- [x] 推送現有程式碼到 GitHub (1331 個物件，389.14 MiB)
+- [x] 設定 Git post-commit hook 實現自動同步
+- [x] 測試自動同步功能（README 更新測試）
+- [x] 撰寫 GitHub 整合說明文件
+
+### 技術細節
+- **儲存庫網址**：https://github.com/iam26phi/26phi-portfolio
+- **自動同步機制**：Git post-commit hook (`.git/hooks/post-commit`)
+- **運作方式**：每次 commit 後自動執行 `git push github main`
+- **Remote 設定**：
+  - `origin`: Manus 內部儲存庫 (S3)
+  - `github`: GitHub 儲存庫
+
+### 測試結果
+- ✅ 自動推送功能正常運作
+- ✅ 每次 commit 後會顯示同步狀態
+- ✅ GitHub 儲存庫與本地保持同步
+
