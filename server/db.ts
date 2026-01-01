@@ -506,6 +506,34 @@ export async function removePhotoFromProject(photoId: number, projectId: number)
   return { success: true };
 }
 
+export async function getAvailablePhotosForProject(projectId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  // Get all photos
+  const allPhotos = await db.select().from(photos);
+  
+  // Get all photo-project associations
+  const allAssociations = await db.select().from(photoProjects);
+  
+  // Get photos already in this project
+  const currentProjectPhotoIds = allAssociations
+    .filter(a => a.projectId === projectId)
+    .map(a => a.photoId);
+  
+  // Get photos in other projects
+  const otherProjectPhotoIds = allAssociations
+    .filter(a => a.projectId !== projectId)
+    .map(a => a.photoId);
+  
+  // Filter: include photos not in any project OR photos already in this project
+  return allPhotos.filter(photo => {
+    const isInOtherProject = otherProjectPhotoIds.includes(photo.id);
+    const isInCurrentProject = currentProjectPhotoIds.includes(photo.id);
+    return !isInOtherProject || isInCurrentProject;
+  }).sort((a, b) => a.sortOrder - b.sortOrder);
+}
+
 export async function setPhotoProjects(photoId: number, projectIds: number[]) {
   const db = await getDb();
   if (!db) throw new Error('Database not available');

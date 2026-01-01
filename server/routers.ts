@@ -867,6 +867,15 @@ export const appRouter = router({
         return { success: true };
       }),
 
+    getAvailablePhotos: protectedProcedure
+      .input(z.object({ projectId: z.number() }))
+      .query(async ({ input, ctx }) => {
+        if (ctx.user.role !== 'admin') {
+          throw new Error('Unauthorized');
+        }
+        return await db.getAvailablePhotosForProject(input.projectId);
+      }),
+
     uploadCoverImage: protectedProcedure
       .input(z.object({
         file: z.string(), // base64 encoded image

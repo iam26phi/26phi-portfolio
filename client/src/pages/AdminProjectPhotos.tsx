@@ -18,7 +18,7 @@ export default function AdminProjectPhotos() {
   const [saving, setSaving] = useState(false);
 
   const { data: project, isLoading: loadingProject } = trpc.projects.getById.useQuery({ id: projectId });
-  const { data: allPhotos, isLoading: loadingPhotos } = trpc.photos.listAll.useQuery();
+  const { data: allPhotos, isLoading: loadingPhotos } = trpc.projects.getAvailablePhotos.useQuery({ projectId });
   const setPhotos = trpc.projects.setPhotos.useMutation();
 
   useEffect(() => {
@@ -164,8 +164,8 @@ export default function AdminProjectPhotos() {
         ) : (
           <Card>
             <CardContent className="flex flex-col items-center justify-center py-12">
-              <h3 className="text-lg font-semibold mb-2">尚無照片</h3>
-              <p className="text-muted-foreground mb-4">請先在照片管理頁面上傳照片</p>
+              <h3 className="text-lg font-semibold mb-2">尚無可用照片</h3>
+              <p className="text-muted-foreground mb-4">所有照片都已分配到其他專案，或尚未上傳照片</p>
               <Button onClick={() => window.location.href = "/admin"}>
                 前往照片管理
               </Button>
