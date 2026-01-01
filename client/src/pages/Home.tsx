@@ -108,35 +108,37 @@ export default function Home() {
     }
   }, [advancedFilters.project, projects]);
 
-  // Apply filters
-  const filteredPhotos = photos.filter(photo => {
-    // Project filter (most specific)
-    if (advancedFilters.project !== "All") {
-      if (!projectPhotos.includes(photo.id)) {
+  // Apply filters (memoized for performance)
+  const filteredPhotos = useMemo(() => {
+    return photos.filter(photo => {
+      // Project filter (most specific)
+      if (advancedFilters.project !== "All") {
+        if (!projectPhotos.includes(photo.id)) {
+          return false;
+        }
+      }
+      
+      // Category filter
+      if (advancedFilters.category !== "All" && photo.category !== advancedFilters.category) {
         return false;
       }
-    }
-    
-    // Category filter
-    if (advancedFilters.category !== "All" && photo.category !== advancedFilters.category) {
-      return false;
-    }
-    
-    // Location filter
-    if (advancedFilters.location !== "All" && photo.location !== advancedFilters.location) {
-      return false;
-    }
-    
-    // Year filter
-    if (advancedFilters.year !== "All") {
-      const photoYear = photo.date ? new Date(photo.date).getFullYear().toString() : null;
-      if (photoYear !== advancedFilters.year) {
+      
+      // Location filter
+      if (advancedFilters.location !== "All" && photo.location !== advancedFilters.location) {
         return false;
       }
-    }
-    
-    return true;
-  });
+      
+      // Year filter
+      if (advancedFilters.year !== "All") {
+        const photoYear = photo.date ? new Date(photo.date).getFullYear().toString() : null;
+        if (photoYear !== advancedFilters.year) {
+          return false;
+        }
+      }
+      
+      return true;
+    });
+  }, [photos, advancedFilters, projectPhotos]);
 
   return (
     <div className="min-h-screen bg-background text-foreground selection:bg-white selection:text-black">

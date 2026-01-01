@@ -39,10 +39,17 @@ export function getSessionCookieOptions(
   //       ? hostname
   //       : undefined;
 
+  // 可配置的 SameSite 設定，預設為 lax（同網域最常見）
+  const sameSiteEnv = (process.env.COOKIE_SAMESITE ?? "lax").toLowerCase() as
+    | "lax"
+    | "strict"
+    | "none";
+
   return {
     httpOnly: true,
     path: "/",
-    sameSite: "none",
-    secure: isSecureRequest(req),
+    sameSite: sameSiteEnv,
+    // SameSite=None 規範要求 Secure=true
+    secure: sameSiteEnv === "none" ? true : isSecureRequest(req),
   };
 }

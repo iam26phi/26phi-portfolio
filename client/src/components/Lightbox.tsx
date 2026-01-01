@@ -1,6 +1,6 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { X, ChevronLeft, ChevronRight, ZoomIn, ZoomOut, Maximize2 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 type Photo = {
   id: number;
@@ -40,6 +40,23 @@ interface LightboxProps {
 }
 
 export default function Lightbox({ photo, onClose, onNext, onPrev, hasNext, hasPrev, nextPhotoSrc, prevPhotoSrc }: LightboxProps) {
+  // Focus management for accessibility
+  const closeBtnRef = useRef<HTMLButtonElement | null>(null);
+  const lastActiveElementRef = useRef<HTMLElement | null>(null);
+
+  useEffect(() => {
+    // 記錄開啟前焦點
+    lastActiveElementRef.current = document.activeElement as HTMLElement | null;
+
+    // 開啟後把焦點移到關閉按鈕
+    closeBtnRef.current?.focus();
+
+    return () => {
+      // 關閉後把焦點還回去
+      lastActiveElementRef.current?.focus?.();
+    };
+  }, []);
+
   // Zoom State
   const [scale, setScale] = useState(1);
   const [position, setPosition] = useState({ x: 0, y: 0 });
@@ -191,6 +208,9 @@ export default function Lightbox({ photo, onClose, onNext, onPrev, hasNext, hasP
 
   return (
     <motion.div
+      role="dialog"
+      aria-modal="true"
+      aria-label="圖片預覽"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
@@ -198,7 +218,9 @@ export default function Lightbox({ photo, onClose, onNext, onPrev, hasNext, hasP
       onClick={onClose}
     >
       <button
+        ref={closeBtnRef}
         onClick={onClose}
+        aria-label="關閉預覽"
         className="absolute top-4 right-4 sm:top-6 sm:right-6 text-white/50 hover:text-white active:text-white transition-colors z-50 p-2 sm:p-3 touch-manipulation"
       >
         <X size={32} />
@@ -208,6 +230,7 @@ export default function Lightbox({ photo, onClose, onNext, onPrev, hasNext, hasP
       {hasPrev && (
         <button
           onClick={(e) => { e.stopPropagation(); onPrev(); }}
+          aria-label="上一張"
           className="absolute left-2 sm:left-4 md:left-8 top-1/2 -translate-y-1/2 text-white/50 hover:text-white active:text-white transition-colors z-50 p-2 sm:p-3 touch-manipulation"
         >
           <ChevronLeft size={48} strokeWidth={1} />
@@ -217,6 +240,7 @@ export default function Lightbox({ photo, onClose, onNext, onPrev, hasNext, hasP
       {hasNext && (
         <button
           onClick={(e) => { e.stopPropagation(); onNext(); }}
+          aria-label="下一張"
           className="absolute right-2 sm:right-4 md:right-8 top-1/2 -translate-y-1/2 text-white/50 hover:text-white active:text-white transition-colors z-50 p-2 sm:p-3 touch-manipulation"
         >
           <ChevronRight size={48} strokeWidth={1} />

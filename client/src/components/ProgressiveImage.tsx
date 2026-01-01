@@ -79,29 +79,44 @@ export function ProgressiveImage({
 
   return (
     <div ref={ref} className={cn("relative overflow-hidden", className)}>
-      {/* Low-res placeholder */}
-      {!isLoaded && (
+      {/* 情況 A：有 lowResSrc，維持原設計（兩張圖） */}
+      {lowResSrc ? (
+        <>
+          {!isLoaded && (
+            <img
+              src={lowResSrc}
+              alt={alt}
+              className={cn("w-full h-auto transition-opacity duration-300 blur-sm scale-105")}
+              loading={loading}
+              decoding="async"
+            />
+          )}
+
+          {highResSrc && (
+            <img
+              src={highResSrc}
+              alt={alt}
+              className={cn(
+                "w-full h-auto transition-opacity duration-700",
+                isLoaded ? "opacity-100" : "opacity-0",
+                !isLoaded && "absolute inset-0"
+              )}
+              decoding="async"
+            />
+          )}
+        </>
+      ) : (
+        /* 情況 B：沒 lowResSrc，只用單張圖（避免雙下載） */
         <img
-          src={lowResSrc || src}
+          src={src}
           alt={alt}
           className={cn(
-            "w-full h-auto transition-opacity duration-300",
-            lowResSrc ? "blur-sm scale-105" : "blur-md scale-110"
+            "w-full h-auto transition-[filter,transform,opacity] duration-700",
+            isLoaded ? "blur-0 scale-100 opacity-100" : "blur-md scale-110 opacity-90"
           )}
           loading={loading}
-        />
-      )}
-      
-      {/* High-res image */}
-      {highResSrc && (
-        <img
-          src={highResSrc}
-          alt={alt}
-          className={cn(
-            "w-full h-auto transition-opacity duration-700",
-            isLoaded ? "opacity-100" : "opacity-0",
-            !isLoaded && "absolute inset-0"
-          )}
+          decoding="async"
+          onLoad={() => setIsLoaded(true)}
         />
       )}
       

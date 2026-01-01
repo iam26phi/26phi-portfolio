@@ -1,39 +1,43 @@
+import { Suspense, lazy } from "react";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/NotFound";
 import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
-import Home from "./pages/Home";
-import About from "./pages/About";
-import Admin from "./pages/Admin";
-import AdminDashboard from "./pages/AdminDashboard";
-import AdminBlog from "./pages/AdminBlog";
-import AdminBlogEditor from "./pages/AdminBlogEditor";
-import AdminHero from "./pages/AdminHero";
-import AdminAbout from "./pages/AdminAbout";
-import AdminCategories from "./pages/AdminCategories";
-import AdminWatermark from "./pages/AdminWatermark";
-import AdminProjects from "./pages/AdminProjects";
-import AdminProjectPhotos from "./pages/AdminProjectPhotos";
-import AdminChangelogs from "./pages/AdminChangelogs";
-import AdminContact from "./pages/AdminContact";
-import AdminCollaborators from "./pages/AdminCollaborators";
-import AdminPackages from "./pages/AdminPackages";
-import AdminTestimonials from "./pages/AdminTestimonials";
-import Packages from "./pages/Packages";
-import CollaboratorDetail from "./pages/CollaboratorDetail";
-import Projects from "./pages/Projects";
-import ProjectDetail from "./pages/ProjectDetail";
-import Changelog from "./pages/Changelog";
-import Blog from "./pages/Blog";
-import BlogPost from "./pages/BlogPost";
-import Contact from "./pages/Contact";
+
+// Lazy load pages for better code splitting
+const Home = lazy(() => import("./pages/Home"));
+const About = lazy(() => import("./pages/About"));
+const Admin = lazy(() => import("./pages/Admin"));
+const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
+const AdminBlog = lazy(() => import("./pages/AdminBlog"));
+const AdminBlogEditor = lazy(() => import("./pages/AdminBlogEditor"));
+const AdminHero = lazy(() => import("./pages/AdminHero"));
+const AdminAbout = lazy(() => import("./pages/AdminAbout"));
+const AdminCategories = lazy(() => import("./pages/AdminCategories"));
+const AdminWatermark = lazy(() => import("./pages/AdminWatermark"));
+const AdminProjects = lazy(() => import("./pages/AdminProjects"));
+const AdminProjectPhotos = lazy(() => import("./pages/AdminProjectPhotos"));
+const AdminChangelogs = lazy(() => import("./pages/AdminChangelogs"));
+const AdminContact = lazy(() => import("./pages/AdminContact"));
+const AdminCollaborators = lazy(() => import("./pages/AdminCollaborators"));
+const AdminPackages = lazy(() => import("./pages/AdminPackages"));
+const AdminTestimonials = lazy(() => import("./pages/AdminTestimonials"));
+const Packages = lazy(() => import("./pages/Packages"));
+const CollaboratorDetail = lazy(() => import("./pages/CollaboratorDetail"));
+const Projects = lazy(() => import("./pages/Projects"));
+const ProjectDetail = lazy(() => import("./pages/ProjectDetail"));
+const Changelog = lazy(() => import("./pages/Changelog"));
+const Blog = lazy(() => import("./pages/Blog"));
+const BlogPost = lazy(() => import("./pages/BlogPost"));
+const Contact = lazy(() => import("./pages/Contact"));
 
 function Router() {
   // make sure to consider if you need authentication for certain routes
   return (
-    <Switch>
+    <Suspense fallback={null}>
+      <Switch>
       <Route path={"/"} component={Home} />
       <Route path={"/about"} component={About} />
       <Route path={"/blog"} component={Blog} />
@@ -63,7 +67,8 @@ function Router() {
       <Route path={"/404"} component={NotFound} />
       {/* Final fallback route */}
       <Route component={NotFound} />
-    </Switch>
+      </Switch>
+    </Suspense>
   );
 }
 

@@ -33,6 +33,30 @@ async function startServer() {
   // Configure body parser with larger size limit for file uploads
   app.use(express.json({ limit: "150mb" }));
   app.use(express.urlencoded({ limit: "150mb", extended: true }));
+  
+  // 最小 CSRF 防護：只擋「跨站帶 cookie 的非 GET」
+  const allowedOrigins = new Set(
+    (process.env.CSRF_ALLOWED_ORIGINS ?? "")
+      .split(",")
+      .map(s => s.trim())
+      .filter(Boolean)
+  );
+
+  app.use((req, res, next) => {
+    const method = req.method.toUpperCase();
+    if (method === "GET" || method === "HEAD" || method === "OPTIONS") return next();
+
+    // 若沒有設 allowedOrigins，就不啟用（避免在開發期被誤擋）
+    if (allowedOrigins.size === 0) return next();
+
+    const origin = req.headers.origin;
+    if (!origin || !allowedOrigins.has(origin)) {
+      return res.status(403).json({ error: "CSRF blocked" });
+    }
+
+    next();
+  });
+  
   // OAuth callback under /api/oauth/callback
   registerOAuthRoutes(app);
   // tRPC API

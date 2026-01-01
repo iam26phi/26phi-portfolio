@@ -24,6 +24,20 @@ export default defineConfig({
   build: {
     outDir: path.resolve(import.meta.dirname, "dist/public"),
     emptyOutDir: true,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          // React 生態常見獨立 chunk
+          react: ["react", "react-dom"],
+
+          // framer-motion（Lightbox 有用到）
+          motion: ["framer-motion"],
+
+          // UI / 工具類（依實際 package 調整）
+          // ui: ["@radix-ui/react-dialog", "@radix-ui/react-popover"],
+        },
+      },
+    },
   },
   server: {
     host: true,
