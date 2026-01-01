@@ -112,6 +112,45 @@ export const appRouter = router({
         return await db.getPhotoById(id);
       }),
 
+    // Quick update: for inline editing (single field updates)
+    quickUpdate: protectedProcedure
+      .input(z.object({
+        id: z.number(),
+        field: z.enum(['displayTitle', 'category', 'isVisible', 'featured']),
+        value: z.union([
+          z.string(),
+          z.number().min(0).max(1),
+        ]),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        if (ctx.user.role !== 'admin') {
+          throw new Error('Unauthorized');
+        }
+        
+        const { id, field, value } = input;
+        
+        // Validate field-specific values
+        if (field === 'isVisible' || field === 'featured') {
+          if (typeof value !== 'number' || (value !== 0 && value !== 1)) {
+            throw new Error(`${field} must be 0 or 1`);
+          }
+        }
+        
+        if (field === 'displayTitle' || field === 'category') {
+          if (typeof value !== 'string') {
+            throw new Error(`${field} must be a string`);
+          }
+        }
+        
+        // Update the specific field
+        const updates: any = {};
+        updates[field] = value;
+        
+        await db.updatePhoto(id, updates);
+        
+        return await db.getPhotoById(id);
+      }),
+
     delete: protectedProcedure
       .input(z.object({ id: z.number() }))
       .mutation(async ({ input, ctx }) => {

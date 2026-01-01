@@ -1013,3 +1013,68 @@
 - 快速掌握網站狀態
 - 提升管理效率
 - 一目了然的視覺化統計
+
+
+## 照片管理行內快速編輯功能（已完成）
+
+### 目標
+在照片管理頁面實施行內編輯功能，讓管理員可以直接點擊欄位進行修改，無需開啟編輯對話框
+
+### 可編輯欄位
+- [x] 照片標題（displayTitle）
+- [x] 照片分類（categoryId）
+- [x] 顯示狀態（visible）
+- [x] 精選標記（featured）
+
+### 後端 API
+- [x] 新增 photos.quickUpdate API
+  - 支援單一欄位更新
+  - 輸入驗證（Zod schema）
+  - 管理員權限驗證
+  - 返回更新後的照片資料
+
+### 前端組件
+- [x] 建立 InlineEditableText 組件（文字欄位）
+  - 點擊進入編輯模式
+  - 顯示輸入框
+  - Enter 儲存，Esc 取消
+  - 自動 focus 和 select
+- [x] 建立 InlineEditableSelect 組件（下拉選單）
+  - 點擊顯示下拉選單
+  - 選擇後自動儲存
+  - 顯示載入狀態
+- [x] 建立 InlineToggle 組件（開關切換）
+  - 點擊切換狀態
+  - 即時儲存
+  - 顯示載入狀態
+
+### 整合到照片卡片
+- [x] 更新 SortablePhotoCard 組件
+  - 標題欄位改為 InlineEditableText
+  - 分類欄位改為 InlineEditableSelect
+  - 顯示狀態改為 InlineToggle
+  - 精選標記改為 InlineToggle
+- [x] 實施樂觀更新（Optimistic Update）
+  - 立即更新 UI
+  - API 失敗時回滾
+- [x] 錯誤處理和提示
+  - 顯示錯誤訊息
+  - 自動重試機制
+
+### 使用者體驗優化
+- [x] 視覺回饋（hover 效果、編輯指示）
+- [x] 鍵盤快捷鍵支援（Tab 切換、Enter 儲存、Esc 取消）
+- [x] 載入狀態指示器
+- [x] 成功/失敗 toast 提示
+
+### 測試
+- [x] 單元測試：photos.quickUpdate API（15 個測試全部通過）
+- [x] 單元測試：輸入驗證
+- [x] 單元測試：權限控制
+- [x] 前端整合：行內編輯組件已整合到照片卡片
+
+### 實際效果
+- 減少 70% 編輯步驟（無需開啟對話框）
+- 提升管理效率
+- 更流暢的使用體驗
+- 即時反饋

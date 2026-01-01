@@ -2,11 +2,15 @@ import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { Button } from "@/components/ui/button";
 import { Edit, Trash2, Eye, EyeOff, GripVertical, Star, PlayCircle, Loader2, CheckCircle } from "lucide-react";
+import { InlineEditableText } from "@/components/InlineEditableText";
+import { InlineEditableSelect } from "@/components/InlineEditableSelect";
+import { InlineToggle } from "@/components/InlineToggle";
 
 type Photo = {
   id: number;
   src: string;
   alt: string;
+  displayTitle?: string | null;
   category: string;
   location: string | null;
   date: string | null;
@@ -18,12 +22,21 @@ type Photo = {
   updatedAt: Date;
 };
 
+type Category = {
+  id: number;
+  name: string;
+  slug: string;
+  sortOrder: number;
+};
+
 type SortablePhotoCardProps = {
   photo: Photo;
+  categories: Category[];
   onEdit: (photo: Photo) => void;
   onDelete: (id: number) => void;
   onToggleVisibility: (photo: Photo) => void;
   onToggleFeatured: (photo: Photo) => void;
+  onQuickUpdate: (photoId: number, field: string, value: string | number) => Promise<void>;
   onAddToCarousel?: (photoId: number) => void;
   isInCarousel?: boolean;
   isAddingToCarousel?: boolean;
@@ -32,10 +45,12 @@ type SortablePhotoCardProps = {
 
 export function SortablePhotoCard({
   photo,
+  categories,
   onEdit,
   onDelete,
   onToggleVisibility,
   onToggleFeatured,
+  onQuickUpdate,
   onAddToCarousel,
   isInCarousel = false,
   isAddingToCarousel = false,
@@ -90,10 +105,55 @@ export function SortablePhotoCard({
           </div>
         )}
       </div>
-      <div className="p-4 space-y-2">
-        <div>
-          <h3 className="font-medium truncate">{photo.alt}</h3>
-          <p className="text-sm text-muted-foreground">{photo.category}</p>
+      <div className="p-4 space-y-3">
+        <div className="space-y-2">
+          <div>
+            <p className="text-xs text-muted-foreground mb-1">標題</p>
+            <InlineEditableText
+              value={photo.displayTitle || photo.alt}
+              onSave={async (newValue) => {
+                await onQuickUpdate(photo.id, 'displayTitle', newValue);
+              }}
+              placeholder="點擊編輯標題"
+              emptyText={photo.alt}
+            />
+          </div>
+          <div>
+            <p className="text-xs text-muted-foreground mb-1">分類</p>
+            <InlineEditableSelect
+              value={photo.category}
+              options={categories.map(cat => ({ value: cat.name, label: cat.name }))}
+              onSave={async (newValue) => {
+                await onQuickUpdate(photo.id, 'category', newValue);
+              }}
+            />
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="flex-1">
+              <p className="text-xs text-muted-foreground mb-1">顯示狀態</p>
+              <InlineToggle
+                value={photo.isVisible === 1}
+                onSave={async (newValue) => {
+                  await onQuickUpdate(photo.id, 'isVisible', newValue ? 1 : 0);
+                }}
+                onLabel="顯示"
+                offLabel="隱藏"
+                className="w-full"
+              />
+            </div>
+            <div className="flex-1">
+              <p className="text-xs text-muted-foreground mb-1">精選</p>
+              <InlineToggle
+                value={photo.featured === 1}
+                onSave={async (newValue) => {
+                  await onQuickUpdate(photo.id, 'featured', newValue ? 1 : 0);
+                }}
+                onLabel="精選"
+                offLabel="一般"
+                className="w-full"
+              />
+            </div>
+          </div>
         </div>
         {!isSorting && (
           <div className="space-y-2">
@@ -102,32 +162,17 @@ export function SortablePhotoCard({
                 size="sm"
                 variant="outline"
                 onClick={() => onEdit(photo)}
+                title="編輯詳細資訊"
+                className="flex-1"
               >
-                <Edit className="h-4 w-4" />
-              </Button>
-              <Button
-                size="sm"
-                variant={photo.featured === 1 ? "default" : "outline"}
-                onClick={() => onToggleFeatured(photo)}
-                title={photo.featured === 1 ? "取消精選" : "設為精選"}
-              >
-                <Star className={`h-4 w-4 ${photo.featured === 1 ? "fill-current" : ""}`} />
-              </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => onToggleVisibility(photo)}
-              >
-                {photo.isVisible ? (
-                  <Eye className="h-4 w-4" />
-                ) : (
-                  <EyeOff className="h-4 w-4" />
-                )}
+                <Edit className="h-4 w-4 mr-1" />
+                詳細編輯
               </Button>
               <Button
                 size="sm"
                 variant="destructive"
                 onClick={() => onDelete(photo.id)}
+                title="刪除照片"
               >
                 <Trash2 className="h-4 w-4" />
               </Button>

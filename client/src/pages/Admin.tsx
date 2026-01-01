@@ -290,7 +290,21 @@ export default function Admin() {
     },
   });
 
+  const quickUpdateMutation = trpc.photos.quickUpdate.useMutation({
+    onSuccess: () => {
+      refetch();
+    },
+    onError: (error) => {
+      toast.error(`更新失敗: ${error.message}`);
+      refetch(); // Refetch to revert UI
+    },
+  });
+
   // Operation handlers
+  const handleQuickUpdate = async (photoId: number, field: string, value: string | number) => {
+    await quickUpdateMutation.mutateAsync({ id: photoId, field: field as any, value });
+  };
+
   const togglePhotoSelection = (photoId: number) => {
     setSelectedPhotoIds(prev => {
       const newSet = new Set(prev);
@@ -1126,10 +1140,12 @@ export default function Admin() {
                     )}
                     <SortablePhotoCard
                       photo={photo}
+                      categories={categories || []}
                       onEdit={handleEdit}
                       onDelete={handleDelete}
                       onToggleVisibility={toggleVisibility}
                       onToggleFeatured={toggleFeatured}
+                      onQuickUpdate={handleQuickUpdate}
                       onAddToCarousel={handleAddToCarousel}
                       isInCarousel={carouselPhotoUrls.has(photo.src)}
                       isAddingToCarousel={addToCarouselMutation.isPending}
