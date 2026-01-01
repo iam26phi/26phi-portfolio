@@ -52,10 +52,14 @@ export default function Home() {
   // Fetch photos from backend API
   const { data: photosRaw = [], isLoading } = trpc.photos.list.useQuery();
   
-  // Randomize photos on mount using shared utility
-  const photos = useMemo(() => {
-    return photosRaw.length > 0 ? shuffleArray(photosRaw) : [];
-  }, [photosRaw]);
+  // Randomize photos once on mount using shared utility
+  const [photos, setPhotos] = useState<typeof photosRaw>([]);
+  
+  useEffect(() => {
+    if (photosRaw.length > 0 && photos.length === 0) {
+      setPhotos(shuffleArray(photosRaw));
+    }
+  }, [photosRaw, photos.length]);
   
   // Fetch categories from backend API
   const { data: categories = [] } = trpc.photoCategories.list.useQuery();
@@ -67,10 +71,14 @@ export default function Home() {
   const { data: heroSlidesRaw = [] } = trpc.hero.getActiveSlides.useQuery();
   const { data: heroQuotes = [] } = trpc.hero.getActiveQuotes.useQuery();
   
-  // Randomize hero slides on mount using shared utility
-  const heroSlides = useMemo(() => {
-    return heroSlidesRaw.length > 0 ? shuffleArray(heroSlidesRaw) : [];
-  }, [heroSlidesRaw]);
+  // Randomize hero slides once on mount using shared utility
+  const [heroSlides, setHeroSlides] = useState<typeof heroSlidesRaw>([]);
+  
+  useEffect(() => {
+    if (heroSlidesRaw.length > 0 && heroSlides.length === 0) {
+      setHeroSlides(shuffleArray(heroSlidesRaw));
+    }
+  }, [heroSlidesRaw, heroSlides.length]);
 
   // Extract unique locations and years from photos
   const availableLocations = useMemo(() => {

@@ -750,3 +750,47 @@
 - 新增 4 個獨立組件：HeroSection (139行), PortfolioGrid (234行), ReviewsSection (41行), BookingSection (18行)
 - 總行數：452 行 → 590 行（+138 行，但可維護性大幅提升）
 - 每個組件職責單一，易於獨立測試和重用
+
+## 階段二優化：組件拆分（已完成）
+
+### 目標
+將 Home.tsx（452 行）拆分為獨立組件，提升程式碼可維護性和團隊協作效率
+
+### 任務清單
+- [x] 建立 HeroSection 組件（139 行）
+  - 英雄區域輪播背景
+  - 動態標語顯示
+  - Ken Burns 縮放效果
+  - 向下滾動提示動畫
+- [x] 建立 PortfolioGrid 組件（234 行）
+  - 照片網格展示
+  - 分類篩選器
+  - 進階篩選面板
+  - 彩色/黑白切換
+  - Lightbox 整合
+- [x] 建立 ReviewsSection 組件（41 行）
+  - 客戶評價展示
+  - 星級評分
+- [x] 建立 BookingSection 組件（18 行）
+  - 預約 CTA 區塊
+- [x] 重構 Home.tsx 整合所有組件（452 行 → 158 行，減少 65%）
+  - 保持所有 state 和邏輯正常運作
+  - 確保 props 傳遞正確
+- [x] 測試功能完整性
+  - 照片篩選功能
+  - Lightbox 開啟/關閉
+  - 輪播自動切換
+  - 響應式設計
+
+### 成果統計
+- Home.tsx：452 行 → 158 行（減少 294 行，-65%）
+- 新增 4 個獨立組件：HeroSection (139行), PortfolioGrid (234行), ReviewsSection (41行), BookingSection (18行)
+- 總行數：452 行 → 590 行（+138 行，但可維護性大幅提升）
+- 每個組件職責單一，易於獨立測試和重用
+
+### Bug 修復
+- [x] 修復無限循環錯誤（Maximum update depth exceeded）
+  - 問題：useMemo 中的 shuffleArray 每次創建新陣列參考，導致依賴於 photos 的其他 useMemo（availableLocations 和 availableYears）不斷重新計算
+  - 解決：改用 useState + useEffect，確保隨機化只執行一次
+  - 影響範圍：photos 和 heroSlides 陣列
+  - 修復位置：Home.tsx 第 52-62 行和第 74-81 行
