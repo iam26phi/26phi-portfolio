@@ -790,10 +790,16 @@
 
 ### Bug 修復
 - [x] 修復無限循環錯誤（Maximum update depth exceeded）
-  - 問題：useMemo 中的 shuffleArray 每次創建新陣列參考，導致依賴於 photos 的其他 useMemo（availableLocations 和 availableYears）不斷重新計算
+  - 問題：useMemo 中的 shuffleArray 每次創建新陣列參考
   - 解決：改用 useState + useEffect，確保隨機化只執行一次
   - 影響範圍：photos 和 heroSlides 陣列
   - 修復位置：Home.tsx 第 52-62 行和第 74-81 行
+- [x] 修復無限循環錯誤（第二次）
+  - 問題：useEffect 依賴項使用陣列本身（photosRaw, heroSlidesRaw）
+  - 原因：陣列每次 render 都是新的參考，導致 useEffect 不斷觸發
+  - 解決：改用 length 作為依賴項（原始值，不會改變參考）
+  - 修復：[photosRaw, photos.length] → [photosRaw.length]
+  - 修復：[heroSlidesRaw, heroSlides.length] → [heroSlidesRaw.length]
 
 ## 功能開發 - 英雄區域透明度調整（已完成）
 

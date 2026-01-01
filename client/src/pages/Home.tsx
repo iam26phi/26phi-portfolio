@@ -59,7 +59,7 @@ export default function Home() {
     if (photosRaw.length > 0 && photos.length === 0) {
       setPhotos(shuffleArray(photosRaw));
     }
-  }, [photosRaw, photos.length]);
+  }, [photosRaw.length]); // Only depend on length, not the array itself
   
   // Fetch categories from backend API
   const { data: categories = [] } = trpc.photoCategories.list.useQuery();
@@ -78,7 +78,7 @@ export default function Home() {
     if (heroSlidesRaw.length > 0 && heroSlides.length === 0) {
       setHeroSlides(shuffleArray(heroSlidesRaw));
     }
-  }, [heroSlidesRaw, heroSlides.length]);
+  }, [heroSlidesRaw.length]); // Only depend on length, not the array itself
 
   // Extract unique locations and years from photos
   const availableLocations = useMemo(() => {
