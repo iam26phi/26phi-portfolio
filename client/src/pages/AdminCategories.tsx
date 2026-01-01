@@ -116,7 +116,7 @@ export default function AdminCategories() {
 
   return (
     <AdminLayout>
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-black">
       <div className="container py-12">
         <div className="flex justify-between items-center mb-8">
           <div>

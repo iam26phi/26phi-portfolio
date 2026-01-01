@@ -226,7 +226,7 @@ export default function AdminAbout() {
 
   return (
     <AdminLayout>
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-black">
       <div className="container py-12 max-w-4xl">
         <Button
           variant="ghost"

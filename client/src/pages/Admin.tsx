@@ -733,7 +733,7 @@ export default function Admin() {
 
   return (
     <AdminLayout>
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-black">
       <div className="container py-12">
         <div className="flex justify-between items-center mb-8">
           <div>
@@ -986,39 +986,41 @@ export default function Admin() {
                   </Button>
                 </>
               )}
-              <div className="flex items-center gap-2">
-              <Select value={uploadCategory} onValueChange={handleCategoryChange}>
-                <SelectTrigger className="w-40">
-                  <SelectValue placeholder="選擇分類" />
-                </SelectTrigger>
-                <SelectContent>
-                  {categories?.map((cat) => (
-                    <SelectItem key={cat.id} value={cat.slug}>{cat.name}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                multiple
-                onChange={handleFileUpload}
-                className="hidden"
-                id="photo-upload"
-                disabled={uploadQueue.length > 0}
-              />
-              <Button
-                onClick={() => fileInputRef.current?.click()}
-                disabled={uploadQueue.length > 0}
-                variant="outline"
-              >
-                {uploadQueue.length > 0 ? (
-                  <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> 上傳中...</>
-                ) : (
-                  <><Upload className="mr-2 h-4 w-4" /> 上傳照片</>
-                )}
-              </Button>
             </div>
+          
+          {/* Upload and manual add buttons - always visible */}
+          <div className="flex items-center gap-2">
+            <Select value={uploadCategory} onValueChange={handleCategoryChange}>
+              <SelectTrigger className="w-40">
+                <SelectValue placeholder="選擇分類" />
+              </SelectTrigger>
+              <SelectContent>
+                {categories?.map((cat) => (
+                  <SelectItem key={cat.id} value={cat.slug}>{cat.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              multiple
+              onChange={handleFileUpload}
+              className="hidden"
+              id="photo-upload"
+              disabled={uploadQueue.length > 0}
+            />
+            <Button
+              onClick={() => fileInputRef.current?.click()}
+              disabled={uploadQueue.length > 0}
+              variant="outline"
+            >
+              {uploadQueue.length > 0 ? (
+                <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> 上傳中...</>
+              ) : (
+                <><Upload className="mr-2 h-4 w-4" /> 上傳照片</>
+              )}
+            </Button>
             
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
               <DialogTrigger asChild>
@@ -1079,7 +1081,7 @@ export default function Admin() {
                     name="category"
                     defaultValue={editingPhoto?.category || ""}
                     required
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="flex h-10 w-full rounded-md border border-input bg-black px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     <option value="" disabled>選擇分類</option>
                     {categories?.map((cat) => (
@@ -1095,7 +1097,7 @@ export default function Admin() {
                     name="collaboratorIds"
                     multiple
                     defaultValue={editingPhoto?.collaboratorId ? [String(editingPhoto.collaboratorId)] : []}
-                    className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="flex min-h-[80px] w-full rounded-md border border-input bg-black px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     {collaborators?.map((collab) => (
                       <option key={collab.id} value={String(collab.id)}>{collab.name}</option>
@@ -1111,7 +1113,7 @@ export default function Admin() {
                     name="packageIds"
                     multiple
                     defaultValue={(editingPhoto?.packageIds || []).map((id: number) => String(id))}
-                    className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="flex min-h-[80px] w-full rounded-md border border-input bg-black px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     {packages?.map((pkg) => (
                       <option key={pkg.id} value={String(pkg.id)}>{pkg.name}</option>

@@ -111,7 +111,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
   };
 
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="flex h-screen bg-black">
       {/* Sidebar */}
       <aside
         className={cn(

@@ -131,7 +131,7 @@ export default function AdminChangelogs() {
       bugfix: "bg-red-500/10 text-red-500",
       design: "bg-purple-500/10 text-purple-500",
     };
-    return colors[type] || "bg-gray-500/10 text-gray-500";
+    return colors[type] || "bg-black0/10 text-gray-500";
   };
 
   return (

@@ -237,7 +237,7 @@ export default function AdminHero() {
 
   return (
     <AdminLayout>
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-black">
       <div className="container py-12 max-w-6xl">
         {/* Header */}
         <div className="mb-8">

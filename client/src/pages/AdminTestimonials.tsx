@@ -169,7 +169,7 @@ export default function AdminTestimonials() {
                         顯示中
                       </div>
                     ) : (
-                      <div className="flex items-center gap-1 text-xs text-gray-600 bg-gray-100 px-2 py-1 rounded-full">
+                      <div className="flex items-center gap-1 text-xs text-gray-600 bg-black px-2 py-1 rounded-full">
                         <EyeOff className="h-3 w-3" />
                         已隱藏
                       </div>

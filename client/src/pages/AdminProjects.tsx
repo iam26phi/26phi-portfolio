@@ -235,7 +235,7 @@ export default function AdminProjects() {
 
   return (
     <AdminLayout>
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-black">
       <div className="container py-12">
         <div className="flex justify-between items-center mb-8">
           <div>
@@ -354,7 +354,7 @@ export default function AdminProjects() {
                         id="isVisible"
                         value={formData.isVisible}
                         onChange={(e) => setFormData({ ...formData, isVisible: parseInt(e.target.value) })}
-                        className="w-full h-10 px-3 rounded-md border border-input bg-background"
+                        className="w-full h-10 px-3 rounded-md border border-input bg-black"
                       >
                         <option value={1}>顯示</option>
                         <option value={0}>隱藏</option>

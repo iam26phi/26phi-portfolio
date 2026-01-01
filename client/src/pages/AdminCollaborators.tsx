@@ -230,7 +230,7 @@ export default function AdminCollaborators() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="min-h-screen bg-black flex items-center justify-center">
         <Loader2 className="w-8 h-8 animate-spin" />
       </div>
     );
@@ -238,7 +238,7 @@ export default function AdminCollaborators() {
 
   return (
     <AdminLayout>
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-black">
       <div className="container py-8">
         <div className="flex justify-between items-center mb-8">
           <div>
@@ -497,7 +497,7 @@ export default function AdminCollaborators() {
                   <Label htmlFor="isVisible">顯示狀態</Label>
                   <select
                     id="isVisible"
-                    className="w-full h-10 px-3 rounded-md border border-input bg-background"
+                    className="w-full h-10 px-3 rounded-md border border-input bg-black"
                     value={formData.isVisible}
                     onChange={(e) =>
                       setFormData({
