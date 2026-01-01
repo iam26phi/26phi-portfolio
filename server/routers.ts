@@ -1330,6 +1330,48 @@ export const appRouter = router({
         return await db.getPackagePhotos(input.packageId);
       }),
   }),
+
+  dashboard: router({
+    getStats: protectedProcedure.query(async ({ ctx }) => {
+      if (ctx.user.role !== 'admin') {
+        throw new Error('Unauthorized');
+      }
+      
+      const allPhotos = await db.getAllPhotos();
+      const visiblePhotos = allPhotos.filter(p => p.isVisible === 1);
+      const hiddenPhotos = allPhotos.filter(p => p.isVisible === 0);
+      
+      // Calculate recent uploads (last 7 days)
+      const sevenDaysAgo = new Date();
+      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+      const recentUploads = allPhotos.filter(p => {
+        const uploadDate = new Date(p.createdAt);
+        return uploadDate >= sevenDaysAgo;
+      });
+      
+      // Calculate category distribution
+      const categoryStats = allPhotos.reduce((acc, photo) => {
+        const category = photo.category || '未分類';
+        acc[category] = (acc[category] || 0) + 1;
+        return acc;
+      }, {} as Record<string, number>);
+      
+      return {
+        totalPhotos: allPhotos.length,
+        visiblePhotos: visiblePhotos.length,
+        hiddenPhotos: hiddenPhotos.length,
+        recentUploads: recentUploads.length,
+        recentUploadsList: recentUploads.slice(0, 5).map(p => ({
+          id: p.id,
+          src: p.src,
+          alt: p.alt,
+          category: p.category,
+          createdAt: p.createdAt
+        })),
+        categoryStats,
+      };
+    }),
+  }),
 });
 
 export type AppRouter = typeof appRouter;

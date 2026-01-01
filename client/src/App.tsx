@@ -7,6 +7,7 @@ import { ThemeProvider } from "./contexts/ThemeContext";
 import Home from "./pages/Home";
 import About from "./pages/About";
 import Admin from "./pages/Admin";
+import AdminDashboard from "./pages/AdminDashboard";
 import AdminBlog from "./pages/AdminBlog";
 import AdminBlogEditor from "./pages/AdminBlogEditor";
 import AdminHero from "./pages/AdminHero";
@@ -42,6 +43,7 @@ function Router() {
       <Route path={"/contact"} component={Contact} />
       <Route path={"/packages"} component={Packages} />
       <Route path={"/collaborators/:slug"} component={CollaboratorDetail} />
+      <Route path={"/admin/dashboard"} component={AdminDashboard} />
       <Route path={"/admin"} component={Admin} />
       <Route path={"/admin/hero"} component={AdminHero} />
       <Route path={"/admin/about"} component={AdminAbout} />

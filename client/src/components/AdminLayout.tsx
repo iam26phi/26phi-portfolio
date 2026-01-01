@@ -28,6 +28,11 @@ interface NavItem {
 
 const navigation: NavItem[] = [
   {
+    title: "儀表板",
+    href: "/admin/dashboard",
+    icon: LayoutDashboard,
+  },
+  {
     title: "作品集照片",
     href: "/admin",
     icon: Image,
