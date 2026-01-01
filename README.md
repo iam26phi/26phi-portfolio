@@ -131,6 +131,18 @@ To add new photos:
 2. Use the admin dashboard to create database entries
 3. Photos will automatically appear in the gallery
 
+## 🔄 GitHub 自動同步
+
+本專案已設定自動同步機制：
+- 每次在 Manus 平台上儲存 checkpoint 時
+- 程式碼會自動推送到 GitHub 儲存庫：https://github.com/iam26phi/26phi-portfolio
+- 無需手動操作，保持程式碼同步
+
+如需手動推送到 GitHub：
+```bash
+git push github main
+```
+
 ## Deployment
 
 ### Manus Platform (Recommended)
