@@ -207,3 +207,60 @@ if (advancedFilters.category !== "All") {
 ### 測試結果
 - ✅ 劇照攝影：3 張照片正常顯示
 - ✅ 篩選邏輯正確使用 slug 進行比對
+
+
+## Bug 修復 - 合作對象檢視頁面照片顯示
+
+### 問題描述
+在管理員後台為照片新增「合作對象」後，該合作對象的檢視頁面並沒有正常顯示這些照片。
+
+### 根本原因
+`getVisiblePhotosByCollaboratorId` 函數只查詢 `photos` 表的 `collaboratorId` 欄位（舊的單一關聯），沒有查詢 `photoCollaborators` 多對多關聯表。管理員後台新增合作對象時使用的是多對多關聯表，因此照片無法顯示。
+
+### 實施步驟
+- [x] 檢查合作對象檢視頁面的前端實作
+- [x] 檢查後端 API 是否正確查詢合作對象的照片
+- [x] 檢查資料庫關聯和查詢邏輯
+- [x] 診斷問題根源（查詢邏輯未支援多對多關聯）
+- [x] 修復 `getVisiblePhotosByCollaboratorId` 函數
+- [x] 測試合作對象頁面的照片顯示功能
+
+### 修復細節
+修改 `server/db.ts` 的 `getVisiblePhotosByCollaboratorId` 函數（第 732-761 行）：
+
+**修復前：**
+```typescript
+return await db.select().from(photos)
+  .where(and(eq(photos.collaboratorId, collaboratorId), eq(photos.isVisible, 1)))
+  .orderBy(photos.sortOrder);
+```
+
+**修復後：**
+```typescript
+// 1. 從多對多關聯表查詢照片 ID
+const photoCollaboratorRecords = await db
+  .select({ photoId: photoCollaborators.photoId })
+  .from(photoCollaborators)
+  .where(eq(photoCollaborators.collaboratorId, collaboratorId));
+
+const photoIds = photoCollaboratorRecords.map(record => record.photoId);
+
+if (photoIds.length === 0) {
+  return [];
+}
+
+// 2. 查詢可見的照片
+return await db
+  .select()
+  .from(photos)
+  .where(and(
+    inArray(photos.id, photoIds),
+    eq(photos.isVisible, 1)
+  ))
+  .orderBy(photos.sortOrder);
+```
+
+### 測試結果
+- ✅ 資料庫中確認有 photoCollaborators 關聯資料
+- ✅ 修復後的函數正確查詢多對多關聯表
+- ✅ 合作對象頁面現在可以正常顯示照片

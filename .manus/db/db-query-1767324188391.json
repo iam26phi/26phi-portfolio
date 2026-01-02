@@ -1,0 +1,90 @@
+{
+  "query": "SELECT pc.*, c.name as collaborator_name, p.alt as photo_title FROM photo_collaborators pc LEFT JOIN collaborators c ON pc.collaboratorId = c.id LEFT JOIN photos p ON pc.photoId = p.id LIMIT 10;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3KMh2yGgHww6rVT.root --database 3s8FCUF9BWUfzRwVV77JBG --execute SELECT pc.*, c.name as collaborator_name, p.alt as photo_title FROM photo_collaborators pc LEFT JOIN collaborators c ON pc.collaboratorId = c.id LEFT JOIN photos p ON pc.photoId = p.id LIMIT 10;",
+  "rows": [
+    {
+      "id": "30003",
+      "photoId": "30001",
+      "collaboratorId": "120001",
+      "createdAt": "2025-12-30 18:01:19",
+      "collaborator_name": "王柔",
+      "photo_title": "IPA_test_1"
+    },
+    {
+      "id": "60001",
+      "photoId": "30002",
+      "collaboratorId": "120001",
+      "createdAt": "2026-01-01 11:44:03",
+      "collaborator_name": "王柔",
+      "photo_title": "IPA_test_2"
+    },
+    {
+      "id": "30002",
+      "photoId": "30023",
+      "collaboratorId": "30005",
+      "createdAt": "2025-12-30 17:56:38",
+      "collaborator_name": "blueinuna",
+      "photo_title": "IMG_9307"
+    },
+    {
+      "id": "30001",
+      "photoId": "30023",
+      "collaboratorId": "30003",
+      "createdAt": "2025-12-30 17:56:38",
+      "collaborator_name": "Xrage",
+      "photo_title": "IMG_9307"
+    },
+    {
+      "id": "1",
+      "photoId": "60017",
+      "collaboratorId": "30004",
+      "createdAt": "2025-12-30 15:46:01",
+      "collaborator_name": "RIKI",
+      "photo_title": "RIKI imma臺北beach 形象照"
+    },
+    {
+      "id": "2",
+      "photoId": "60035",
+      "collaboratorId": "12",
+      "createdAt": "2025-12-30 15:46:01",
+      "collaborator_name": "Minimus",
+      "photo_title": "_A1_0249"
+    },
+    {
+      "id": "3",
+      "photoId": "90002",
+      "collaboratorId": "1",
+      "createdAt": "2025-12-30 15:46:01",
+      "collaborator_name": "NULL",
+      "photo_title": "NULL"
+    },
+    {
+      "id": "4",
+      "photoId": "90005",
+      "collaboratorId": "7",
+      "createdAt": "2025-12-30 15:46:01",
+      "collaborator_name": "NULL",
+      "photo_title": "NULL"
+    },
+    {
+      "id": "17",
+      "photoId": "150001",
+      "collaboratorId": "90001",
+      "createdAt": "2025-12-30 15:52:34",
+      "collaborator_name": "NULL",
+      "photo_title": "NULL"
+    },
+    {
+      "id": "18",
+      "photoId": "150001",
+      "collaboratorId": "90002",
+      "createdAt": "2025-12-30 15:52:34",
+      "collaborator_name": "NULL",
+      "photo_title": "NULL"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tphotoId\tcollaboratorId\tcreatedAt\tcollaborator_name\tphoto_title\n30003\t30001\t120001\t2025-12-30 18:01:19\t王柔\tIPA_test_1\n60001\t30002\t120001\t2026-01-01 11:44:03\t王柔\tIPA_test_2\n30002\t30023\t30005\t2025-12-30 17:56:38\tblueinuna\tIMG_9307\n30001\t30023\t30003\t2025-12-30 17:56:38\tXrage\tIMG_9307\n1\t60017\t30004\t2025-12-30 15:46:01\tRIKI\tRIKI imma臺北beach 形象照\n2\t60035\t12\t2025-12-30 15:46:01\tMinimus\t_A1_0249\n3\t90002\t1\t2025-12-30 15:46:01\tNULL\tNULL\n4\t90005\t7\t2025-12-30 15:46:01\tNULL\tNULL\n17\t150001\t90001\t2025-12-30 15:52:34\tNULL\tNULL\n18\t150001\t90002\t2025-12-30 15:52:34\tNULL\tNULL\n",
+  "stderr": "",
+  "execution_time_ms": 1803
+}

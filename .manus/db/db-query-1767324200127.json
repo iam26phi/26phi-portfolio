@@ -1,0 +1,15 @@
+{
+  "query": "SELECT c.slug, c.name, COUNT(pc.photoId) as photo_count FROM collaborators c LEFT JOIN photo_collaborators pc ON c.id = pc.collaboratorId WHERE c.isVisible = 1 GROUP BY c.id HAVING photo_count > 0 LIMIT 1;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3KMh2yGgHww6rVT.root --database 3s8FCUF9BWUfzRwVV77JBG --execute SELECT c.slug, c.name, COUNT(pc.photoId) as photo_count FROM collaborators c LEFT JOIN photo_collaborators pc ON c.id = pc.collaboratorId WHERE c.isVisible = 1 GROUP BY c.id HAVING photo_count > 0 LIMIT 1;",
+  "rows": [
+    {
+      "slug": "minimus",
+      "name": "Minimus",
+      "photo_count": "1"
+    }
+  ],
+  "messages": [],
+  "stdout": "slug\tname\tphoto_count\nminimus\tMinimus\t1\n",
+  "stderr": "",
+  "execution_time_ms": 1520
+}

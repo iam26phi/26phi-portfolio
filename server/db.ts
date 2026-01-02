@@ -736,7 +736,28 @@ export async function getVisiblePhotosByCollaboratorId(collaboratorId: number) {
     return [];
   }
 
-  return await db.select().from(photos).where(and(eq(photos.collaboratorId, collaboratorId), eq(photos.isVisible, 1))).orderBy(photos.sortOrder);
+  // Get photo IDs from the many-to-many relationship table
+  const photoCollaboratorRecords = await db
+    .select({ photoId: photoCollaborators.photoId })
+    .from(photoCollaborators)
+    .where(eq(photoCollaborators.collaboratorId, collaboratorId));
+  
+  const photoIds = photoCollaboratorRecords.map(record => record.photoId);
+  
+  // If no photos found in the many-to-many table, return empty array
+  if (photoIds.length === 0) {
+    return [];
+  }
+  
+  // Get visible photos that match the photo IDs
+  return await db
+    .select()
+    .from(photos)
+    .where(and(
+      inArray(photos.id, photoIds),
+      eq(photos.isVisible, 1)
+    ))
+    .orderBy(photos.sortOrder);
 }
 
 // Photo-Collaborator relationship management functions
