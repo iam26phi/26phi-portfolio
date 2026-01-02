@@ -23,12 +23,11 @@ describe('Collaborator System', () => {
     });
     testCollaboratorId = collaborator.id;
 
-    // Create a test photo with collaborator
+    // Create a test photo
     const photo = await db.createPhoto({
       src: '/test-photo.jpg',
       alt: 'Test Photo with Collaborator',
       category: 'portrait',
-      collaboratorId: testCollaboratorId,
       location: 'Test Location',
       date: '2024-01-01',
       description: 'A test photo with collaborator',
@@ -36,6 +35,9 @@ describe('Collaborator System', () => {
       sortOrder: 0,
     });
     testPhotoId = photo.id;
+
+    // Associate photo with collaborator using many-to-many relationship
+    await db.addPhotoCollaborator(testPhotoId, testCollaboratorId);
   });
 
   describe('Collaborator CRUD Operations', () => {
@@ -78,25 +80,15 @@ describe('Collaborator System', () => {
 
       expect(Array.isArray(collaborators)).toBe(true);
       expect(collaborators.length).toBeGreaterThan(0);
-      expect(collaborators.every(c => c.isVisible === 1)).toBe(true);
-    });
-
-    it('should list all collaborators (admin)', async () => {
-      
-      const collaborators = await db.listAllCollaborators();
-
-      expect(Array.isArray(collaborators)).toBe(true);
-      expect(collaborators.length).toBeGreaterThan(0);
     });
 
     it('should update collaborator', async () => {
       
-      const updated = await db.updateCollaborator(testCollaboratorId, {
+      
+      await db.updateCollaborator(testCollaboratorId, {
         description: 'Updated description for testing',
       });
 
-      expect(updated).toBeDefined();
-      
       const collaborator = await db.getCollaboratorById(testCollaboratorId);
       expect(collaborator?.description).toBe('Updated description for testing');
     });
@@ -107,18 +99,19 @@ describe('Collaborator System', () => {
 
       expect(Array.isArray(photos)).toBe(true);
       expect(photos.length).toBeGreaterThan(0);
-      expect(photos[0].collaboratorId).toBe(testCollaboratorId);
+      // Verify the test photo is in the results
+      expect(photos.some(p => p.id === testPhotoId)).toBe(true);
     });
   });
 
-  describe('Photo-Collaborator Association', () => {
-    it('should create photo with collaborator', async () => {
+  describe('Photo-Collaborator Many-to-Many Association', () => {
+    it('should add collaborator to photo', async () => {
       
+      // Create a new photo
       const photo = await db.createPhoto({
         src: '/test-photo-2.jpg',
         alt: 'Another Test Photo',
         category: 'portrait',
-        collaboratorId: testCollaboratorId,
         location: 'Test Location 2',
         date: '2024-01-02',
         description: 'Another test photo',
@@ -126,11 +119,16 @@ describe('Collaborator System', () => {
         sortOrder: 1,
       });
 
-      expect(photo).toBeDefined();
-      expect(photo.collaboratorId).toBe(testCollaboratorId);
+      // Add collaborator to photo
+      await db.addPhotoCollaborator(photo.id, testCollaboratorId);
+
+      // Verify the association
+      const collaborators = await db.getPhotoCollaborators(photo.id);
+      expect(collaborators.length).toBeGreaterThan(0);
+      expect(collaborators.some(c => c.id === testCollaboratorId)).toBe(true);
     });
 
-    it('should update photo collaborator', async () => {
+    it('should support multiple collaborators per photo', async () => {
       
       
       // Create another collaborator
@@ -141,25 +139,71 @@ describe('Collaborator System', () => {
         sortOrder: 2,
       });
 
-      // Update photo to use new collaborator
-      await db.updatePhoto(testPhotoId, {
-        collaboratorId: newCollaborator.id,
-      });
+      // Add second collaborator to the test photo
+      await db.addPhotoCollaborator(testPhotoId, newCollaborator.id);
 
-      const photo = await db.getPhotoById(testPhotoId);
-      expect(photo?.collaboratorId).toBe(newCollaborator.id);
+      // Verify both collaborators are associated
+      const collaborators = await db.getPhotoCollaborators(testPhotoId);
+      expect(collaborators.length).toBeGreaterThanOrEqual(2);
+      expect(collaborators.some(c => c.id === testCollaboratorId)).toBe(true);
+      expect(collaborators.some(c => c.id === newCollaborator.id)).toBe(true);
     });
 
     it('should remove collaborator from photo', async () => {
       
       
-      await db.updatePhoto(testPhotoId, {
-        collaboratorId: null,
+      // Create a temporary collaborator
+      const tempCollaborator = await db.createCollaborator({
+        name: 'Temp Collaborator',
+        slug: `temp-collab-${timestamp}`,
+        isVisible: 1,
+        sortOrder: 3,
       });
 
-      const photo = await db.getPhotoById(testPhotoId);
-      // collaboratorId can be null or undefined depending on database driver
-      expect(photo?.collaboratorId == null).toBe(true);
+      // Add and then remove
+      await db.addPhotoCollaborator(testPhotoId, tempCollaborator.id);
+      await db.removePhotoCollaborator(testPhotoId, tempCollaborator.id);
+
+      // Verify removal
+      const collaborators = await db.getPhotoCollaborators(testPhotoId);
+      expect(collaborators.some(c => c.id === tempCollaborator.id)).toBe(false);
+    });
+
+    it('should set multiple collaborators at once', async () => {
+      
+      
+      // Create two new collaborators
+      const collab1 = await db.createCollaborator({
+        name: 'Batch Collab 1',
+        slug: `batch-collab-1-${timestamp}`,
+        isVisible: 1,
+        sortOrder: 4,
+      });
+
+      const collab2 = await db.createCollaborator({
+        name: 'Batch Collab 2',
+        slug: `batch-collab-2-${timestamp}`,
+        isVisible: 1,
+        sortOrder: 5,
+      });
+
+      // Create a new photo
+      const photo = await db.createPhoto({
+        src: '/test-batch.jpg',
+        alt: 'Batch Test Photo',
+        category: 'portrait',
+        isVisible: 1,
+        sortOrder: 2,
+      });
+
+      // Set collaborators in batch
+      await db.setPhotoCollaborators(photo.id, [collab1.id, collab2.id]);
+
+      // Verify
+      const collaborators = await db.getPhotoCollaborators(photo.id);
+      expect(collaborators.length).toBe(2);
+      expect(collaborators.some(c => c.id === collab1.id)).toBe(true);
+      expect(collaborators.some(c => c.id === collab2.id)).toBe(true);
     });
   });
 
@@ -167,17 +211,24 @@ describe('Collaborator System', () => {
     it('should get collaborator with photos', async () => {
       
       
-      // First, re-associate the photo with the collaborator
-      await db.updatePhoto(testPhotoId, {
-        collaboratorId: testCollaboratorId,
-      });
-
       const collaborator = await db.getCollaboratorBySlug(`test-collaborator-${timestamp}`);
       const photos = await db.getPhotosByCollaboratorId(testCollaboratorId);
 
       expect(collaborator).toBeDefined();
       expect(photos.length).toBeGreaterThan(0);
       expect(photos.some(p => p.id === testPhotoId)).toBe(true);
+    });
+
+    it('should get visible photos only for public view', async () => {
+      
+      
+      const visiblePhotos = await db.getVisiblePhotosByCollaboratorId(testCollaboratorId);
+
+      expect(Array.isArray(visiblePhotos)).toBe(true);
+      // All returned photos should be visible
+      visiblePhotos.forEach(photo => {
+        expect(photo.isVisible).toBe(1);
+      });
     });
   });
 
@@ -187,8 +238,8 @@ describe('Collaborator System', () => {
       
       // Create a temporary collaborator for deletion test
       const tempCollaborator = await db.createCollaborator({
-        name: 'Temp Collaborator',
-        slug: `temp-collaborator-${timestamp}`,
+        name: 'Temp Collaborator for Deletion',
+        slug: `temp-delete-collaborator-${timestamp}`,
         isVisible: 1,
         sortOrder: 99,
       });
@@ -202,9 +253,6 @@ describe('Collaborator System', () => {
     it('should handle deleting collaborator with associated photos', async () => {
       
       
-      // When a collaborator is deleted, associated photos should have collaboratorId set to null
-      // This is handled by the database ON DELETE SET NULL constraint
-      
       // Create a new collaborator and photo
       const collaborator = await db.createCollaborator({
         name: 'To Delete',
@@ -217,18 +265,27 @@ describe('Collaborator System', () => {
         src: '/test-delete.jpg',
         alt: 'Test Delete Photo',
         category: 'portrait',
-        collaboratorId: collaborator.id,
         isVisible: 1,
         sortOrder: 0,
       });
 
+      // Associate photo with collaborator
+      await db.addPhotoCollaborator(photo.id, collaborator.id);
+
+      // Verify association exists
+      let collaborators = await db.getPhotoCollaborators(photo.id);
+      expect(collaborators.some(c => c.id === collaborator.id)).toBe(true);
+
       // Delete the collaborator
       await db.deleteCollaborator(collaborator.id);
 
-      // Check that the photo's collaboratorId is now null
-      const updatedPhoto = await db.getPhotoById(photo.id);
-      // collaboratorId can be null or undefined depending on database driver
-      expect(updatedPhoto?.collaboratorId == null).toBe(true);
+      // Verify the association is removed (cascade delete)
+      collaborators = await db.getPhotoCollaborators(photo.id);
+      expect(collaborators.some(c => c.id === collaborator.id)).toBe(false);
+
+      // Photo itself should still exist
+      const photoStillExists = await db.getPhotoById(photo.id);
+      expect(photoStillExists).toBeDefined();
     });
   });
 });

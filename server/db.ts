@@ -726,7 +726,24 @@ export async function getPhotosByCollaboratorId(collaboratorId: number) {
     return [];
   }
 
-  return await db.select().from(photos).where(eq(photos.collaboratorId, collaboratorId)).orderBy(photos.sortOrder);
+  // Get photo IDs from the many-to-many relationship table
+  const photoCollaboratorRecords = await db
+    .select({ photoId: photoCollaborators.photoId })
+    .from(photoCollaborators)
+    .where(eq(photoCollaborators.collaboratorId, collaboratorId));
+  
+  const photoIds = photoCollaboratorRecords.map(record => record.photoId);
+  
+  if (photoIds.length === 0) {
+    return [];
+  }
+  
+  // Get all photos that match the photo IDs (including hidden ones for admin)
+  return await db
+    .select()
+    .from(photos)
+    .where(inArray(photos.id, photoIds))
+    .orderBy(photos.sortOrder);
 }
 
 export async function getVisiblePhotosByCollaboratorId(collaboratorId: number) {

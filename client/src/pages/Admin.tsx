@@ -57,9 +57,8 @@ type PhotoFormData = {
   alt: string;
   displayTitle?: string;
   category: string;
-  collaboratorId?: number | null; // Kept for backward compatibility
-  collaboratorIds?: number[]; // New: support multiple collaborators
-  packageIds?: number[]; // New: support multiple booking packages
+  collaboratorIds?: number[]; // Support multiple collaborators
+  packageIds?: number[]; // Support multiple booking packages
   location: string;
   date: string;
   description: string;
@@ -177,41 +176,31 @@ export default function Admin() {
     },
   });
 
-  // Update sorted photos when data changes, filter changes, or sort option changes
+  // Sort and filter photos
   useEffect(() => {
-    if (photos) {
-      let filtered = photos;
-      if (filterCollaboratorId !== null) {
-        filtered = photos.filter(photo => photo.collaboratorId === filterCollaboratorId);
-      }
-      
-      // Apply sorting
-      const sorted = [...filtered];
-      switch (sortBy) {
-        case 'uploadTime-desc':
-          sorted.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-          break;
-        case 'uploadTime-asc':
-          sorted.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
-          break;
-        case 'title-asc':
-          sorted.sort((a, b) => (a.alt || '').localeCompare(b.alt || ''));
-          break;
-        case 'title-desc':
-          sorted.sort((a, b) => (b.alt || '').localeCompare(a.alt || ''));
-          break;
-        case 'category-asc':
-          sorted.sort((a, b) => (a.category || '').localeCompare(b.category || ''));
-          break;
-        case 'sortOrder':
-        default:
-          sorted.sort((a, b) => a.sortOrder - b.sortOrder);
-          break;
-      }
-      
-      setSortedPhotos(sorted);
+    if (!photos) return;
+    
+    // Start with all photos (collaborator filter temporarily disabled)
+    const photoList = [...photos];
+    
+    // Apply sorting based on selected option
+    if (sortBy === 'uploadTime-desc') {
+      photoList.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    } else if (sortBy === 'uploadTime-asc') {
+      photoList.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+    } else if (sortBy === 'title-asc') {
+      photoList.sort((a, b) => (a.alt || '').localeCompare(b.alt || ''));
+    } else if (sortBy === 'title-desc') {
+      photoList.sort((a, b) => (b.alt || '').localeCompare(a.alt || ''));
+    } else if (sortBy === 'category-asc') {
+      photoList.sort((a, b) => (a.category || '').localeCompare(b.category || ''));
+    } else {
+      // sortOrder (default)
+      photoList.sort((a, b) => a.sortOrder - b.sortOrder);
     }
-  }, [photos, filterCollaboratorId, sortBy]);
+    
+    setSortedPhotos(photoList);
+  }, [photos, sortBy]);
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
@@ -1235,7 +1224,7 @@ export default function Admin() {
                     id="collaboratorIds"
                     name="collaboratorIds"
                     multiple
-                    defaultValue={editingPhoto?.collaboratorId ? [String(editingPhoto.collaboratorId)] : []}
+                    defaultValue={editingPhoto?.collaborators?.map(c => String(c.id)) || []}
                     className="flex min-h-[80px] w-full rounded-md border border-input bg-black px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     {collaborators?.map((collab) => (

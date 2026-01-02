@@ -32,7 +32,16 @@ export const appRouter = router({
       if (ctx.user.role !== 'admin') {
         throw new Error('Unauthorized');
       }
-      return await db.getAllPhotos();
+      // Get all photos with their collaborators
+      const photos = await db.getAllPhotos();
+      // Enrich each photo with its collaborators
+      const photosWithCollaborators = await Promise.all(
+        photos.map(async (photo) => {
+          const collaborators = await db.getPhotoCollaborators(photo.id);
+          return { ...photo, collaborators };
+        })
+      );
+      return photosWithCollaborators;
     }),
 
     getById: protectedProcedure
@@ -50,8 +59,7 @@ export const appRouter = router({
         alt: z.string(),
         displayTitle: z.string().optional(),
         category: z.string(),
-        collaboratorId: z.number().nullable().optional(), // Kept for backward compatibility
-        collaboratorIds: z.array(z.number()).optional(), // New: support multiple collaborators
+        collaboratorIds: z.array(z.number()).optional(), // Support multiple collaborators
         location: z.string().optional(),
         date: z.string().optional(),
         description: z.string().optional(),
@@ -83,8 +91,7 @@ export const appRouter = router({
         alt: z.string().optional(),
         displayTitle: z.string().optional(),
         category: z.string().optional(),
-        collaboratorId: z.number().nullable().optional(), // Kept for backward compatibility
-        collaboratorIds: z.array(z.number()).optional(), // New: support multiple collaborators
+        collaboratorIds: z.array(z.number()).optional(), // Support multiple collaborators
         location: z.string().optional(),
         date: z.string().optional(),
         description: z.string().optional(),

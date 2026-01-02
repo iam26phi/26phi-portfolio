@@ -17,13 +17,12 @@ type Photo = {
   category: string;
   location: string | null;
   date: string | null;
-  description: string | null;
+  projectId: number | null;
   displayTitle: string | null;
   camera: string | null;
   lens: string | null;
   settings: string | null;
   featured: number;
-  collaboratorId: number | null;
   collaborators?: Array<{
     id: number | null;
     name: string | null;

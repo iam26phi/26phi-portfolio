@@ -54,7 +54,7 @@ describe("Photos Enhanced Fields", () => {
       alt: "IMG_TEST_ENHANCED",
       displayTitle: "台北街頭 / Taipei Street",
       category: "Portrait",
-      collaboratorId: testCollaboratorId,
+      collaboratorIds: [testCollaboratorId],
       location: "台北",
       date: "2024-01-15",
       description: "Test description",

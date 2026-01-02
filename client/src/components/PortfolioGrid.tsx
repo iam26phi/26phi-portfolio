@@ -20,7 +20,6 @@ type Photo = {
   lens: string | null;
   settings: string | null;
   featured: number;
-  collaboratorId: number | null;
   collaborators?: Array<{
     id: number | null;
     name: string | null;

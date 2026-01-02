@@ -68,7 +68,6 @@ export const photos = mysqlTable("photos", {
   displayTitle: varchar("displayTitle", { length: 255 }), // User-friendly display title (overrides alt)
   category: varchar("category", { length: 100 }).notNull(), // Changed from enum to varchar for dynamic categories
   projectId: int("projectId"), // Optional reference to projects table
-  collaboratorId: int("collaboratorId"), // Optional reference to collaborators table
   location: varchar("location", { length: 255 }),
   date: varchar("date", { length: 50 }),
   description: text("description"),
