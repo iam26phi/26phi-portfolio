@@ -3,20 +3,23 @@ import { trpc } from "@/lib/trpc";
 import { Loader2 } from "lucide-react";
 import { Link } from "wouter";
 import Navigation from "@/components/Navigation";
+import { motion } from "framer-motion";
+import { photoGridContainerVariants, photoGridItemVariants } from "@/lib/animations";
+import { ProgressiveImage } from "@/components/ProgressiveImage";
 
 export default function Projects() {
   const { data: projects, isLoading } = trpc.projects.list.useQuery();
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="animate-spin h-8 w-8" />
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <Loader2 className="animate-spin h-8 w-8 text-foreground" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background text-foreground">
       <Navigation />
 
       {/* Hero Section */}
@@ -26,45 +29,68 @@ export default function Projects() {
             攝影專案
           </h1>
           <p className="text-base sm:text-lg md:text-xl text-muted-foreground">
-            專案記錄（文字待更新）
+            探索我的攝影專案集錦
           </p>
         </div>
       </section>
 
-      {/* Projects Grid */}
+      {/* Projects Masonry Grid */}
       <section className="pb-16 sm:pb-20 md:pb-24 px-4 sm:px-6">
         <div className="container mx-auto">
           {projects && projects.length > 0 ? (
-            <div className="grid gap-6 sm:gap-8 sm:grid-cols-2 lg:grid-cols-3">
-              {projects.map((project) => (
-                <Link key={project.id} href={`/projects/${project.slug}`}>
-                  <a className="group block">
-                    <div className="relative aspect-[4/3] overflow-hidden rounded-lg bg-neutral-900 mb-4">
-                      {project.coverImage ? (
-                        <img
-                          src={project.coverImage}
-                          alt={project.title}
-                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center text-neutral-600">
-                          <span className="text-sm">No Cover Image</span>
+            <motion.div
+              variants={photoGridContainerVariants}
+              initial="hidden"
+              animate="visible"
+              className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-4 sm:gap-6"
+            >
+              {projects.map((project, index) => (
+                <motion.div
+                  key={project.id}
+                  variants={photoGridItemVariants}
+                  custom={index}
+                  className="break-inside-avoid mb-4 sm:mb-6"
+                >
+                  <Link href={`/projects/${project.slug}`}>
+                    <a className="group block">
+                      <div className="relative overflow-hidden rounded-lg bg-neutral-900">
+                        {project.coverImage ? (
+                          <ProgressiveImage
+                            src={project.coverImage}
+                            alt={project.title}
+                            className="w-full h-auto transition-transform duration-500 group-hover:scale-105"
+                          />
+                        ) : (
+                          <div className="w-full aspect-[4/3] flex items-center justify-center text-neutral-600">
+                            <span className="text-sm">No Cover Image</span>
+                          </div>
+                        )}
+                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors duration-300" />
+                        
+                        {/* Project Info Overlay */}
+                        <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                          <h3 className="text-xl font-bold text-white mb-1">
+                            {project.title}
+                          </h3>
+                          {project.description && (
+                            <p className="text-sm text-white/80 line-clamp-2">
+                              {project.description}
+                            </p>
+                          )}
                         </div>
-                      )}
-                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300" />
-                    </div>
-                    <h3 className="text-2xl font-bold mb-2 group-hover:text-primary transition-colors">
-                      {project.title}
-                    </h3>
-                    {project.description && (
-                      <p className="text-muted-foreground line-clamp-2">
-                        {project.description}
-                      </p>
-                    )}
-                  </a>
-                </Link>
+                      </div>
+                      
+                      {/* Project Title Below (Always Visible) */}
+                      <div className="mt-3 px-1">
+                        <h3 className="text-lg font-semibold group-hover:text-primary transition-colors">
+                          {project.title}
+                        </h3>
+                      </div>
+                    </a>
+                  </Link>
+                </motion.div>
               ))}
-            </div>
+            </motion.div>
           ) : (
             <div className="text-center py-16">
               <p className="text-xl text-muted-foreground">尚無專案</p>
