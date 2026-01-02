@@ -1,4 +1,4 @@
-import { eq, and, inArray } from "drizzle-orm";
+import { eq, and, inArray, ne } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import { InsertUser, users, photos, InsertPhoto, blogPosts, InsertBlogPost, siteSettings, InsertSiteSetting, photoCategories, InsertPhotoCategory, projects, InsertProject, photoProjects, InsertPhotoProject, changelogs, InsertChangelog, contactSubmissions, InsertContactSubmission, collaborators, InsertCollaborator, Collaborator, photoCollaborators, InsertPhotoCollaborator, heroSlides, InsertHeroSlide, heroQuotes, InsertHeroQuote, bookingPackages, InsertBookingPackage, photoPackageRelations, InsertPhotoPackageRelation, testimonials, InsertTestimonial, Testimonial } from "../drizzle/schema";
 import { ENV } from './_core/env';
@@ -417,6 +417,59 @@ export async function getProjectBySlug(slug: string) {
   if (!db) return null;
   const result = await db.select().from(projects).where(eq(projects.slug, slug));
   return result[0] || null;
+}
+
+export async function getRelatedProjects(projectId: number, limit: number = 3) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  // Get categories of photos in the current project
+  const currentProjectPhotos = await db
+    .select({ category: photos.category })
+    .from(photos)
+    .where(eq(photos.projectId, projectId))
+    .groupBy(photos.category);
+  
+  if (currentProjectPhotos.length === 0) {
+    // If no photos, return random visible projects
+    return await db
+      .select()
+      .from(projects)
+      .where(and(
+        eq(projects.isVisible, 1),
+        ne(projects.id, projectId)
+      ))
+      .orderBy(projects.sortOrder)
+      .limit(limit);
+  }
+  
+  const categories = currentProjectPhotos.map(p => p.category);
+  
+  // Find projects with similar categories
+  // Use a subquery to find projects that have photos in the same categories
+  const relatedProjects = await db
+    .selectDistinct({
+      id: projects.id,
+      title: projects.title,
+      slug: projects.slug,
+      description: projects.description,
+      coverImage: projects.coverImage,
+      isVisible: projects.isVisible,
+      sortOrder: projects.sortOrder,
+      createdAt: projects.createdAt,
+      updatedAt: projects.updatedAt,
+    })
+    .from(projects)
+    .innerJoin(photos, eq(photos.projectId, projects.id))
+    .where(and(
+      eq(projects.isVisible, 1),
+      ne(projects.id, projectId),
+      inArray(photos.category, categories)
+    ))
+    .orderBy(projects.sortOrder)
+    .limit(limit);
+  
+  return relatedProjects;
 }
 
 export async function createProject(data: InsertProject) {

@@ -751,6 +751,12 @@ export const appRouter = router({
         return { ...project, photos };
       }),
 
+    getRelated: publicProcedure
+      .input(z.object({ projectId: z.number(), limit: z.number().default(3) }))
+      .query(async ({ input }) => {
+        return await db.getRelatedProjects(input.projectId, input.limit);
+      }),
+
     // Admin endpoints: manage all projects
     listAll: protectedProcedure.query(async ({ ctx }) => {
       if (ctx.user.role !== 'admin') {

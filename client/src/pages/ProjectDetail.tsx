@@ -12,6 +12,10 @@ import Lightbox from "@/components/Lightbox";
 export default function ProjectDetail() {
   const { slug } = useParams<{ slug: string }>();
   const { data: project, isLoading } = trpc.projects.getBySlug.useQuery({ slug: slug || "" });
+  const { data: relatedProjects } = trpc.projects.getRelated.useQuery(
+    { projectId: project?.id || 0, limit: 3 },
+    { enabled: !!project?.id }
+  );
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
 
@@ -161,8 +165,49 @@ export default function ProjectDetail() {
         />
       )}
 
+      {/* Related Projects */}
+      {relatedProjects && relatedProjects.length > 0 && (
+        <section className="pb-16 sm:pb-20 md:pb-24 px-4 sm:px-6 border-t border-border pt-12">
+          <div className="container mx-auto">
+            <h2 className="text-2xl sm:text-3xl font-bold mb-8 sm:mb-12 text-center">
+              相關專案
+            </h2>
+            <div className="grid gap-6 sm:gap-8 sm:grid-cols-2 lg:grid-cols-3 max-w-5xl mx-auto">
+              {relatedProjects.map((relatedProject) => (
+                <Link key={relatedProject.id} href={`/projects/${relatedProject.slug}`}>
+                  <a className="group block">
+                    <div className="relative aspect-[4/3] overflow-hidden rounded-lg bg-neutral-900 mb-4">
+                      {relatedProject.coverImage ? (
+                        <img
+                          src={relatedProject.coverImage}
+                          alt={relatedProject.title}
+                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-neutral-600">
+                          <span className="text-sm">No Cover Image</span>
+                        </div>
+                      )}
+                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors duration-300" />
+                    </div>
+                    <h3 className="text-xl font-bold group-hover:text-primary transition-colors">
+                      {relatedProject.title}
+                    </h3>
+                    {relatedProject.description && (
+                      <p className="text-sm text-muted-foreground mt-2 line-clamp-2">
+                        {relatedProject.description}
+                      </p>
+                    )}
+                  </a>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* Footer */}
-      <footer className="border-t border-border py-8 mt-12">
+      <footer className="border-t border-border py-8">
         <div className="container mx-auto px-6 text-center text-sm text-muted-foreground">
           <p>© 2024 26phi. All rights reserved.</p>
         </div>
